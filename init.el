@@ -613,16 +613,7 @@
 ;; -> hooks
 ;;
 
-;; (defun get-subtle-highlight-color ()
-;;   "Retrieve a subtle highlight color based on the current background."
-;;   (let* ((bg (face-attribute 'default :background))
-;;          (color (color-lighten-name bg 50)))
-;;     color))
-
 (defun my/after-theme-loaded(theme)
-  ;; (let ((highlight-color (get-subtle-highlight-color)))
-  ;;   (custom-set-faces
-  ;;    `(org-transclusion ((t (:background ,highlight-color))))))
   (my/sync-tab-bar-to-theme))
 
 (add-hook 'before-save-hook #'delete-trailing-whitespace)
@@ -1289,8 +1280,6 @@ If ARG is provided, it sets the counter."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(org-transclusion ((t (:weight regular :height 1.0 :box (:line-width 1 :style released-button)))))
- '(org-transclusion-fringe ((t (:weight bold :height 1.0))))
  '(org-level-1 ((t (:inherit default :weight regular :height 1.1))))
  '(org-level-2 ((t (:inherit default :weight light :height 1.0))))
  '(org-level-3 ((t (:inherit default :weight light :height 1.0))))
@@ -3436,8 +3425,6 @@ The symbol at point is added to the future history."
    ("C-x C-a b" . activities-switch-buffer)
    ("C-x C-a g" . activities-revert)
    ("C-x C-a l" . activities-list)))
-
-(use-package org-transclusion)
 
 (add-hook 'org-mode-hook 'org-indent-mode)
 
