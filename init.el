@@ -390,6 +390,7 @@
      '(("~/.config" . 0)
        ("~/source/repos" . 2)
        ("~/bin" . 1)
+       ("~/.emacs.d" . 1)
        ("~/DCIM/Art/Content" . 2)
        ("~/DCIM/themes" . 2)))))
 
