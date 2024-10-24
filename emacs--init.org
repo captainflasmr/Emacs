@@ -1,7 +1,7 @@
 -*- mode: org; fill-column: 80; eval: (display-fill-column-indicator-mode 1); -*-
 #+title: Emacs Configuration
 #+options: toc:nil author:t title:t
-#+property: header-args :tangle ~/.config/emacs/init.el
+#+property: header-args :tangle ~/.emacs.d/init.el
 #+startup: overview
 #+TOC: headlines 1 local
 
@@ -9,7 +9,7 @@
 
 This block sets up Emacs to avoid a flash of the default theme upon startup, helping prevent a sudden bright screen especially in dark environments.
 
-#+begin_src elisp :tangle ~/.config/emacs/early-init.el
+#+begin_src elisp :tangle ~/.emacs.d/early-init.el
 ;;
 ;; -> early-init
 ;;
