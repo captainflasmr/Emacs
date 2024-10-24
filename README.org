@@ -1,0 +1,9 @@
+#+title: Emacs README
+#+author: James Dyer
+#+email: captainflasmr@gmail.com
+#+language: en
+#+options: ':t toc:nil author:nil email:nil num:nil title:nil
+#+todo: TODO DOING | DONE
+#+startup: showall
+
+This repository is hosting my significant Emacs files
