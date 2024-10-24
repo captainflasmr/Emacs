@@ -1804,7 +1804,7 @@ If ARG is provided, it sets the counter."
 ;; -> programming
 ;;
 
-(setq my/old-ada-mode (concat user-emacs-directory "old/old-ada-mode"))
+(setq my/old-ada-mode (concat user-emacs-directory "old-ada-mode"))
 (when (file-exists-p my/old-ada-mode)
   (use-package ada-mode
     :load-path my/old-ada-mode))
