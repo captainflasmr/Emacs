@@ -294,9 +294,12 @@
 (define-key my-jump-keymap (kbd "z") #'list-packages)
 (define-key my-jump-keymap (kbd "i") #'my/complete)
 
-
 (use-package ace-window
+  :demand t
+  :init
+  (add-hook 'after-init-hook 'ace-window-display-mode)
   :config
+  (setq aw-display-mode-overlay nil)
   (setq aw-keys '(?j ?k ?l ?\; ?a ?s ?d ?f))
   (setq aw-background nil))
 
@@ -1112,15 +1115,15 @@ If ARG is provided, it sets the counter."
         org-return-follows-link t
         org-use-fast-todo-selection 'expert
         org-todo-keywords
-        ;; '((sequence "TODO(t)" "DOING(d)" "ORDR(o)" "SENT(s)" "|" "CANCELLED(c)" "DONE(n)"))
-        '((sequence "TODO" "DOING" "ORDR" "SENT" "|" "CANCELLED" "DONE"))
+        ;; '((sequence "TODO(t)" "DOING(d)" "ORDR(o)" "SENT(s)" "|" "DONE(n)" "CANCELLED(c)"))
+        '((sequence "TODO" "DOING" "ORDR" "SENT" "|" "DONE" "CANCELLED"))
         org-todo-keyword-faces
         '(("TODO" . "#ee5566")
           ("DOING" . "#5577aa")
           ("ORDR" . "#bb44ee")
           ("SENT" . "#bb44ee")
-          ("CANCELLED" . "#426b3e")
-          ("DONE" . "#77aa66"))
+          ("DONE" . "#77aa66")
+          ("CANCELLED" . "#426b3e"))
         org-cycle-separator-lines 0))
 
 (use-package org-tidy)
@@ -2844,11 +2847,11 @@ Or indeed other filters as defined in the main unless from RSTART and REND."
 
   (custom-theme-set-faces
    'user
-   '(variable-pitch ((t (:family "DejaVu Sans" :height 120 :weight normal))))
+   '(variable-pitch ((t (:family "DejaVu Sans" :height 110 :weight normal))))
    '(fixed-pitch ((t ( :family "Source Code Pro" :height 110)))))
 
   ;; (setq font-general "Noto Sans Mono 11")
-  (setq font-general "Source Code Pro 12")
+  (setq font-general "Source Code Pro 11")
   ;; (setq font-general "Source Code Pro Light 11")
   ;; (setq font-general "Nimbus Mono PS 11")
   ;; (setq font-general "Monospace 11")
@@ -3578,3 +3581,38 @@ The symbol at point is added to the future history."
     (message "This command must be run in an Org buffer.")))
 
 (bind-key* (kbd "M-s s") #'my/org-ql-tags-search-in-current-buffer)
+
+(use-package org-superstar
+  :hook
+  (org-mode . org-superstar-mode))
+
+(use-package rotate)
+
+(transient-define-prefix my/transient-for-windows ()
+  "Transient for manipulating windows."
+  ["Window Commands"
+   ["Rotate"
+    ("r" "Rotate Layout" rotate-layout)
+    ("n" "Rotate Window" rotate-window)]
+   ["Layouts"
+    ("a" "Rotate Tiled" rotate:tiled)
+    ("s" "Rotate Even Vertical" rotate:even-vertical)
+    ("d" "Rotate Main Vertical" rotate:main-vertical)
+    ("f" "Rotate Even Horizontal" rotate:even-horizontal)
+    ("g" "Rotate Main Horizontal" rotate:main-horizontal)]
+   ["Resize"
+    ("m" "Swap" ace-swap-window)
+    ("h" "Left" (lambda () (interactive)
+                  (my/resize-window 2 t)
+                  (my/repeat-window-size)))
+    ("l" "Right" (lambda () (interactive)
+                  (my/resize-window -2 t)
+                  (my/repeat-window-size)))
+    ("j" "Down" (lambda () (interactive)
+                  (my/resize-window 1 nil)
+                  (my/repeat-window-size)))
+    ("k" "Up" (lambda () (interactive)
+                  (my/resize-window -1 nil)
+                  (my/repeat-window-size)))]])
+
+(bind-key* (kbd "C-c m") #'my/transient-for-windows)
