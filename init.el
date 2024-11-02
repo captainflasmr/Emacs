@@ -210,8 +210,6 @@
 (use-package company
   :bind
   (:map company-active-map
-        ("M-j" . company-select-next)
-        ("M-k" . company-select-previous)
         ("<tab>" . company-complete-selection))
   :config
   (setq company-minimum-prefix-length 1)
@@ -329,8 +327,10 @@
 (define-key my-win-keymap (kbd "o") #'visual-fill-column-mode)
 (define-key my-win-keymap (kbd "p") #'variable-pitch-mode)
 (define-key my-win-keymap (kbd "q") #'toggle-menu-bar-mode-from-frame)
+(define-key my-win-keymap (kbd "r") #'org-wc-remove-overlays)
 (define-key my-win-keymap (kbd "s") #'my/toggle-internal-border-width)
 (define-key my-win-keymap (kbd "v") #'visual-line-mode)
+(define-key my-win-keymap (kbd "w") #'org-wc-display)
 
 ;;
 ;; -> keys-other
@@ -475,10 +475,8 @@
 ;;
 
 (bind-key* (kbd "C-+") (lambda ()(interactive)(text-scale-adjust 1)))
-(bind-key* (kbd "C--") #'bookmark-jump)
 (bind-key* (kbd "C--") (lambda ()(interactive)(text-scale-adjust -1)))
-(bind-key* (kbd "C-0") #'my/switch-to-thing)
-(bind-key* (kbd "C-=") #'switch-to-buffer)
+(bind-key* (kbd "M-/") #'consult-buffer)
 (bind-key* (kbd "C-=") (lambda ()(interactive)(text-scale-adjust 1)))
 (bind-key* (kbd "C-@") #'my/shell-create)
 (bind-key* (kbd "C-c ,") #'embark-act)
@@ -486,27 +484,25 @@
 (bind-key* (kbd "C-o") #'other-window)
 (bind-key* (kbd "C-x s") #'save-buffer)
 (bind-key* (kbd "C-z") #'undo)
-(bind-key* (kbd "M-'") #'set-mark-command)
 (bind-key* (kbd "M-9") #'my/complete)
-(bind-key* (kbd "M-SPC") #'set-mark-command)
-(bind-key* (kbd "M-h") #'backward-char)
-(bind-key* (kbd "M-j") #'next-line)
-(bind-key* (kbd "M-k") #'previous-line)
-(bind-key* (kbd "M-l") #'forward-char)
+(bind-key* (kbd "M-'") #'set-mark-command)
 (bind-key* (kbd "M-m") #'(lambda ()(interactive)(scroll-down (/ (window-height) 4))))
 (bind-key* (kbd "M-n") #'(lambda ()(interactive)(scroll-up (/ (window-height) 4))))
 (define-key minibuffer-local-map (kbd "C-c c") #'embark-collect)
 (define-key minibuffer-local-map (kbd "C-c e") #'embark-export)
-(global-set-key (kbd "C-1") #'delete-other-windows)
-(global-set-key (kbd "C-2") #'split-window-vertically)
-(global-set-key (kbd "C-3") #'split-window-horizontally)
+(global-set-key (kbd "M-0") 'delete-window)
+(global-set-key (kbd "M-1") #'delete-other-windows)
+(global-set-key (kbd "M-2") #'split-window-vertically)
+(global-set-key (kbd "M-3") #'split-window-horizontally)
+(global-set-key (kbd "M-k") #'delete-other-windows)
+(global-set-key (kbd "M-j") #'split-window-vertically)
+(global-set-key (kbd "M-l") #'split-window-horizontally)
 (global-set-key (kbd "C-c a") #'org-agenda)
 (global-set-key (kbd "C-c b") #'(lambda ()(interactive)(async-shell-command "do_backup home" "*backup*")))
 (global-set-key (kbd "C-c c") #'org-capture)
 (global-set-key (kbd "C-x C-b") #'ibuffer)
 (global-set-key (kbd "C-x l") #'scroll-lock-mode)
 (global-set-key (kbd "C-x v e") 'vc-ediff)
-(global-set-key (kbd "M--") #'bookmark-jump)
 (global-set-key (kbd "M-0") #'delete-window)
 (global-set-key (kbd "M-;") #'my/comment-or-uncomment)
 (global-set-key (kbd "M-[") #'yank)
@@ -1334,8 +1330,6 @@ If ARG is provided, it sets the counter."
   :bind (("M-e" . dired-jump)
          (:map dired-mode-map
                ("W" . dired-do-async-shell-command)
-               ("j" . dired-next-line)
-               ("k" . dired-previous-line)
                ("-" . dired-jump)
                ("b" . my/dired-file-to-org-link)
                ("_" . dired-create-empty-file)
@@ -1362,20 +1356,6 @@ If ARG is provided, it sets the counter."
   (dired-deletion-confirmer '(lambda (x) t))
   :config
   (dired-async-mode 1))
-
-(defun my/dired-create-directory ()
-  "Wrapper to dired-create-directory to avoid minibuffer completion."
-  (interactive)
-  (let ((search-term
-         (read-from-minibuffer "Dir : ")))
-    (dired-create-directory search-term)))
-
-(defun my/dired-create-empty-file ()
-  "Wrapper to dired-create-empty-file to avoid minibuffer completion."
-  (interactive)
-  (let ((search-term
-         (read-from-minibuffer "File : ")))
-    (dired-create-empty-file search-term)))
 
 ;;
 ;; -> image-dired
@@ -1847,12 +1827,7 @@ If ARG is provided, it sets the counter."
 
 (use-package diff-mode
   :hook
-  ((diff-mode . (lambda ()
-                  (define-key diff-mode-map (kbd "M-j") nil)
-                  (define-key diff-mode-map (kbd "M-k") nil)
-                  (define-key diff-mode-map (kbd "M-h") nil)
-                  (define-key diff-mode-map (kbd "M-l") nil)))
-   (ediff-prepare-buffer . org-fold-show-all)
+  ((ediff-prepare-buffer . org-fold-show-all)
    (ediff-prepare-buffer . (lambda () (visual-line-mode -1))))
   :custom
   (ediff-window-setup-function 'ediff-setup-windows-plain)
@@ -2848,7 +2823,7 @@ Or indeed other filters as defined in the main unless from RSTART and REND."
   (custom-theme-set-faces
    'user
    '(variable-pitch ((t (:family "DejaVu Sans" :height 110 :weight normal))))
-   '(fixed-pitch ((t ( :family "Source Code Pro" :height 110)))))
+   '(fixed-pitch ((t ( :family "Source Code Pro" :height 120)))))
 
   ;; (setq font-general "Noto Sans Mono 11")
   (setq font-general "Source Code Pro 11")
@@ -3616,3 +3591,5 @@ The symbol at point is added to the future history."
                   (my/repeat-window-size)))]])
 
 (bind-key* (kbd "C-c m") #'my/transient-for-windows)
+
+(use-package org-wc)
