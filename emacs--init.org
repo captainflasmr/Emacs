@@ -34,13 +34,15 @@ Configures the package management system by specifying preferred package archive
 
 (require 'package)
 
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("elpa" . "https://elpa.gnu.org/packages/")
-                         ("org" . "https://orgmode.org/elpa/")))
+(when (eq system-type 'gnu/linux)
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                           ("elpa" . "https://elpa.gnu.org/packages/")
+                           ("org" . "https://orgmode.org/elpa/"))))
 
-;; (setq package-archives '(("melpa" . "~/emacs-pkgs/melpa")
-;;                           ("elpa" . "~/emacs-pkgs/elpa")
-;;                           ("org" . "~/emacs-pkgs/org-mode/lisp")))
+(when (eq system-type 'windows-nt)
+  (setq package-archives '(("melpa" . "~/emacs-pkgs/melpa")
+                          ("elpa" . "~/emacs-pkgs/elpa")
+                          ("org" . "~/emacs-pkgs/org-mode/lisp"))))
 
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
