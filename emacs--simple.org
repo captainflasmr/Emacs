@@ -10,6 +10,41 @@
   (require 'bookmark)
   (require 'dired)
 
+  (when (eq system-type 'gnu/linux)
+    (custom-theme-set-faces
+     'user
+     '(variable-pitch ((t (:family "DejaVu Sans" :height 120 :weight normal))))
+     '(fixed-pitch ((t ( :family "Source Code Pro" :height 110)))))
+
+    (setq font-general "Source Code Pro 12")
+    (set-frame-font font-general nil t)
+    (add-to-list 'default-frame-alist `(font . ,font-general)))
+
+  (when (eq system-type 'windows-nt)
+    (setq home-dir "c:/users/jimbo")
+    (let ((xPaths
+           `(,(expand-file-name "~/bin")
+             ,(expand-file-name "~/bin/PortableGit/bin")
+             ,(expand-file-name "~/bin/PortableGit/usr/bin")
+             ,(expand-file-name "~/bin/Apache-Subversion/bin/")
+             ,(expand-file-name "~/bin/svn2git-2.4.0/bin")
+             ,(expand-file-name "~/bin/clang/bin")
+             ,(expand-file-name "~/bin/find")
+             ,(expand-file-name "~/bin/omnisharp-win-x64")
+             "c:/GnuWin32/bin"
+             "c:/GNAT/2021/bin")))
+      (setenv "PATH" (mapconcat 'identity xPaths ";"))
+      (setq exec-path (append xPaths (list "." exec-directory))))
+
+    (custom-theme-set-faces
+     'user
+     '(variable-pitch ((t (:family "Consolas" :height 110 :weight normal))))
+     '(fixed-pitch ((t ( :family "Consolas" :height 110)))))
+
+    (setq font-general "Consolas 11")
+    (set-frame-font font-general nil t)
+    (add-to-list 'default-frame-alist `(font . ,font-general)))
+
   ;; don't resize framee
   (setq frame-inhibit-implied-resize t)
 
@@ -76,7 +111,7 @@
   ;; always try and figure out which window to copy / move file
   (setq dired-dwim-target t)
 
-    ;; set up simple completion
+  ;; set up simple completion
   (setq-default abbrev-mode t)
 
   (setq hippie-expand-try-functions-list
@@ -223,7 +258,7 @@
 
   (defun my/switch-to-thing ()
     "Switch to a buffer, open a recent file, jump to a bookmark,
-                           or change the theme from a unified interface."
+                               or change the theme from a unified interface."
     (interactive)
     (let* ((buffers (mapcar #'buffer-name (buffer-list)))
            (recent-files recentf-list)
@@ -276,7 +311,7 @@
 
   (defun my/dired-duplicate-file (arg)
     "Duplicate a file from DIRED with an incremented number.
-        If ARG is provided, it sets the counter."
+            If ARG is provided, it sets the counter."
     (interactive "p")
     (let* ((file (dired-get-file-for-visit))
            (dir (file-name-directory file))
@@ -348,16 +383,5 @@
          (region-beginning)(region-end))
       (comment-or-uncomment-region
        (line-beginning-position)(line-end-position))))
-
-  ;; theme / visual settings
-  (custom-theme-set-faces
-   'user
-   '(variable-pitch ((t (:family "DejaVu Sans" :height 110 :weight normal))))
-   '(fixed-pitch ((t ( :family "Source Code Pro" :height 110)))))
-
-  (setq font-general "Source Code Pro 11")
-  (set-frame-font font-general nil t)
-
-  (add-to-list 'default-frame-alist `(font . ,font-general))
 
 #+end_src
