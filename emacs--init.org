@@ -285,8 +285,6 @@ Configures `corfu` for autocompletion, setting up preferences like cycling throu
 (use-package company
   :bind
   (:map company-active-map
-        ("M-j" . company-select-next)
-        ("M-k" . company-select-previous)
         ("<tab>" . company-complete-selection))
   :config
   (setq company-minimum-prefix-length 1)
@@ -451,8 +449,10 @@ Sets up keybindings for quickly toggling visual features like font, theme, line 
 (define-key my-win-keymap (kbd "o") #'visual-fill-column-mode)
 (define-key my-win-keymap (kbd "p") #'variable-pitch-mode)
 (define-key my-win-keymap (kbd "q") #'toggle-menu-bar-mode-from-frame)
+(define-key my-win-keymap (kbd "r") #'org-wc-remove-overlays)
 (define-key my-win-keymap (kbd "s") #'my/toggle-internal-border-width)
 (define-key my-win-keymap (kbd "v") #'visual-line-mode)
+(define-key my-win-keymap (kbd "w") #'org-wc-display)
 
 #+end_src
 
@@ -638,10 +638,8 @@ Note that occasionally I use the use-package related bind-key for a set all mode
 ;;
 
 (bind-key* (kbd "C-+") (lambda ()(interactive)(text-scale-adjust 1)))
-(bind-key* (kbd "C--") #'bookmark-jump)
 (bind-key* (kbd "C--") (lambda ()(interactive)(text-scale-adjust -1)))
-(bind-key* (kbd "C-0") #'my/switch-to-thing)
-(bind-key* (kbd "C-=") #'switch-to-buffer)
+(bind-key* (kbd "M-k") #'consult-buffer)
 (bind-key* (kbd "C-=") (lambda ()(interactive)(text-scale-adjust 1)))
 (bind-key* (kbd "C-@") #'my/shell-create)
 (bind-key* (kbd "C-c ,") #'embark-act)
@@ -649,27 +647,21 @@ Note that occasionally I use the use-package related bind-key for a set all mode
 (bind-key* (kbd "C-o") #'other-window)
 (bind-key* (kbd "C-x s") #'save-buffer)
 (bind-key* (kbd "C-z") #'undo)
-(bind-key* (kbd "M-'") #'set-mark-command)
 (bind-key* (kbd "M-9") #'my/complete)
 (bind-key* (kbd "M-SPC") #'set-mark-command)
-(bind-key* (kbd "M-h") #'backward-char)
-(bind-key* (kbd "M-j") #'next-line)
-(bind-key* (kbd "M-k") #'previous-line)
-(bind-key* (kbd "M-l") #'forward-char)
 (bind-key* (kbd "M-m") #'(lambda ()(interactive)(scroll-down (/ (window-height) 4))))
 (bind-key* (kbd "M-n") #'(lambda ()(interactive)(scroll-up (/ (window-height) 4))))
 (define-key minibuffer-local-map (kbd "C-c c") #'embark-collect)
 (define-key minibuffer-local-map (kbd "C-c e") #'embark-export)
-(global-set-key (kbd "C-1") #'delete-other-windows)
-(global-set-key (kbd "C-2") #'split-window-vertically)
-(global-set-key (kbd "C-3") #'split-window-horizontally)
+(global-set-key (kbd "M-h") #'delete-other-windows)
+(global-set-key (kbd "M-j") #'split-window-vertically)
+(global-set-key (kbd "M-l") #'split-window-horizontally)
 (global-set-key (kbd "C-c a") #'org-agenda)
 (global-set-key (kbd "C-c b") #'(lambda ()(interactive)(async-shell-command "do_backup home" "*backup*")))
 (global-set-key (kbd "C-c c") #'org-capture)
 (global-set-key (kbd "C-x C-b") #'ibuffer)
 (global-set-key (kbd "C-x l") #'scroll-lock-mode)
 (global-set-key (kbd "C-x v e") 'vc-ediff)
-(global-set-key (kbd "M--") #'bookmark-jump)
 (global-set-key (kbd "M-0") #'delete-window)
 (global-set-key (kbd "M-;") #'my/comment-or-uncomment)
 (global-set-key (kbd "M-[") #'yank)
@@ -1653,20 +1645,6 @@ Enhances Dired, the directory editor, with additional functionalities like async
   :config
   (dired-async-mode 1))
 
-(defun my/dired-create-directory ()
-  "Wrapper to dired-create-directory to avoid minibuffer completion."
-  (interactive)
-  (let ((search-term
-         (read-from-minibuffer "Dir : ")))
-    (dired-create-directory search-term)))
-
-(defun my/dired-create-empty-file ()
-  "Wrapper to dired-create-empty-file to avoid minibuffer completion."
-  (interactive)
-  (let ((search-term
-         (read-from-minibuffer "File : ")))
-    (dired-create-empty-file search-term)))
-
 #+end_src
 
 * image-dired
@@ -2156,7 +2134,6 @@ Dynamically populate the compilation-search-path whenever a compilation takes pl
 ;; (add-hook 'compilation-mode-hook #'my/project-create-compilation-search-path)
 #+end_src
 
-
 * auto-mode-alist
 
 Maps file extensions to specific Emacs modes, enabling automatic mode activation based on file type for a seamless editing experience across different languages and content types.
@@ -2237,12 +2214,7 @@ Customizes the appearance and behaviour of diff and merge tools within Emacs, ad
 
 (use-package diff-mode
   :hook
-  ((diff-mode . (lambda ()
-                  (define-key diff-mode-map (kbd "M-j") nil)
-                  (define-key diff-mode-map (kbd "M-k") nil)
-                  (define-key diff-mode-map (kbd "M-h") nil)
-                  (define-key diff-mode-map (kbd "M-l") nil)))
-   (ediff-prepare-buffer . org-fold-show-all)
+  ((ediff-prepare-buffer . org-fold-show-all)
    (ediff-prepare-buffer . (lambda () (visual-line-mode -1))))
   :custom
   (ediff-window-setup-function 'ediff-setup-windows-plain)
@@ -3327,7 +3299,6 @@ Shares custom Lisp functions for managing financial data within Emacs, demonstra
 
 #+end_src
 
-
 * word-count
 
 Configures word count functionality, demonstrating custom word counting strategies for specific document sections or content types, optimizing for tasks like writing and documentation.
@@ -3438,7 +3409,7 @@ Curates configurations specific to Linux, making adjustments for paths, fonts, a
   (custom-theme-set-faces
    'user
    '(variable-pitch ((t (:family "DejaVu Sans" :height 110 :weight normal))))
-   '(fixed-pitch ((t ( :family "Source Code Pro" :height 110)))))
+   '(fixed-pitch ((t ( :family "Source Code Pro" :height 120)))))
 
   ;; (setq font-general "Noto Sans Mono 11")
   (setq font-general "Source Code Pro 11")
@@ -3565,25 +3536,6 @@ Curates configurations specific to Linux, making adjustments for paths, fonts, a
   (swig--generate-include-file-list
    "/home/jdyer/source/repos/cigi-ccl_4_0/include"
    "/home/jdyer/source/repos/cigi-ccl_4_0/example.i"))
-#+end_src
-
-* casual
-
-#+begin_src elisp :tangle no
-;;
-;; -> casual
-;;
-
-(use-package casual
-  :ensure t
-  :custom
-  (casual-dired-listing-switches
-   '("--all" "--human-readable" "-g" "--no-group"))
-  :bind (:map dired-mode-map
-              ("M-s a" . #'casual-dired-tmenu)
-              ("s" . #'casual-dired-sort-by-tmenu)
-              ("/" . #'casual-dired-search-replace-tmenu)))
-
 #+end_src
 
 * transients
@@ -3825,7 +3777,6 @@ programming modes based on basic space / tab indentation."
 (global-set-key (kbd "C-c g") 'chatgpt-shell-transient)
 
 #+end_src
-
 
 * development
 
@@ -4242,5 +4193,7 @@ The symbol at point is added to the future history."
                   (my/repeat-window-size)))]])
 
 (bind-key* (kbd "C-c m") #'my/transient-for-windows)
+
+(use-package org-wc)
 
 #+end_src
