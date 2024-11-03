@@ -643,7 +643,7 @@ Note that occasionally I use the use-package related bind-key for a set all mode
   (bind-key* (kbd "C--") (lambda ()(interactive)(text-scale-adjust -1)))
   (bind-key* (kbd "M-/") #'consult-buffer)
   (bind-key* (kbd "C-=") (lambda ()(interactive)(text-scale-adjust 1)))
-  (bind-key* (kbd "C-@") #'my/shell-create)
+  (bind-key* (kbd "C-c h") #'my/shell-create)
   (bind-key* (kbd "C-c ,") #'embark-act)
   (bind-key* (kbd "C-c r") #'my/repeat-window-size)
   (bind-key* (kbd "C-o") #'other-window)
@@ -2881,8 +2881,8 @@ Demonstrates customizations for shell integration within Emacs, optimizing setti
   :custom
   (popper-window-height 15))
 
-(bind-key* (kbd "C-'") #'popper-toggle)
-(bind-key* (kbd "C-;") #'popper-toggle-type)
+(bind-key* (kbd "C-c '") #'popper-toggle)
+(bind-key* (kbd "C-c ;") #'popper-toggle-type)
 
 #+end_src
 

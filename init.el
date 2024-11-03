@@ -4,13 +4,15 @@
 
 (require 'package)
 
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("elpa" . "https://elpa.gnu.org/packages/")
-                         ("org" . "https://orgmode.org/elpa/")))
+(when (eq system-type 'gnu/linux)
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                           ("elpa" . "https://elpa.gnu.org/packages/")
+                           ("org" . "https://orgmode.org/elpa/"))))
 
-;; (setq package-archives '(("melpa" . "~/emacs-pkgs/melpa")
-;;                           ("elpa" . "~/emacs-pkgs/elpa")
-;;                           ("org" . "~/emacs-pkgs/org-mode/lisp")))
+(when (eq system-type 'windows-nt)
+  (setq package-archives '(("melpa" . "~/emacs-pkgs/melpa")
+                          ("elpa" . "~/emacs-pkgs/elpa")
+                          ("org" . "~/emacs-pkgs/org-mode/lisp"))))
 
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
@@ -478,7 +480,7 @@
 (bind-key* (kbd "C--") (lambda ()(interactive)(text-scale-adjust -1)))
 (bind-key* (kbd "M-/") #'consult-buffer)
 (bind-key* (kbd "C-=") (lambda ()(interactive)(text-scale-adjust 1)))
-(bind-key* (kbd "C-@") #'my/shell-create)
+(bind-key* (kbd "C-c h") #'my/shell-create)
 (bind-key* (kbd "C-c ,") #'embark-act)
 (bind-key* (kbd "C-c r") #'my/repeat-window-size)
 (bind-key* (kbd "C-o") #'other-window)
@@ -2356,8 +2358,8 @@ With directories under project root using find."
   :custom
   (popper-window-height 15))
 
-(bind-key* (kbd "C-'") #'popper-toggle)
-(bind-key* (kbd "C-;") #'popper-toggle-type)
+(bind-key* (kbd "C-c '") #'popper-toggle)
+(bind-key* (kbd "C-c ;") #'popper-toggle-type)
 
 ;;
 ;; -> calendar
