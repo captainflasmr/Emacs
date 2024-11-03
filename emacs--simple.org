@@ -166,7 +166,7 @@
   (global-set-key (kbd "C-c d") #'my/dired-duplicate-file)
   (global-set-key (kbd "C-c u") #'my/dired-du)
   (global-set-key (kbd "M-/") #'my/switch-to-thing)
-  (global-set-key (kbd "C-@") #'my/shell-create)
+  (global-set-key (kbd "C-c h") #'my/shell-create)
 
   ;; hooks
   (defun disable-M-h ()
