@@ -111,6 +111,11 @@
   ;; always try and figure out which window to copy / move file
   (setq dired-dwim-target t)
 
+  ;; org
+  (setq org-startup-indented t)
+  (setq org-use-speed-commands t)
+  (setq org-hide-leading-stars t)
+
   ;; set up simple completion
   (setq-default abbrev-mode t)
 
@@ -130,6 +135,8 @@
    '(warning-suppress-types '((frameset))))
 
   ;; keybindings
+  (global-set-key (kbd "M-s =") #'ediff-buffers)
+  (global-set-key (kbd "C-x x g") #'revert-buffer)
   (global-set-key (kbd "M-'") #'set-mark-command)
   (global-set-key (kbd "C-x [") #'beginning-of-buffer)
   (global-set-key (kbd "C-x ]") #'end-of-buffer)
@@ -144,15 +151,16 @@
   (global-set-key (kbd "M-1") #'delete-other-windows)
   (global-set-key (kbd "M-2") #'split-window-vertically)
   (global-set-key (kbd "M-3") #'split-window-horizontally)
-  (global-set-key (kbd "M-k") #'delete-other-windows)
+  (global-set-key (kbd "M-l") #'delete-other-windows)
   (global-set-key (kbd "M-j") #'split-window-vertically)
-  (global-set-key (kbd "M-l") #'split-window-horizontally)
+  (global-set-key (kbd "M-k") #'split-window-horizontally)
   (global-set-key (kbd "M-;") 'my/comment-or-uncomment)
   (global-set-key (kbd "M-[") #'yank)
   (global-set-key (kbd "M-]") #'yank-pop)
   (global-set-key (kbd "M-e") #'dired-jump)
   (global-set-key (kbd "M-u") #'tab-bar-switch-to-prev-tab)
   (global-set-key (kbd "M-i") #'tab-bar-switch-to-next-tab)
+  (global-set-key (kbd "M-s j") #'eval-defun)
   (global-set-key (kbd "M-s h") #'my/mark-block)
   (global-set-key (kbd "M-s ,") #'my/mark-line)
   (global-set-key (kbd "M-s f") #'my/find-file)
@@ -168,6 +176,14 @@
   (global-set-key (kbd "M-/") #'my/switch-to-thing)
   (global-set-key (kbd "C-c h") #'my/shell-create)
 
+  ;; window positioning
+  (add-to-list 'display-buffer-alist
+               '("\\*.*shell"
+                 (display-buffer-reuse-window display-buffer-in-direction)
+                 (direction . bottommost)
+                 (dedicated . t)
+                 (window-height . 0.2)
+                 (inhibit-same-window . t)))
   ;; hooks
   (defun disable-M-h ()
     (local-unset-key (kbd "M-h")))
@@ -205,6 +221,15 @@
   ;; dired
   (setq dired-listing-switches "-alGgh")
 
+  ;; I don't ever want a confirmation of a deletion
+  (setq dired-auto-revert-buffer t)
+  (setq dired-confirm-shell-command nil)
+  (setq dired-no-confirm t)
+  (setq dired-deletion-confirmer '(lambda (x) t))
+
+  ;; always recursively delete
+  (setq dired-recursive-deletes 'always)
+
   ;; grep
   (eval-after-load 'grep
     '(progn
@@ -228,6 +253,7 @@
   (define-key my-jump-keymap (kbd "o") #'bookmark-jump)
   (define-key my-jump-keymap (kbd "h") (lambda () (interactive) (find-file "~")))
   (define-key my-jump-keymap (kbd "k") (lambda () (interactive) (find-file (concat user-emacs-directory "emacs--simple.org"))))
+  (define-key my-jump-keymap (kbd "r") (lambda () (interactive) (switch-to-buffer "*scratch*")))
   (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content")))
   (define-key my-jump-keymap (kbd "-") #'tab-close)
   (define-key my-jump-keymap (kbd "=") (lambda () (interactive) (tab-bar-new-tab-to -1)))
@@ -249,6 +275,11 @@
   (define-key my-win-keymap (kbd "q") #'toggle-menu-bar-mode-from-frame)
   (define-key my-win-keymap (kbd "v") #'visual-line-mode)
 
+  ;; ediff
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+  (setq ediff-highlight-all-diffs t)
+  (setq ediff-split-window-function 'split-window-horizontally)
+
   ;; functions
   (defun my/load-theme ()
     "Prompt to select a theme from available themes and load the selected theme."
@@ -258,7 +289,7 @@
 
   (defun my/switch-to-thing ()
     "Switch to a buffer, open a recent file, jump to a bookmark,
-                               or change the theme from a unified interface."
+                                                   or change the theme from a unified interface."
     (interactive)
     (let* ((buffers (mapcar #'buffer-name (buffer-list)))
            (recent-files recentf-list)
@@ -289,18 +320,22 @@
   (defun my/sync-tab-bar-to-theme ()
     "Synchronize tab-bar faces with the current theme."
     (interactive)
-    (set-face-attribute 'mode-line-active nil :height 120 :underline nil :overline nil :box nil
-                        :inherit 'highlight :foreground "#000000")
+    (set-face-attribute 'mode-line nil :height 120 :underline nil :overline nil :box nil
+                        :background "#ff8c00" :foreground "#000000")
     (set-face-attribute 'mode-line-inactive nil :height 120 :underline nil :overline nil
-                        :background "#151515" :foreground "#cacaca")
+                        :background "#000000" :foreground "#aaaaaa")
     (let ((default-bg (face-background 'default))
           (default-fg (face-foreground 'default))
           (default-hl (face-background 'highlight))
           (inactive-fg (face-foreground 'mode-line-inactive)))
       (custom-set-faces
+       '(vertical-border ((t (:foreground "#000000"))))
+       '(window-divider ((t (:foreground "#000000"))))
        `(tab-bar ((t (:inherit default :background ,default-bg :foreground ,default-fg))))
-       `(tab-bar-tab ((t (:inherit 'highlight :background ,default-hl :foreground "#000000"))))
+       `(tab-bar-tab ((t (:inherit 'highlight :background "#ff8c00" :foreground "#000000"))))
        `(tab-bar-tab-inactive ((t (:inherit default :background ,default-bg :foreground ,inactive-fg)))))))
+
+  (my/sync-tab-bar-to-theme)
 
   (defun my/shell-create (name)
     "Create a custom-named eshell buffer with NAME."
@@ -311,7 +346,7 @@
 
   (defun my/dired-duplicate-file (arg)
     "Duplicate a file from DIRED with an incremented number.
-            If ARG is provided, it sets the counter."
+                                If ARG is provided, it sets the counter."
     (interactive "p")
     (let* ((file (dired-get-file-for-visit))
            (dir (file-name-directory file))
@@ -383,5 +418,12 @@
          (region-beginning)(region-end))
       (comment-or-uncomment-region
        (line-beginning-position)(line-end-position))))
+
+  (setq window-divider-default-bottom-width 4)
+  (setq window-divider-default-right-width 4)
+  (setq window-divider-default-places t)
+  (window-divider-mode -1)
+
+  (set-fringe-mode '(0 . 0))
 
 #+end_src
