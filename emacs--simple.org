@@ -83,12 +83,10 @@
   ;; make ^K kill thru newline
   (setq kill-whole-line t)
 
+  ;; set the completion styles
+  (setq completion-styles '(basic partial-completion emacs22))
+
   ;; minibuffer completion for file and buffer switching
-  (ido-mode 1)
-  (setq ido-everywhere 1)
-  (setq ido-default-buffer-method 'selected-window)
-  (setq ido-default-file-method 'selected-window)
-  (icomplete-mode 1)
   (fido-mode 1)
 
   ;; minibuffer history to be saved
@@ -102,9 +100,6 @@
 
   ;; always confirm before exiting emacs
   (setq confirm-kill-emacs 'y-or-n-p)
-
-  ;; turn off highlighting the selected line
-  (global-hl-line-mode -1)
 
   (setq custom-safe-themes t)
 
@@ -163,7 +158,6 @@
   (global-set-key (kbd "M-s j") #'eval-defun)
   (global-set-key (kbd "M-s h") #'my/mark-block)
   (global-set-key (kbd "M-s ,") #'my/mark-line)
-  (global-set-key (kbd "M-s f") #'my/find-file)
   (global-set-key (kbd "M-s v") #'eval-expression)
   (global-set-key (kbd "M-9") #'hippie-expand)
   (global-set-key (kbd "M-s g") #'rgrep)
@@ -173,8 +167,12 @@
   (global-set-key (kbd "M-g i") 'imenu)
   (global-set-key (kbd "C-c d") #'my/dired-duplicate-file)
   (global-set-key (kbd "C-c u") #'my/dired-du)
-  (global-set-key (kbd "M-/") #'my/switch-to-thing)
+  (global-set-key (kbd "C-x ;") #'my/switch-to-thing)
   (global-set-key (kbd "C-c h") #'my/shell-create)
+  (global-set-key (kbd "C-c m m") #'window-swap-states)
+  (global-unset-key (kbd "C-h h"))
+  (global-unset-key (kbd "C-t"))
+  (global-unset-key (kbd "C-x m"))
 
   ;; window positioning
   (add-to-list 'display-buffer-alist
@@ -184,10 +182,6 @@
                  (dedicated . t)
                  (window-height . 0.2)
                  (inhibit-same-window . t)))
-  ;; hooks
-  (defun disable-M-h ()
-    (local-unset-key (kbd "M-h")))
-  (add-hook 'org-mode-hook 'disable-M-h)
 
   ;; scrolling
   (setq scroll-margin 20)
@@ -256,7 +250,7 @@
   (define-key my-jump-keymap (kbd "r") (lambda () (interactive) (switch-to-buffer "*scratch*")))
   (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content")))
   (define-key my-jump-keymap (kbd "-") #'tab-close)
-  (define-key my-jump-keymap (kbd "=") (lambda () (interactive) (tab-bar-new-tab-to -1)))
+  (define-key my-jump-keymap (kbd "=") #'tab-bar-new-tab)
 
   ;; visual changes map keybindings
   (defvar my-win-keymap (make-sparse-keymap))
@@ -273,7 +267,11 @@
   (define-key my-win-keymap (kbd "n") #'display-line-numbers-mode)
   (define-key my-win-keymap (kbd "p") #'variable-pitch-mode)
   (define-key my-win-keymap (kbd "q") #'toggle-menu-bar-mode-from-frame)
+  (define-key my-win-keymap (kbd "s") #'my/toggle-internal-border-width)
+  (define-key my-win-keymap (kbd "u") #'set-cursor-color)
   (define-key my-win-keymap (kbd "v") #'visual-line-mode)
+
+  (setq tab-bar-new-tab-to 'rightmost)
 
   ;; ediff
   (setq ediff-window-setup-function 'ediff-setup-windows-plain)
@@ -281,26 +279,43 @@
   (setq ediff-split-window-function 'split-window-horizontally)
 
   ;; functions
+  (defun darken-color (color percent)
+    "Return a darker shade of COLOR by reducing its brightness by PERCENT."
+    (let* ((rgb (color-values color))
+           (factor (/ (- 100 percent) 100.0))
+           (darker-rgb (mapcar (lambda (x) (max 0 (round (* x factor)))) rgb)))
+      (apply 'format "#%02x%02x%02x" (mapcar (lambda (x) (/ x 256)) darker-rgb))))
+
+  (defun set-hl-line-darker-background ()
+    "Set the hl-line background to a slightly darker shade of the default background,
+           preserving the original foreground colors of the current line."
+    (interactive)
+    (require 'hl-line)
+    (unless global-hl-line-mode
+      (global-hl-line-mode 1))
+    (when (facep 'hl-line)
+      (let* ((bg (face-background 'default))
+             (darker-bg (darken-color bg 20)))
+        (custom-set-faces
+         `(hl-line ((t (:background ,darker-bg))))))))
+
   (defun my/load-theme ()
     "Prompt to select a theme from available themes and load the selected theme."
     (interactive)
     (let ((theme (completing-read "Choose theme: " (mapcar 'symbol-name (custom-available-themes)))))
+      (dolist (item custom-enabled-themes)
+        (disable-theme item))
       (load-theme (intern theme) t)))
 
   (defun my/switch-to-thing ()
     "Switch to a buffer, open a recent file, jump to a bookmark,
-                                                   or change the theme from a unified interface."
+                                                                     or change the theme from a unified interface."
     (interactive)
     (let* ((buffers (mapcar #'buffer-name (buffer-list)))
            (recent-files recentf-list)
            (bookmarks (bookmark-all-names))
            (all-options (append buffers recent-files bookmarks))
-           (selection (completing-read "Switch to: "
-                                       (lambda (str pred action)
-                                         (if (eq action 'metadata)
-                                             '(metadata . ((category . file)))
-                                           (complete-with-action action all-options str pred)))
-                                       nil t nil 'file-name-history)))
+           (selection (completing-read "Switch to: " all-options)))
       (pcase selection
         ((pred (lambda (sel) (member sel buffers))) (switch-to-buffer selection))
         ((pred (lambda (sel) (member sel bookmarks))) (bookmark-jump selection))
@@ -320,6 +335,7 @@
   (defun my/sync-tab-bar-to-theme ()
     "Synchronize tab-bar faces with the current theme."
     (interactive)
+    (set-hl-line-darker-background)
     (set-face-attribute 'mode-line nil :height 120 :underline nil :overline nil :box nil
                         :background "#ff8c00" :foreground "#000000")
     (set-face-attribute 'mode-line-inactive nil :height 120 :underline nil :overline nil
@@ -346,7 +362,7 @@
 
   (defun my/dired-duplicate-file (arg)
     "Duplicate a file from DIRED with an incremented number.
-                                If ARG is provided, it sets the counter."
+                                                  If ARG is provided, it sets the counter."
     (interactive "p")
     (let* ((file (dired-get-file-for-visit))
            (dir (file-name-directory file))
@@ -372,7 +388,6 @@
                            ("rg --follow --files --null" . :string)
                            ("find-name-dired" . :command)))
            (selection (completing-read "Select : " find-options))
-           (metadata '((category . file)))
            (file-list)
            (file))
       (pcase (alist-get selection find-options nil nil #'string=)
@@ -380,12 +395,10 @@
          (call-interactively (intern selection)))
         (:string
          (setq file-list (split-string (shell-command-to-string selection) "\0" t))
-         (setq file (completing-read (format "Find file in %s: " (abbreviate-file-name default-directory))
-                                     (lambda (str pred action)
-                                       (if (eq action 'metadata)
-                                           `(metadata . ,metadata)
-                                         (complete-with-action action file-list str pred)))
-                                     nil t nil 'file-name-history))))
+         (setq file (completing-read
+                     (format "Find file in %s: "
+                             (abbreviate-file-name default-directory))
+                     file-list))))
       (when file (find-file (expand-file-name file)))))
 
   (defun my/mark-line ()
@@ -425,5 +438,23 @@
   (window-divider-mode -1)
 
   (set-fringe-mode '(0 . 0))
+
+  (defvar my/internal-border-width 10 "Default internal border width for toggling.")
+
+  (defun my/toggle-internal-border-width (&optional value)
+    "Toggle internal border width given VALUE."
+    (interactive "P")
+    (let ((new-value (if value
+                         value
+                       (if (= (or (frame-parameter nil 'internal-border-width) 0)
+                              0)
+                           my/internal-border-width
+                         0))))
+      (modify-all-frames-parameters `((internal-border-width . ,new-value)))))
+
+  ;; (modify-all-frames-parameters `((internal-border-width . ,my/internal-border-width)))
+
+  (setq ispell-local-dictionary "en_GB")
+  (setq ispell-program-name "hunspell")
 
 #+end_src

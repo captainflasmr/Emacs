@@ -641,7 +641,7 @@ Note that occasionally I use the use-package related bind-key for a set all mode
 
   (bind-key* (kbd "C-+") (lambda ()(interactive)(text-scale-adjust 1)))
   (bind-key* (kbd "C--") (lambda ()(interactive)(text-scale-adjust -1)))
-  (bind-key* (kbd "M-/") #'consult-buffer)
+  (bind-key* (kbd "C-x ;") #'consult-buffer)
   (bind-key* (kbd "C-=") (lambda ()(interactive)(text-scale-adjust 1)))
   (bind-key* (kbd "C-c h") #'my/shell-create)
   (bind-key* (kbd "C-c ,") #'embark-act)
