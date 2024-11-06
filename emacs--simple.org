@@ -38,10 +38,10 @@
 
     (custom-theme-set-faces
      'user
-     '(variable-pitch ((t (:family "Consolas" :height 110 :weight normal))))
-     '(fixed-pitch ((t ( :family "Consolas" :height 110)))))
+     '(variable-pitch ((t (:family "Consolas" :height 140 :weight normal))))
+     '(fixed-pitch ((t ( :family "Consolas" :height 140)))))
 
-    (setq font-general "Consolas 11")
+    (setq font-general "Consolas 14")
     (set-frame-font font-general nil t)
     (add-to-list 'default-frame-alist `(font . ,font-general)))
 
@@ -95,8 +95,9 @@
   ;; adds the column number in the modeline
   (column-number-mode 1)
 
-  ;; revert windows with winner-undo
-  (winner-mode 1)
+  ;; revert windows
+  ;;  (winner-mode 1)
+  (tab-bar-history-mode 1)
 
   ;; always confirm before exiting emacs
   (setq confirm-kill-emacs 'y-or-n-p)
@@ -140,8 +141,10 @@
   (global-set-key (kbd "M-n") #'(lambda ()(interactive)(scroll-up (/ (window-height) 4))))
   (global-set-key (kbd "C-o") #'other-window)
   (global-set-key (kbd "C-x C-b") 'ibuffer)
-  (global-set-key (kbd "C-x j") 'winner-undo)
-  (global-set-key (kbd "C-x k") 'winner-redo)
+  ;;  (global-set-key (kbd "C-x j") 'winner-undo)
+  ;;  (global-set-key (kbd "C-x k") 'winner-redo)
+  (global-set-key (kbd "C-x j") 'tab-bar-history-back)
+  (global-set-key (kbd "C-x k") 'tab-bar-history-forward)
   (global-set-key (kbd "M-0") 'delete-window)
   (global-set-key (kbd "M-1") #'delete-other-windows)
   (global-set-key (kbd "M-2") #'split-window-vertically)
@@ -168,11 +171,11 @@
   (global-set-key (kbd "C-c d") #'my/dired-duplicate-file)
   (global-set-key (kbd "C-c u") #'my/dired-du)
   (global-set-key (kbd "C-x ;") #'my/switch-to-thing)
+  (global-set-key (kbd "C-x m") #'my/switch-to-thing)
   (global-set-key (kbd "C-c h") #'my/shell-create)
   (global-set-key (kbd "C-c m m") #'window-swap-states)
   (global-unset-key (kbd "C-h h"))
   (global-unset-key (kbd "C-t"))
-  (global-unset-key (kbd "C-x m"))
 
   ;; window positioning
   (add-to-list 'display-buffer-alist
@@ -272,6 +275,7 @@
   (define-key my-win-keymap (kbd "v") #'visual-line-mode)
 
   (setq tab-bar-new-tab-to 'rightmost)
+  (setq tab-bar-close-button-show nil)
 
   ;; ediff
   (setq ediff-window-setup-function 'ediff-setup-windows-plain)
@@ -288,14 +292,14 @@
 
   (defun set-hl-line-darker-background ()
     "Set the hl-line background to a slightly darker shade of the default background,
-           preserving the original foreground colors of the current line."
+              preserving the original foreground colors of the current line."
     (interactive)
     (require 'hl-line)
     (unless global-hl-line-mode
       (global-hl-line-mode 1))
     (when (facep 'hl-line)
       (let* ((bg (face-background 'default))
-             (darker-bg (darken-color bg 20)))
+             (darker-bg (darken-color bg 15)))
         (custom-set-faces
          `(hl-line ((t (:background ,darker-bg))))))))
 
@@ -309,7 +313,7 @@
 
   (defun my/switch-to-thing ()
     "Switch to a buffer, open a recent file, jump to a bookmark,
-                                                                     or change the theme from a unified interface."
+                                                                        or change the theme from a unified interface."
     (interactive)
     (let* ((buffers (mapcar #'buffer-name (buffer-list)))
            (recent-files recentf-list)
@@ -345,8 +349,9 @@
           (default-hl (face-background 'highlight))
           (inactive-fg (face-foreground 'mode-line-inactive)))
       (custom-set-faces
-       '(vertical-border ((t (:foreground "#000000"))))
-       '(window-divider ((t (:foreground "#000000"))))
+       `(vertical-border ((t (:foreground ,default-fg))))
+       `(window-divider ((t (:foreground ,default-fg))))
+       `(fringe ((t (:foreground ,default-bg :background ,default-bg))))
        `(tab-bar ((t (:inherit default :background ,default-bg :foreground ,default-fg))))
        `(tab-bar-tab ((t (:inherit 'highlight :background "#ff8c00" :foreground "#000000"))))
        `(tab-bar-tab-inactive ((t (:inherit default :background ,default-bg :foreground ,inactive-fg)))))))
@@ -362,7 +367,7 @@
 
   (defun my/dired-duplicate-file (arg)
     "Duplicate a file from DIRED with an incremented number.
-                                                  If ARG is provided, it sets the counter."
+                                                     If ARG is provided, it sets the counter."
     (interactive "p")
     (let* ((file (dired-get-file-for-visit))
            (dir (file-name-directory file))
@@ -432,14 +437,14 @@
       (comment-or-uncomment-region
        (line-beginning-position)(line-end-position))))
 
-  (setq window-divider-default-bottom-width 4)
-  (setq window-divider-default-right-width 4)
+  (setq window-divider-default-bottom-width 2)
+  (setq window-divider-default-right-width 2)
   (setq window-divider-default-places t)
   (window-divider-mode -1)
 
-  (set-fringe-mode '(0 . 0))
+  (set-fringe-mode '(20 . 20))
 
-  (defvar my/internal-border-width 10 "Default internal border width for toggling.")
+  (defvar my/internal-border-width 5 "Default internal border width for toggling.")
 
   (defun my/toggle-internal-border-width (&optional value)
     "Toggle internal border width given VALUE."
@@ -452,7 +457,7 @@
                          0))))
       (modify-all-frames-parameters `((internal-border-width . ,new-value)))))
 
-  ;; (modify-all-frames-parameters `((internal-border-width . ,my/internal-border-width)))
+  (modify-all-frames-parameters `((internal-border-width . ,my/internal-border-width)))
 
   (setq ispell-local-dictionary "en_GB")
   (setq ispell-program-name "hunspell")
