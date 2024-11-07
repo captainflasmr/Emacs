@@ -489,13 +489,20 @@
                                   (tab-bar-history-forward)))
       (set-transient-map map t)))
 
-  (setq-default mode-line-modified
-                '(:eval (if (and (buffer-file-name) (buffer-modified-p))
-                            (propertize " * " 'face
-                                        '(:background "#ff0000" :foreground "#ffffff" :inherit bold)) "")))
-
   (setq-default mode-line-format
-                (append mode-line-format mode-line-modified
-                        '((:eval (format " | Point: %d" (point))))))
+                (list
+                 '(:eval (if (and (buffer-file-name) (buffer-modified-p))
+                             (propertize " * " 'face
+                                         '(:background "#ff0000" :foreground "#ffffff" :inherit bold)) ""))
+                 '(:eval
+                   (propertize (format "%s" (abbreviate-file-name default-directory)) 'face '(:inherit bold)))
+                 '(:eval
+                   (if (not (equal major-mode 'dired-mode))
+                       (propertize (format "%s " (buffer-name)))
+                     " "))
+                 'mode-line-position
+                 'mode-line-modes
+                 '(:eval (format " | Point: %d" (point)))
+                 'mode-line-misc-info))
 
 #+end_src
