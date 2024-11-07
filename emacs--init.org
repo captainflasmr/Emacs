@@ -4197,7 +4197,7 @@ The symbol at point is added to the future history."
                 (my/resize-window -1 nil)
                 (my/repeat-window-size)))]])
 
-(bind-key* (kbd "C-c m") #'my/transient-for-windows)
+(bind-key* (kbd "C-c r") #'my/transient-for-windows)
 
 (use-package org-wc)
 
