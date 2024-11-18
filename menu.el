@@ -27,7 +27,7 @@
         (insert-file-contents file-path)
         (split-string (buffer-string) "\n" t)))
 
-    (defun my/dwim-convert-generic (command)
+    (defun my/dwim-convert-generic-menu (command)
       "Execute a dwim-shell-command-on-marked-files with the given COMMAND."
       (let* ((unique-text-file "/home/jdyer/bin/category-list-uniq.txt")
              (user-selection nil)
@@ -42,13 +42,13 @@
                                  (concat command " " user-selection " " (mapconcat 'identity files " "))
                                (concat command " " (mapconcat 'identity files " ")))
                              "*convert*")))
-      ;; (save-buffers-kill-terminal))
+    ;; (save-buffers-kill-terminal))
 
     (defun my/dwim-convert-with-selection-files-command (files-string chosen-command)
       "Prompt user to choose command and execute dwim-shell-command-on-marked-files."
       (interactive)
       (setq my/org-dired-marked-files (split-string files-string ";" t))
-      (my/dwim-convert-generic chosen-command))
+      (my/dwim-convert-generic-menu chosen-command))
 
     (defun my/dwim-convert-with-selection-files (files-string)
       "Prompt user to choose command and execute dwim-shell-command-on-marked-files."
@@ -56,11 +56,6 @@
       (setq my/org-dired-marked-files (split-string files-string ";" t))
       (let ((chosen-command (completing-read "Choose command: "
                                              my/dwim-convert-commands)))
-        (my/dwim-convert-generic chosen-command)))
-
-    (defun my/dwim-convert-with-selection ()
-      "Prompt user to choose command and execute dwim-shell-command-on-marked-files."
-      (interactive)
-      (let ((chosen-command (completing-read "Choose command: "
-                                             my/dwim-convert-commands)))
-        (my/dwim-convert-generic chosen-command)))))
+        (my/dwim-convert-generic-menu chosen-command)))
+    )
+  )
