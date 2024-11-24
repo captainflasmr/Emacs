@@ -11,8 +11,8 @@
 
 (when (eq system-type 'windows-nt)
   (setq package-archives '(("melpa" . "~/emacs-pkgs/melpa")
-                          ("elpa" . "~/emacs-pkgs/elpa")
-                          ("org" . "~/emacs-pkgs/org-mode/lisp"))))
+                           ("elpa" . "~/emacs-pkgs/elpa")
+                           ("org" . "~/emacs-pkgs/org-mode/lisp"))))
 
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
@@ -110,11 +110,6 @@
   (ready-player-open-playback-commands
    '((ready-player-is-audio-p "mplayer")
      (ready-player-is-video-p "mpv"))))
-
-(use-package ibuffer
-  :bind (:map ibuffer-mode-map
-              ("j" . next-line)
-              ("k" . previous-line)))
 
 ;;
 ;; -> completion
@@ -246,33 +241,33 @@
   (global-tempel-abbrev-mode))
 
 ;;
-;; -> modeline-completion-advanced
+;; -> modeline-completion-vanilla
 ;;
 
-(use-package vertico
-  :init
-  (vertico-mode 1)
-  :custom
-  (vertico-cycle t)
-  (read-file-name-completion-ignore-case t)
-  (read-buffer-completion-ignore-case t)
-  (completion-ignore-case t)
-  (vertico-resize nil)
-  (vertico-count 10)
-  :bind (:map vertico-map
-              ("C-n" . vertico-next)
-              ("C-p" . vertico-previous)
-              :repeat-map my/vertico-repeat-map
-              ("n" . vertico-next)
-              ("p" . vertico-previous)))
+(require 'icomplete)
 
-(use-package marginalia
-  :after vertico
-  :custom
-  (marginalia-annotators
-   '(marginalia-annotators-heavy marginalia-annotators-light nil))
-  :init
-  (marginalia-mode))
+(defun my-icomplete-exit-minibuffer-with-input ()
+  "Exit the minibuffer with the current input, without forcing completion."
+  (interactive)
+  (exit-minibuffer))
+
+(with-eval-after-load 'icomplete
+  (define-key icomplete-minibuffer-map (kbd "M-RET") 'my-icomplete-exit-minibuffer-with-input))
+
+(defun fido-style ()
+  "fido-style completion."
+  (interactive)
+  (setq completion-auto-wrap t
+        completion-auto-help nil
+        completions-max-height 15
+        completion-styles '(initials basic partial-completion initials flex)
+        icomplete-in-buffer t
+        icomplete-compute-delay 0
+        icomplete-show-matches-on-no-input t
+        max-mini-window-height 10)
+  (fido-mode 1)
+  (fido-vertical-mode 1))
+(fido-style)
 
 ;;
 ;; -> keys-navigation
@@ -286,11 +281,10 @@
 (define-key my-jump-keymap (kbd "e") (lambda () (interactive) (find-file (concat user-emacs-directory "init.el"))))
 (define-key my-jump-keymap (kbd "h") (lambda () (interactive) (find-file "~")))
 (define-key my-jump-keymap (kbd "k") (lambda () (interactive) (find-file (concat user-emacs-directory "emacs--init.org"))))
-(define-key my-jump-keymap (kbd "l") #'recentf-open)
+(define-key my-jump-keymap (kbd "l") #'consult-recent-file)
 (define-key my-jump-keymap (kbd "m") #'customize-themes)
 (define-key my-jump-keymap (kbd "o") #'bookmark-jump)
 (define-key my-jump-keymap (kbd "r") #'scratch-buffer)
-(define-key my-jump-keymap (kbd "t") #'customize-themes)
 (define-key my-jump-keymap (kbd "z") #'list-packages)
 (define-key my-jump-keymap (kbd "i") #'my/complete)
 
@@ -348,16 +342,12 @@
 (bind-key* (kbd "M-s f") #'my/find-file)
 (bind-key* (kbd "M-s i") #'my/convert-markdown-clipboard-to-org)
 (bind-key* (kbd "M-s k") #'org-kanban/shift)
-(bind-key* (kbd "M-s l") #'mark-sexp)
+(bind-key* (kbd "M-s l") #'eval-expression)
 (bind-key* (kbd "M-s m") #'org-preview-html-mode)
 (bind-key* (kbd "M-s r") #'org-preview-html-refresh)
 (bind-key* (kbd "M-s t") #'my/save-buffer-as-html)
-(bind-key* (kbd "M-s v") #'eval-expression)
-(bind-key* (kbd "M-s w") #'org-table-expand)
 (bind-key* (kbd "M-s x") #'diff-buffer-with-file)
-(bind-key* (kbd "M-s z") #'org-table-shrink)
-(global-set-key (kbd "M-s M-[") #'beginning-of-buffer)
-(global-set-key (kbd "M-s M-]") #'end-of-buffer)
+(bind-key* (kbd "M-s ;") #'my/copy-buffer-to-kill-ring)
 (global-set-key (kbd "M-s b") #'my/dired-duplicate-backup-file)
 (global-set-key (kbd "M-s g") #'my/grep)
 (global-set-key (kbd "M-s h") #'my/mark-block)
@@ -478,26 +468,26 @@
 
 (bind-key* (kbd "C-+") (lambda ()(interactive)(text-scale-adjust 1)))
 (bind-key* (kbd "C--") (lambda ()(interactive)(text-scale-adjust -1)))
-(bind-key* (kbd "M-/") #'consult-buffer)
+(bind-key* (kbd "C-x ;") #'consult-buffer)
+(bind-key* (kbd "C-x m") #'consult-buffer)
 (bind-key* (kbd "C-=") (lambda ()(interactive)(text-scale-adjust 1)))
 (bind-key* (kbd "C-c h") #'my/shell-create)
 (bind-key* (kbd "C-c ,") #'embark-act)
 (bind-key* (kbd "C-c r") #'my/repeat-window-size)
 (bind-key* (kbd "C-o") #'other-window)
 (bind-key* (kbd "C-x s") #'save-buffer)
-(bind-key* (kbd "C-z") #'undo)
 (bind-key* (kbd "M-9") #'my/complete)
 (bind-key* (kbd "M-'") #'set-mark-command)
-(bind-key* (kbd "M-m") #'(lambda ()(interactive)(scroll-down (/ (window-height) 4))))
-(bind-key* (kbd "M-n") #'(lambda ()(interactive)(scroll-up (/ (window-height) 4))))
+(bind-key* (kbd "M-j") #'(lambda ()(interactive)(scroll-up (/ (window-height) 8))))
+(bind-key* (kbd "M-k") #'(lambda ()(interactive)(scroll-down (/ (window-height) 8))))
 (define-key minibuffer-local-map (kbd "C-c c") #'embark-collect)
 (define-key minibuffer-local-map (kbd "C-c e") #'embark-export)
 (global-set-key (kbd "M-0") 'delete-window)
 (global-set-key (kbd "M-1") #'delete-other-windows)
 (global-set-key (kbd "M-2") #'split-window-vertically)
 (global-set-key (kbd "M-3") #'split-window-horizontally)
-(global-set-key (kbd "M-k") #'delete-other-windows)
-(global-set-key (kbd "M-j") #'split-window-vertically)
+;;(global-set-key (kbd "C-z") #'delete-other-windows)
+(global-set-key (kbd "M-m") #'split-window-vertically)
 (global-set-key (kbd "M-l") #'split-window-horizontally)
 (global-set-key (kbd "C-c a") #'org-agenda)
 (global-set-key (kbd "C-c b") #'(lambda ()(interactive)(async-shell-command "do_backup home" "*backup*")))
@@ -506,7 +496,9 @@
 (global-set-key (kbd "C-x l") #'scroll-lock-mode)
 (global-set-key (kbd "C-x v e") 'vc-ediff)
 (global-set-key (kbd "M-0") #'delete-window)
-(global-set-key (kbd "M-;") #'my/comment-or-uncomment)
+(global-set-key (kbd "C-z") #'my/comment-or-uncomment)
+(global-set-key (kbd "M-z") #'my/comment-or-uncomment)
+(global-set-key (kbd "M-;") #'delete-other-windows)
 (global-set-key (kbd "M-[") #'yank)
 (global-set-key (kbd "M-]") #'yank-pop)
 (global-unset-key (kbd "C-h h"))
@@ -901,6 +893,12 @@ If ARG is provided, it sets the counter."
         (write-file html-file-name))
       (kill-buffer html-buffer) ;; Clean up the temporary HTML buffer
       (message "Exported to %s" html-file-name))))
+
+(defun my/copy-buffer-to-kill-ring ()
+  "Copy the entire buffer to the kill ring without changing the point."
+  (interactive)
+  (save-excursion
+    (kill-ring-save (point-min) (point-max))))
 
 ;;
 ;; -> window-positioning
@@ -1493,8 +1491,8 @@ If ARG is provided, it sets the counter."
 
 (setq-default truncate-partial-width-windows 120)
 
-(set-frame-parameter nil 'alpha-background 95)
-(add-to-list 'default-frame-alist '(alpha-background . 95))
+(set-frame-parameter nil 'alpha-background 90)
+(add-to-list 'default-frame-alist '(alpha-background . 90))
 
 (set-fringe-mode '(20 . 20))
 (set-display-table-slot standard-display-table 0 ?\ )
@@ -1718,13 +1716,13 @@ If ARG is provided, it sets the counter."
       ("t" "Synonyms" powerthesaurus-lookup-synonyms-dwim)
       ("a" "Antonyms" powerthesaurus-lookup-antonyms-dwim)]
      ["Spelling Tools"
-      ("l" "Jinx" (lambda ()(interactive)
+      ("s" "Jinx" (lambda ()(interactive)
                     (flymake-proselint-setup)
                     (call-interactively 'jinx-mode)
                     (call-interactively 'writegood-mode)
                     (call-interactively 'flymake-mode)))
       ("j" "Jinx correct" jinx-correct)
-      ("s" "Jinx correct" jinx-correct)]
+      ("l" "Jinx correct" jinx-correct)]
      ["Dictionary"
       ("d" "Lookup" dictionary-lookup-definition)]
      ["languagetool"
@@ -1732,7 +1730,7 @@ If ARG is provided, it sets the counter."
       ("c" "Correct" languagetool-correct-at-point)
       ("e" "Server Start" languagetool-server-start)
       ("p" "Server Stop" languagetool-server-stop)
-     ]]
+      ]]
     )
   :bind
   ("C-c s" . my/transient-spelling))
@@ -2302,13 +2300,6 @@ With directories under project root using find."
 (when (file-exists-p "/bin/fish")
   (setq shell-file-name "/bin/fish"))
 
-(use-package chatgpt-shell
-  :defer 5
-  :custom
-  ((chatgpt-shell-openai-key
-    (lambda ()
-      (auth-source-pass-get 'secret "openai-key")))))
-
 (defun my/eshell-hook ()
   "Set up company completions to be a little more fish like."
   (interactive)
@@ -2356,7 +2347,7 @@ With directories under project root using find."
   (popper-mode 1)
   (popper-echo-mode 1)
   :custom
-  (popper-window-height 15))
+  (popper-window-height 20))
 
 (bind-key* (kbd "C-c '") #'popper-toggle)
 (bind-key* (kbd "C-c ;") #'popper-toggle-type)
@@ -3158,30 +3149,123 @@ programming modes based on basic space / tab indentation."
 
 (add-hook 'prog-mode-hook 'my/prog-folding)
 
-(transient-define-prefix chatgpt-shell-transient ()
-  "Transient for ChatGPT Shell commands."
-  ["ChatGPT Shell Commands"
-   ["Code and Text"
-    ;; ("e" "Explain Code" chatgpt-shell-explain-code)
-    ("p" "Proofread Region" chatgpt-shell-proofread-region)
-    ("g" "Write Git Commit" chatgpt-shell-write-git-commit)
-    ("s" "Send Region" chatgpt-shell-send-region)
-    ("d" "Describe Code" chatgpt-shell-describe-code)
-    ("r" "Refactor Code" chatgpt-shell-refactor-code)
-    ("u" "Generate Unit Test" chatgpt-shell-generate-unit-test)
-    ("a" "Send and Review Region" chatgpt-shell-send-and-review-region)]
-   ["Shell Operations"
-    ("l" "Start Shell" chatgpt-shell)
-    ("m" "Swap Model Version" chatgpt-shell-swap-model-version)
-    ("t" "Save Session Transcript" chatgpt-shell-save-session-transcript)]
-   ["Eshell Integrations"
-    ("o" "Summarize Last Command Output" chatgpt-shell-eshell-summarize-last-command-output)
-    ("w" "What's Wrong With Last Command" chatgpt-shell-eshell-whats-wrong-with-last-command)]
-   ["Miscellaneous"
-    ("i" "Describe Image" chatgpt-shell-describe-image)]
-   ])
+(with-eval-after-load 'chatgpt-shell
+  (transient-define-prefix chatgpt-shell-transient ()
+    "Transient for ChatGPT Shell commands."
+    ["ChatGPT Shell Commands"
+     ["Code and Text"
+      ("e" "Explain Code" chatgpt-shell-explain-code)
+      ("p" "Proofread Region" chatgpt-shell-proofread-region)
+      ("g" "Write Git Commit" chatgpt-shell-write-git-commit)
+      ("s" "Send Region" chatgpt-shell-send-region)
+      ("d" "Describe Code" chatgpt-shell-describe-code)
+      ("r" "Refactor Code" chatgpt-shell-refactor-code)
+      ("u" "Generate Unit Test" chatgpt-shell-generate-unit-test)
+      ("a" "Send and Review Region" chatgpt-shell-send-and-review-region)]
+     ["Shell Operations"
+      ("l" "Start Shell" chatgpt-shell)
+      ;;    ("m" "Swap Model Version" chatgpt-shell-swap-model-version)
+      ("t" "Save Session Transcript" chatgpt-shell-save-session-transcript)]
+     ["Eshell Integrations"
+      ("o" "Summarize Last Command Output" chatgpt-shell-eshell-summarize-last-command-output)
+      ("w" "What's Wrong With Last Command" chatgpt-shell-eshell-whats-wrong-with-last-command)]
+     ["Miscellaneous"
+      ("i" "Describe Image" chatgpt-shell-describe-image)
+      ("m" "Swap Model" chatgpt-shell-swap-model)
+      ]
+     ])
 
-(global-set-key (kbd "C-c g") 'chatgpt-shell-transient)
+  (global-set-key (kbd "C-c g") 'chatgpt-shell-transient))
+
+;;
+;; -> LLM
+;;
+
+(use-package ellama
+  :bind ("C-c e" . ellama-transient-main-menu)
+  :init
+  (setopt ellama-language "English")
+  (require 'llm-ollama)
+  (setopt ellama-provider
+	       (make-llm-ollama
+	        :chat-model "qwen2.5-coder-7b-instruct-q5_k_m"
+	        :embedding-model "qwen2.5-coder-7b-instruct-q5_k_m"
+	        :default-chat-non-standard-params '(("num_ctx" . 8192))))
+  (setopt ellama-providers
+		    '(("codellama-7b.Q5_K_M" .
+             (make-llm-ollama
+				  :chat-model "codellama-7b.Q5_K_M"
+				  :embedding-model "codellama-7b.Q5_K_M"))
+            ("qwen2.5-coder-7b-instruct-q5_k_m" .
+             (make-llm-ollama
+	           :chat-model "qwen2.5-coder-7b-instruct-q5_k_m"
+	           :embedding-model "qwen2.5-coder-7b-instruct-q5_k_m"))
+		      ("Llama-3.2-1B-Instruct-Q8_0" .
+             (make-llm-ollama
+				  :chat-model "Llama-3.2-1B-Instruct-Q8_0"
+				  :embedding-model "Llama-3.2-1B-Instruct-Q8_0"))))
+  ;; (setopt ellama-naming-scheme 'ellama-generate-name-by-llm)
+  (setopt ellama-naming-scheme 'ellama-generate-name-by-words)
+  (setopt ellama-translation-provider (make-llm-ollama
+				                           :chat-model "qwen2.5-coder-7b-instruct-q5_k_m"
+				                           :embedding-model "nomic-embed-text"))
+  :config
+  (setq ellama-sessions-directory "~/.config/emacs/ellama-sessions/"
+        ellama-sessions-auto-save t))
+
+(use-package gptel
+  :config
+  (gptel-make-ollama "qwen2.5-coder-7b-instruct-q5_k_m"
+    :host "localhost:11434"
+    :stream t
+    :models '(qwen2.5-coder-7b-instruct-q5_k_m:latest))
+  (setq gptel-model 'qwen2.5-coder-7b-instruct-q5_k_m:latest
+        gptel-backend (gptel-make-ollama "qwen2.5-coder-7b-instruct-q5_k_m"
+                        :host "localhost:11434"
+                        :stream t
+                        :models '(qwen2.5-coder-7b-instruct-q5_k_m:latest))))
+
+(use-package chatgpt-shell
+  :custom
+  (chatgpt-shell-openai-key
+   (lambda ()
+     (auth-source-pass-get 'secret "openai-key")))
+  (chatgpt-shell-models
+   '(((:version . "chatgpt-4o-latest")
+      (:short-version)
+      (:label . "ChatGPT")
+      (:provider . "OpenAI")
+      (:path . "/v1/chat/completions")
+      (:token-width . 3)
+      (:context-window . 12800)
+      (:handler . chatgpt-shell-openai--handle-chatgpt-command)
+      (:filter . chatgpt-shell-openai--filter-output)
+      (:payload . chatgpt-shell-openai--make-payload)
+      (:headers . chatgpt-shell-openai--make-headers)
+      (:url . chatgpt-shell-openai--make-url)
+      (:key . chatgpt-shell-openai-key)
+      (:url-base . chatgpt-shell-api-url-base)
+      (:validate-command . chatgpt-shell-openai--validate-command))
+     ((:provider . "Ollama")
+      (:label . "Ollama-qwen")
+      (:version . "qwen2.5-coder-7b-instruct-q5_k_m")
+      (:short-version)
+      (:token-width . 4)
+      (:context-window . 8192)
+      (:handler . chatgpt-shell-ollama--handle-ollama-command)
+      (:filter . chatgpt-shell-ollama--extract-ollama-response)
+      (:payload . chatgpt-shell-ollama-make-payload)
+      (:url . chatgpt-shell-ollama--make-url))
+     ((:provider . "Ollama")
+      (:label . "Ollama-llama")
+      (:version . "Llama-3.2-1B-Instruct-Q8_0")
+      (:short-version)
+      (:token-width . 4)
+      (:context-window . 8192)
+      (:handler . chatgpt-shell-ollama--handle-ollama-command)
+      (:filter . chatgpt-shell-ollama--extract-ollama-response)
+      (:payload . chatgpt-shell-ollama-make-payload)
+      (:url . chatgpt-shell-ollama--make-url)))))
 
 ;;
 ;; -> development
@@ -3583,15 +3667,146 @@ The symbol at point is added to the future history."
                   (my/resize-window 2 t)
                   (my/repeat-window-size)))
     ("l" "Right" (lambda () (interactive)
-                  (my/resize-window -2 t)
-                  (my/repeat-window-size)))
+                   (my/resize-window -2 t)
+                   (my/repeat-window-size)))
     ("j" "Down" (lambda () (interactive)
                   (my/resize-window 1 nil)
                   (my/repeat-window-size)))
     ("k" "Up" (lambda () (interactive)
-                  (my/resize-window -1 nil)
-                  (my/repeat-window-size)))]])
+                (my/resize-window -1 nil)
+                (my/repeat-window-size)))]])
 
 (bind-key* (kbd "C-c m") #'my/transient-for-windows)
 
 (use-package org-wc)
+
+(use-package zoxide)
+
+;;
+;; export functions
+;;
+
+(defvar highlight-rules
+  '((th . (("TODO" . "#999")))
+    (td . (("\\&gt" . "#bbb")
+           ("-\\&gt" . "#ccc")
+           ("- " . "#ddd")
+           ("- - - - " . "#eee")
+           ("- - - - - - - - " . "#fff")
+           ("TODO" . "#fcc")
+           ("DOING" . "#ccf")
+           ("DONE" . "#cfc"))))
+  "Alist of elements ('th or 'td) and associated keywords/colors for row highlighting.")
+
+(defun apply-row-style (row-start row-attributes color)
+  "Apply a background COLOR to the row starting at ROW-START with ROW-ATTRIBUTES."
+  (goto-char row-start)
+  (kill-line)
+  (insert (format "<tr%s style=\"background: %s\">\n" row-attributes color)))
+
+(defun highlight-row-by-rules (row-start row-end row-attributes element)
+  "Highlight a row based on ELEMENT ('th or 'td) keyword rules within ROW-START to ROW-END."
+  (let ((rules (cdr (assoc element highlight-rules))))
+    (dolist (rule rules)
+      (let ((keyword (car rule))
+            (color (cdr rule)))
+        (when (save-excursion
+                (and (re-search-forward (format "<%s.*>%s.*</%s>" element keyword element) row-end t)
+                     (goto-char row-start)))
+          (apply-row-style row-start row-attributes color))))))
+
+(defun my/html-org-table-highlight ()
+  "Open 'readme.html', find tables with the class 'custom-table',
+      and add background styles to rows containing specific keywords in <td> or <th> elements."
+  (interactive)
+  (save-excursion
+    (find-file "/home/jdyer/DCIM/content/confluence--sles-setup.html")
+    (goto-char (point-min))
+    (while (re-search-forward "<table.*>" nil t)
+      (let ((table-start (point))
+            (table-end (save-excursion
+                         (when (re-search-forward "</table>" nil t)
+                           (point)))))
+        (when table-end
+          (save-restriction
+            (narrow-to-region table-start table-end)
+            (goto-char (point-min))
+            (while (re-search-forward "<tr\\(.*\\)>" nil t)
+              (let ((row-start (match-beginning 0))
+                    (row-attributes (match-string 1))
+                    (row-end (save-excursion (search-forward "</tr>"))))
+                (highlight-row-by-rules row-start row-end row-attributes 'th)
+                (highlight-row-by-rules row-start row-end row-attributes 'td)))))))
+    (save-buffer)))
+
+(defun my/format-to-table(&optional match properties-to-display)
+  "Format Org headings into a structured alist, optionally filtered by MATCH
+   and displaying only specified PROPERTIES-TO-DISPLAY (e.g., '(\"ID\" \"PRIORITY\"))."
+  (interactive)
+  (let ((rows '())
+        (header (list "TODO" "Tags" "Title" "Contents" "Properties")) ;; Add "Properties" to header
+        (max-level 0))
+    (save-excursion
+      (goto-char (point-min))
+      (when match (re-search-forward (format "\\*%s\\*$" (regexp-quote match)) nil t))
+      (org-map-entries
+       (lambda ()
+         (let* ((entry (org-element-at-point))
+                (heading (org-get-heading t t t t))
+                (level (org-outline-level))
+                (tags (org-get-tags))
+                (todo (org-get-todo-state))
+                (vis-indent "- - - - ")
+                (contents "")
+                (properties (org-entry-properties)))
+           (org-end-of-meta-data nil)
+           (skip-chars-forward " \n\t")
+           (when (eq (org-element-type (org-element-at-point)) 'paragraph)
+             (let ((start (point)))
+               (org-next-visible-heading 1)
+               (setq contents (buffer-substring-no-properties start (point)))
+               (dolist (pattern '("^#\\+begin.*" "^#\\+end.*" "\n+"))
+                 (setq contents (replace-regexp-in-string pattern
+                                                          (if (string= pattern "\n+") " " "")
+                                                          (string-trim contents))))))
+           (setq max-level (max max-level level))
+           ;; Filter and format only selected properties
+           (let ((filtered-properties
+                  (mapconcat (lambda (prop)
+                               (when (and properties-to-display
+                                          (member (car prop) properties-to-display))
+                                 (format "%s: %s" (car prop) (cdr prop))))
+                             properties " ")))
+             (push (list
+                    (or todo "")
+                    (string-join tags ":")
+                    (cond ((= level 1)
+                           (concat "> " heading))
+                          ((= level 2)
+                           (concat "-> " heading))
+                          (t
+                           (concat (mapconcat (lambda (_) vis-indent) (make-list (* (- level 2) 1) "") "") heading)))
+                    (or contents "")
+                    filtered-properties)
+                   rows))))
+       nil (when match 'tree)))
+    (setq rows (reverse rows))
+    (push 'hline rows)
+    ;;    (prin1 rows)
+    (cons header rows)))
+
+(global-set-key (kbd "M-s w") #'(lambda ()(interactive)
+                                  (org-html-export-to-html)
+                                  (my/html-org-table-highlight)
+                                  (tab-bar-history-back)))
+
+(global-set-key (kbd "C-c o s") #'outline-show-all)
+(global-set-key (kbd "C-c o h") #'outline-hide-sublevels)
+
+(setq org-todo-keywords
+      '((sequence "TODO" "DOING" "|" "DONE" "CANCELLED"))
+      org-todo-keyword-faces
+      '(("TODO" . "#ee5566")
+        ("DOING" . "#5577aa")
+        ("DONE" . "#77aa66")
+        ("CANCELLED" . "#426b3e")))
