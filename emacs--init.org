@@ -10,34 +10,34 @@
 Configures the package management system by specifying preferred package archives including MELPA, ELPA, and Org. It ensures `use-package` is installed and enables stricter loading behaviour for newer files.
 
 #+begin_src elisp
-;;
-;; -> package-archives
-;;
+  ;;
+  ;; -> package-archives
+  ;;
 
-(require 'package)
+  (require 'package)
 
-(when (eq system-type 'gnu/linux)
-  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                           ("elpa" . "https://elpa.gnu.org/packages/")
-                           ("org" . "https://orgmode.org/elpa/"))))
+  (when (eq system-type 'gnu/linux)
+    (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                             ("elpa" . "https://elpa.gnu.org/packages/")
+                             ("org" . "https://orgmode.org/elpa/"))))
 
-(when (eq system-type 'windows-nt)
-  (setq package-archives '(("melpa" . "~/emacs-pkgs/melpa")
-                           ("elpa" . "~/emacs-pkgs/elpa")
-                           ("org" . "~/emacs-pkgs/org-mode/lisp"))))
+  (when (eq system-type 'windows-nt)
+    (setq package-archives '(("melpa" . "~/emacs-pkgs/melpa")
+                             ("elpa" . "~/emacs-pkgs/elpa")
+                             ("org" . "~/emacs-pkgs/org-mode/lisp"))))
 
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
-(setq use-package-verbose t)
-(setq use-package-always-ensure t)
-(require 'use-package)
-(setq load-prefer-newer t)
+  (unless (package-installed-p 'use-package)
+    (package-install 'use-package))
+  (setq use-package-verbose t)
+  (setq use-package-always-ensure t)
+  (require 'use-package)
+  (setq load-prefer-newer t)
 
-;; (when init-file-debug
-(setq use-package-verbose t
-      use-package-expand-minimally nil
-      use-package-compute-statistics t
-      debug-on-error nil)
+  ;; (when init-file-debug
+  (setq use-package-verbose t
+        use-package-expand-minimally nil
+        use-package-compute-statistics t
+        debug-on-error nil)
 
 #+end_src
 
@@ -60,101 +60,101 @@ Ensures essential packages like `org`, `dired-x`, and `org-agenda` are loaded at
 Simple abbrev completion
 
 #+begin_src elisp
-;;
-;; -> completion
-;;
-(setq-default abbrev-mode t)
-(setq hippie-expand-try-functions-list
-      '(try-complete-file-name-partially
-        try-complete-file-name
-        try-expand-all-abbrevs try-expand-dabbrev
-        try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
-        try-complete-lisp-symbol-partially try-complete-lisp-symbol))
+  ;;
+  ;; -> completion
+  ;;
+  (setq-default abbrev-mode t)
+  (setq hippie-expand-try-functions-list
+        '(try-complete-file-name-partially
+          try-complete-file-name
+          try-expand-all-abbrevs try-expand-dabbrev
+          try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill
+          try-complete-lisp-symbol-partially try-complete-lisp-symbol))
 
-(use-package capf-autosuggest
-  :hook
-  (eshell-mode . capf-autosuggest-mode)
-  (shell-mode . capf-autosuggest-mode))
+  (use-package capf-autosuggest
+    :hook
+    (eshell-mode . capf-autosuggest-mode)
+    (shell-mode . capf-autosuggest-mode))
 
-(use-package eglot
-  :hook
-  (eglot-managed-mode
-   . (lambda ()
-       (setq-local completion-at-point-functions
-                   (list (cape-capf-super
-                          #'cape-dabbrev
-                          #'eglot-completion-at-point)))))
-  :custom
-  (eglot-ignored-server-capabilities
-   '(
-     ;; :hoverProvider                    ; Provides information when you hover over code elements.
-     ;; :completionProvider               ; Provides code completion suggestions.
-     ;; :signatureHelpProvider            ; Offers signature information for functions/methods.
-     ;; :definitionProvider               ; Finds the definition of variables/functions.
-     ;; :typeDefinitionProvider           ; Finds the type definition of variables/functions.
-     ;; :implementationProvider           ; Finds the implementation of types/functions.
-     ;; :declarationProvider              ; Finds the declaration of variables/types.
-     ;; :referencesProvider               ; Finds all references to the symbol at the caret.
-     ;; :documentHighlightProvider        ; Highlights references to the symbol at the caret.
-     ;; :documentSymbolProvider           ; Lists all symbols in a document.
-     ;; :workspaceSymbolProvider          ; Lists symbols across workspace/project.
-     ;; :codeActionProvider               ; Suggests code actions (like quick fixes).
-     ;; :codeLensProvider                 ; Displays inline code actions or information.
-     ;; :documentFormattingProvider       ; Formats an entire document.
-     ;; :documentRangeFormattingProvider  ; Formats a specified range in a document.
-     ;; :documentOnTypeFormattingProvider ; Formats code as you type.
-     ;; :renameProvider                   ; Refactors/renames symbols.
-     ;; :documentLinkProvider             ; Handles clickable links in documents.
-     ;; :colorProvider                    ; Provides color information for document.
-     ;; :foldingRangeProvider             ; Supports code folding.
-     ;; :executeCommandProvider           ; Allows execution of commands.
-     ;; :inlayHintProvider                ; Displays inline hints (e.g., parameter names).
-     ))
-  (eglot-send-changes-idle-time 2.0))
+  (use-package eglot
+    :hook
+    (eglot-managed-mode
+     . (lambda ()
+         (setq-local completion-at-point-functions
+                     (list (cape-capf-super
+                            #'cape-dabbrev
+                            #'eglot-completion-at-point)))))
+    :custom
+    (eglot-ignored-server-capabilities
+     '(
+       ;; :hoverProvider                    ; Provides information when you hover over code elements.
+       ;; :completionProvider               ; Provides code completion suggestions.
+       ;; :signatureHelpProvider            ; Offers signature information for functions/methods.
+       ;; :definitionProvider               ; Finds the definition of variables/functions.
+       ;; :typeDefinitionProvider           ; Finds the type definition of variables/functions.
+       ;; :implementationProvider           ; Finds the implementation of types/functions.
+       ;; :declarationProvider              ; Finds the declaration of variables/types.
+       ;; :referencesProvider               ; Finds all references to the symbol at the caret.
+       ;; :documentHighlightProvider        ; Highlights references to the symbol at the caret.
+       ;; :documentSymbolProvider           ; Lists all symbols in a document.
+       ;; :workspaceSymbolProvider          ; Lists symbols across workspace/project.
+       ;; :codeActionProvider               ; Suggests code actions (like quick fixes).
+       ;; :codeLensProvider                 ; Displays inline code actions or information.
+       ;; :documentFormattingProvider       ; Formats an entire document.
+       ;; :documentRangeFormattingProvider  ; Formats a specified range in a document.
+       ;; :documentOnTypeFormattingProvider ; Formats code as you type.
+       ;; :renameProvider                   ; Refactors/renames symbols.
+       ;; :documentLinkProvider             ; Handles clickable links in documents.
+       ;; :colorProvider                    ; Provides color information for document.
+       ;; :foldingRangeProvider             ; Supports code folding.
+       ;; :executeCommandProvider           ; Allows execution of commands.
+       ;; :inlayHintProvider                ; Displays inline hints (e.g., parameter names).
+       ))
+    (eglot-send-changes-idle-time 2.0))
 
-(use-package corfu
-  :custom
-  (corfu-auto-delay 0.1)
-  (corfu-auto-prefix 2)
-  (corfu-cycle t)
-  (corfu-auto nil)
-  (corfu-separator ?\s)
-  (corfu-quit-at-boundary nil)
-  (corfu-quit-no-match nil)
-  (corfu-preview-current nil)
-  (corfu-preselect 'first)
-  (corfu-on-exact-match nil)
-  (corfu-scroll-margin 5))
+  (use-package corfu
+    :custom
+    (corfu-auto-delay 0.1)
+    (corfu-auto-prefix 2)
+    (corfu-cycle t)
+    (corfu-auto nil)
+    (corfu-separator ?\s)
+    (corfu-quit-at-boundary nil)
+    (corfu-quit-no-match nil)
+    (corfu-preview-current nil)
+    (corfu-preselect 'first)
+    (corfu-on-exact-match nil)
+    (corfu-scroll-margin 5))
 
-(use-package company
-  :bind
-  (:map company-active-map
-        ("<tab>" . company-complete-selection))
-  :config
-  (setq company-minimum-prefix-length 1)
-  (setq company-idle-delay nil))
+  (use-package company
+    :bind
+    (:map company-active-map
+          ("<tab>" . company-complete-selection))
+    :config
+    (setq company-minimum-prefix-length 1)
+    (setq company-idle-delay nil))
 
-(use-package emacs
-  :init
-  ;; TAB cycle if there are only few candidates
-  (setq completion-cycle-threshold 3)
-  ;; Enable indentation+completion using the TAB key.
-  ;; `completion-at-point' is often bound to M-TAB.
-  (setq tab-always-indent 'complete))
+  (use-package emacs
+    :init
+    ;; TAB cycle if there are only few candidates
+    (setq completion-cycle-threshold 3)
+    ;; Enable indentation+completion using the TAB key.
+    ;; `completion-at-point' is often bound to M-TAB.
+    (setq tab-always-indent 'complete))
 
-(use-package tempel
-  :diminish tempel-abbrev-mode global-tempel-abbrev-mode abbrev-mode
-  :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
-         ("M-*" . tempel-insert))
-  :init
-  (defun tempel-setup-capf ()
-    (setq-local completion-at-point-functions
-                (cons #'tempel-expand
-                      completion-at-point-functions)))
-  (add-hook 'conf-mode-hook #'tempel-setup-capf)
-  (add-hook 'prog-mode-hook #'tempel-setup-capf)
-  (add-hook 'text-mode-hook #'tempel-setup-capf)
-  (global-tempel-abbrev-mode))
+  (use-package tempel
+    :diminish tempel-abbrev-mode global-tempel-abbrev-mode abbrev-mode
+    :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
+           ("M-*" . tempel-insert))
+    :init
+    (defun tempel-setup-capf ()
+      (setq-local completion-at-point-functions
+                  (cons #'tempel-expand
+                        completion-at-point-functions)))
+    (add-hook 'conf-mode-hook #'tempel-setup-capf)
+    (add-hook 'prog-mode-hook #'tempel-setup-capf)
+    (add-hook 'text-mode-hook #'tempel-setup-capf)
+    (global-tempel-abbrev-mode))
 
 #+end_src
 
@@ -1033,47 +1033,47 @@ My aim here is to make deadgrep as similar to rgrep as possible for easier switc
 Configures spell checking tools and dictionaries, integrating external tools like `aspell` or `hunspell`, and interfaces for checking and correcting spelling within documents.
 
 #+begin_src elisp
-;;
-;; -> spelling
-;;
+  ;;
+  ;; -> spelling
+  ;;
 
-(use-package jinx)
-(use-package writegood-mode)
+  (use-package jinx)
+  (use-package writegood-mode)
 
-(use-package powerthesaurus
-  :init
-  (require 'transient)
-  (transient-define-prefix my/transient-spelling ()
-    "Spelling commands"
-    ["Spelling"
-     ["Lookups"
-      ("t" "Synonyms" powerthesaurus-lookup-synonyms-dwim)
-      ("a" "Antonyms" powerthesaurus-lookup-antonyms-dwim)]
-     ["Spelling Tools"
-      ("s" "Jinx" (lambda ()(interactive)
-                    (flymake-proselint-setup)
-                    (call-interactively 'jinx-mode)
-                    (call-interactively 'writegood-mode)
-                    (call-interactively 'flymake-mode)))
-      ("j" "Jinx correct" jinx-correct)
-      ("l" "Jinx correct" jinx-correct)]
-     ["Dictionary"
-      ("d" "Lookup" dictionary-lookup-definition)]
-     ["languagetool"
-      ("m" "Server Mode" languagetool-server-mode)
-      ("c" "Correct" languagetool-correct-at-point)
-      ("e" "Server Start" languagetool-server-start)
-      ("p" "Server Stop" languagetool-server-stop)
-      ]]
-    )
-  :bind
-  ("C-c s" . my/transient-spelling))
+  (use-package powerthesaurus
+    :init
+    (require 'transient)
+    (transient-define-prefix my/transient-spelling ()
+      "Spelling commands"
+      ["Spelling"
+       ["Lookups"
+        ("t" "Synonyms" powerthesaurus-lookup-synonyms-dwim)
+        ("a" "Antonyms" powerthesaurus-lookup-antonyms-dwim)]
+       ["Spelling Tools"
+        ("s" "Jinx" (lambda ()(interactive)
+                      (flymake-proselint-setup)
+                      (call-interactively 'jinx-mode)
+                      (call-interactively 'writegood-mode)
+                      (call-interactively 'flymake-mode)))
+        ("j" "Jinx correct" jinx-correct)
+        ("l" "Jinx correct" jinx-correct)]
+       ["Dictionary"
+        ("d" "Lookup" dictionary-lookup-definition)]
+       ["languagetool"
+        ("m" "Server Mode" languagetool-server-mode)
+        ("c" "Correct" languagetool-correct-at-point)
+        ("e" "Server Start" languagetool-server-start)
+        ("p" "Server Stop" languagetool-server-stop)
+        ]]
+      )
+    :bind
+    ("C-c s" . my/transient-spelling))
 
-(setq ispell-local-dictionary "en_GB")
-(setq ispell-program-name "hunspell")
-(setq dictionary-default-dictionary "*")
-(setq dictionary-server "dict.org")
-(setq dictionary-use-single-buffer t)
+  (setq ispell-local-dictionary "en_GB")
+  (setq ispell-program-name "hunspell")
+  (setq dictionary-default-dictionary "*")
+  (setq dictionary-server "dict.org")
+  (setq dictionary-use-single-buffer t)
 #+end_src
 
 * gdb
@@ -1249,67 +1249,74 @@ Generation of etags to have an offline alternative to LSP, uses the following ba
 Demonstrates customizations for shell integration within Emacs, optimizing settings for shell modes, command history, and shorthand functions for frequent shell-related tasks.
 
 #+begin_src elisp
-;;
-;; -> shell
-;;
+  ;;
+  ;; -> shell
+  ;;
 
-(when (file-exists-p "/usr/bin/fish")
-  (setq explicit-shell-file-name "/usr/bin/fish"))
+  (when (file-exists-p "/usr/bin/fish")
+    (setq explicit-shell-file-name "/usr/bin/fish"))
 
-(when (file-exists-p "/bin/fish")
-  (setq shell-file-name "/bin/fish"))
+  (when (file-exists-p "/bin/fish")
+    (setq shell-file-name "/bin/fish"))
 
-(defun my/eshell-hook ()
-  "Set up company completions to be a little more fish like."
-  (interactive)
-  (setq-local completion-styles '(basic partial-completion))
-  (setq-local corfu-auto nil)
-  (corfu-mode)
-  (setq-local completion-at-point-functions
-              (list (cape-capf-super
-                     #'pcomplete-completions-at-point
-                     #'cape-history)))
-  ;; (define-key eshell-mode-map (kbd "<tab>") #'company-complete)
-  (define-key eshell-hist-mode-map (kbd "M-r") #'consult-history))
+  (defun my/eshell-hook ()
+    "Set up company completions to be a little more fish like."
+    (interactive)
+    (setq-local completion-styles '(basic partial-completion))
+    (setq-local corfu-auto nil)
+    (corfu-mode)
+    (setq-local completion-at-point-functions
+                (list (cape-capf-super
+                       #'pcomplete-completions-at-point
+                       #'cape-history)))
+    ;; (define-key eshell-mode-map (kbd "<tab>") #'company-complete)
+    (define-key eshell-hist-mode-map (kbd "M-r") #'consult-history))
 
-(defun my/shell-hook ()
-  "Set up company completions to be a little more fish like."
-  (interactive)
-  ;; (define-key shell-mode-map (kbd "<tab>") #'company-complete)
-  (define-key shell-mode-map (kbd "M-r") #'consult-history))
+  (defun my/shell-hook ()
+    "Set up company completions to be a little more fish like."
+    (interactive)
+    ;; (define-key shell-mode-map (kbd "<tab>") #'company-complete)
+    (define-key shell-mode-map (kbd "M-r") #'consult-history))
 
-(use-package eshell
-  :config
-  (setq eshell-scroll-to-bottom-on-input t)
-  (setq-local tab-always-indent 'complete)
-  (setq eshell-history-size 10000) ;; Adjust size as needed
-  (setq eshell-save-history-on-exit t) ;; Enable history saving on exit
-  (setq eshell-hist-ignoredups t) ;; Ignore duplicates
-  :hook
-  (eshell-mode . my/eshell-hook))
+  (defun my/shell-create (name)
+    "Create a custom-named eshell buffer with NAME."
+    (interactive "sName: ")
+    (eshell 'new)
+    (let ((new-buffer-name (concat "*eshell-" name "*")))
+      (rename-buffer new-buffer-name t)))
 
-(use-package shell
-  :config
-  (setq-local tab-always-indent 'complete)
-  :hook
-  (shell-mode . my/shell-hook))
+  (use-package eshell
+    :config
+    (setq eshell-scroll-to-bottom-on-input t)
+    (setq-local tab-always-indent 'complete)
+    (setq eshell-history-size 10000) ;; Adjust size as needed
+    (setq eshell-save-history-on-exit t) ;; Enable history saving on exit
+    (setq eshell-hist-ignoredups t) ;; Ignore duplicates
+    :hook
+    (eshell-mode . my/eshell-hook))
 
-(use-package popper
-  :init
-  (setq popper-reference-buffers
-        '("\\*eshell.*"
-          "\\*convert.*"
-          "\\*eldoc.*"
-          flymake-diagnostics-buffer-mode
-          help-mode
-          compilation-mode))
-  (popper-mode 1)
-  (popper-echo-mode 1)
-  :custom
-  (popper-window-height 20))
+  (use-package shell
+    :config
+    (setq-local tab-always-indent 'complete)
+    :hook
+    (shell-mode . my/shell-hook))
 
-(bind-key* (kbd "C-c '") #'popper-toggle)
-(bind-key* (kbd "C-c ;") #'popper-toggle-type)
+  (use-package popper
+    :init
+    (setq popper-reference-buffers
+          '("\\*eshell.*"
+            "\\*convert.*"
+            "\\*eldoc.*"
+            flymake-diagnostics-buffer-mode
+            help-mode
+            compilation-mode))
+    (popper-mode 1)
+    (popper-echo-mode 1)
+    :custom
+    (popper-window-height 20))
+
+  (bind-key* (kbd "C-c '") #'popper-toggle)
+  (bind-key* (kbd "C-c ;") #'popper-toggle-type)
 
 #+end_src
 
@@ -1331,36 +1338,36 @@ Details configurations for Emacs's tab bar, showcasing customizations for tab be
 Curates configurations specific to the Windows operating system, adjusting paths, fonts, and environment variables for optimal use of Emacs on Windows.
 
 #+begin_src elisp
-;;
-;; -> windows-specific
-;;
+  ;;
+  ;; -> windows-specific
+  ;;
 
-(when (eq system-type 'windows-nt)
-  (setq home-dir "c:/users/jimbo")
-  (let ((xPaths
-         `(,(expand-file-name "~/bin")
-           ,(expand-file-name "~/bin/PortableGit/bin")
-           ,(expand-file-name "~/bin/PortableGit/usr/bin")
-           ,(expand-file-name "~/bin/Apache-Subversion/bin/")
-           ,(expand-file-name "~/bin/svn2git-2.4.0/bin")
-           ,(expand-file-name "~/bin/clang/bin")
-           ,(expand-file-name "~/bin/find")
-           ,(expand-file-name "~/bin/omnisharp-win-x64")
-           "c:/GnuWin32/bin"
-           "c:/GNAT/2021/bin")))
-    (setenv "PATH" (mapconcat 'identity xPaths ";"))
-    (setq exec-path (append xPaths (list "." exec-directory))))
+  (when (eq system-type 'windows-nt)
+    (setq home-dir "c:/users/jimbo")
+    (let ((xPaths
+           `(,(expand-file-name "~/bin")
+             ,(expand-file-name "~/bin/PortableGit/bin")
+             ,(expand-file-name "~/bin/PortableGit/usr/bin")
+             ,(expand-file-name "~/bin/Apache-Subversion/bin/")
+             ,(expand-file-name "~/bin/svn2git-2.4.0/bin")
+             ,(expand-file-name "~/bin/clang/bin")
+             ,(expand-file-name "~/bin/find")
+             ,(expand-file-name "~/bin/omnisharp-win-x64")
+             "c:/GnuWin32/bin"
+             "c:/GNAT/2021/bin")))
+      (setenv "PATH" (mapconcat 'identity xPaths ";"))
+      (setq exec-path (append xPaths (list "." exec-directory))))
 
-  (custom-theme-set-faces
-   'user
-   '(variable-pitch ((t (:family "Consolas" :height 110 :weight normal))))
-   '(fixed-pitch ((t ( :family "Consolas" :height 110)))))
+    (custom-theme-set-faces
+     'user
+     '(variable-pitch ((t (:family "Consolas" :height 110 :weight normal))))
+     '(fixed-pitch ((t ( :family "Consolas" :height 110)))))
 
-  (setq font-general "Consolas 11")
-  (set-frame-font font-general nil t)
-  (add-to-list 'default-frame-alist `(font . ,font-general)))
+    (setq font-general "Consolas 11")
+    (set-frame-font font-general nil t)
+    (add-to-list 'default-frame-alist `(font . ,font-general)))
 
-(setq tab-bar-show 1)
+  (setq tab-bar-show 1)
 
 #+end_src
 
@@ -1369,38 +1376,38 @@ Curates configurations specific to the Windows operating system, adjusting paths
 Curates configurations specific to Linux, making adjustments for paths, fonts, and system integrations ensuring Emacs is well integrated with the Linux desktop environment.
 
 #+begin_src elisp
-;;
-;; -> linux specific
-;;
+  ;;
+  ;; -> linux specific
+  ;;
 
-(when (eq system-type 'gnu/linux)
-  (define-key my-jump-keymap (kbd "a") #'emms-browse-by-album)
-  (define-key my-jump-keymap (kbd "b") (lambda () (interactive) (find-file "~/bin")))
-  (define-key my-jump-keymap (kbd "c") (lambda () (interactive) (find-file "~/DCIM/Camera")))
-  (define-key my-jump-keymap (kbd "g") (lambda () (interactive) (find-file "~/.config")))
-  (define-key my-jump-keymap (kbd "j") (lambda () (interactive) (find-file "~/DCIM/content/aaa--todo.org")))
-  (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
-  (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
-  (define-key my-jump-keymap (kbd "y") #'emms)
+  (when (eq system-type 'gnu/linux)
+    (define-key my-jump-keymap (kbd "a") #'emms-browse-by-album)
+    (define-key my-jump-keymap (kbd "b") (lambda () (interactive) (find-file "~/bin")))
+    (define-key my-jump-keymap (kbd "c") (lambda () (interactive) (find-file "~/DCIM/Camera")))
+    (define-key my-jump-keymap (kbd "g") (lambda () (interactive) (find-file "~/.config")))
+    (define-key my-jump-keymap (kbd "j") (lambda () (interactive) (find-file "~/DCIM/content/aaa--todo.org")))
+    (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
+    (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
+    (define-key my-jump-keymap (kbd "y") #'emms)
 
-  (setq diary-file "~/DCIM/content/diary.org")
+    (setq diary-file "~/DCIM/content/diary.org")
 
-  (custom-theme-set-faces
-   'user
-   '(variable-pitch ((t (:family "DejaVu Sans" :height 110 :weight normal))))
-   '(fixed-pitch ((t ( :family "Source Code Pro" :height 120)))))
+    (custom-theme-set-faces
+     'user
+     '(variable-pitch ((t (:family "DejaVu Sans" :height 110 :weight normal))))
+     '(fixed-pitch ((t ( :family "Source Code Pro" :height 120)))))
 
-  ;; (setq font-general "Noto Sans Mono 11")
-  (setq font-general "Source Code Pro 11")
-  ;; (setq font-general "Source Code Pro Light 11")
-  ;; (setq font-general "Nimbus Mono PS 11")
-  ;; (setq font-general "Monospace 11")
-  (set-frame-font font-general nil t)
-  (add-to-list 'default-frame-alist `(font . ,font-general))
+    ;; (setq font-general "Noto Sans Mono 11")
+    (setq font-general "Source Code Pro 11")
+    ;; (setq font-general "Source Code Pro Light 11")
+    ;; (setq font-general "Nimbus Mono PS 11")
+    ;; (setq font-general "Monospace 11")
+    (set-frame-font font-general nil t)
+    (add-to-list 'default-frame-alist `(font . ,font-general))
 
-  (when (file-exists-p "~/source/repos/fd-find")
-    (use-package fd-find
-      :load-path "~/source/repos/fd-find")))
+    (when (file-exists-p "~/source/repos/fd-find")
+      (use-package fd-find
+        :load-path "~/source/repos/fd-find")))
 
 #+end_src
 
@@ -1496,95 +1503,95 @@ Curates configurations specific to Linux, making adjustments for paths, fonts, a
 * LLM
 
 #+begin_src elisp
-;;
-;; -> LLM
-;;
+  ;;
+  ;; -> LLM
+  ;;
 
-(use-package ellama
-  :bind ("C-c e" . ellama-transient-main-menu)
-  :init
-  (setopt ellama-language "English")
-  (require 'llm-ollama)
-  (setopt ellama-provider
-	       (make-llm-ollama
-	        :chat-model "qwen2.5-coder-7b-instruct-q5_k_m"
-	        :embedding-model "qwen2.5-coder-7b-instruct-q5_k_m"
-	        :default-chat-non-standard-params '(("num_ctx" . 8192))))
-  (setopt ellama-providers
-		    '(("codellama-7b.Q5_K_M" .
-             (make-llm-ollama
-				  :chat-model "codellama-7b.Q5_K_M"
-				  :embedding-model "codellama-7b.Q5_K_M"))
-            ("qwen2.5-coder-7b-instruct-q5_k_m" .
-             (make-llm-ollama
-	           :chat-model "qwen2.5-coder-7b-instruct-q5_k_m"
-	           :embedding-model "qwen2.5-coder-7b-instruct-q5_k_m"))
-		      ("Llama-3.2-1B-Instruct-Q8_0" .
-             (make-llm-ollama
-				  :chat-model "Llama-3.2-1B-Instruct-Q8_0"
-				  :embedding-model "Llama-3.2-1B-Instruct-Q8_0"))))
-  ;; (setopt ellama-naming-scheme 'ellama-generate-name-by-llm)
-  (setopt ellama-naming-scheme 'ellama-generate-name-by-words)
-  (setopt ellama-translation-provider (make-llm-ollama
-				                           :chat-model "qwen2.5-coder-7b-instruct-q5_k_m"
-				                           :embedding-model "nomic-embed-text"))
-  :config
-  (setq ellama-sessions-directory "~/.config/emacs/ellama-sessions/"
-        ellama-sessions-auto-save t))
+  (use-package ellama
+    :bind ("C-c e" . ellama-transient-main-menu)
+    :init
+    (setopt ellama-language "English")
+    (require 'llm-ollama)
+    (setopt ellama-provider
+            (make-llm-ollama
+             :chat-model "qwen2.5-coder-7b-instruct-q5_k_m"
+             :embedding-model "qwen2.5-coder-7b-instruct-q5_k_m"
+             :default-chat-non-standard-params '(("num_ctx" . 8192))))
+    (setopt ellama-providers
+            '(("codellama-7b.Q5_K_M" .
+               (make-llm-ollama
+                :chat-model "codellama-7b.Q5_K_M"
+                :embedding-model "codellama-7b.Q5_K_M"))
+              ("qwen2.5-coder-7b-instruct-q5_k_m" .
+               (make-llm-ollama
+                :chat-model "qwen2.5-coder-7b-instruct-q5_k_m"
+                :embedding-model "qwen2.5-coder-7b-instruct-q5_k_m"))
+              ("Llama-3.2-1B-Instruct-Q8_0" .
+               (make-llm-ollama
+                :chat-model "Llama-3.2-1B-Instruct-Q8_0"
+                :embedding-model "Llama-3.2-1B-Instruct-Q8_0"))))
+    ;; (setopt ellama-naming-scheme 'ellama-generate-name-by-llm)
+    (setopt ellama-naming-scheme 'ellama-generate-name-by-words)
+    (setopt ellama-translation-provider (make-llm-ollama
+                                         :chat-model "qwen2.5-coder-7b-instruct-q5_k_m"
+                                         :embedding-model "nomic-embed-text"))
+    :config
+    (setq ellama-sessions-directory "~/.config/emacs/ellama-sessions/"
+          ellama-sessions-auto-save t))
 
-(use-package gptel
-  :config
-  (gptel-make-ollama "qwen2.5-coder-7b-instruct-q5_k_m"
-    :host "localhost:11434"
-    :stream t
-    :models '(qwen2.5-coder-7b-instruct-q5_k_m:latest))
-  (setq gptel-model 'qwen2.5-coder-7b-instruct-q5_k_m:latest
-        gptel-backend (gptel-make-ollama "qwen2.5-coder-7b-instruct-q5_k_m"
-                        :host "localhost:11434"
-                        :stream t
-                        :models '(qwen2.5-coder-7b-instruct-q5_k_m:latest))))
+  (use-package gptel
+    :config
+    (gptel-make-ollama "qwen2.5-coder-7b-instruct-q5_k_m"
+      :host "localhost:11434"
+      :stream t
+      :models '(qwen2.5-coder-7b-instruct-q5_k_m:latest))
+    (setq gptel-model 'qwen2.5-coder-7b-instruct-q5_k_m:latest
+          gptel-backend (gptel-make-ollama "qwen2.5-coder-7b-instruct-q5_k_m"
+                          :host "localhost:11434"
+                          :stream t
+                          :models '(qwen2.5-coder-7b-instruct-q5_k_m:latest))))
 
-(use-package chatgpt-shell
-  :custom
-  (chatgpt-shell-openai-key
-   (lambda ()
-     (auth-source-pass-get 'secret "openai-key")))
-  (chatgpt-shell-models
-   '(((:version . "chatgpt-4o-latest")
-      (:short-version)
-      (:label . "ChatGPT")
-      (:provider . "OpenAI")
-      (:path . "/v1/chat/completions")
-      (:token-width . 3)
-      (:context-window . 12800)
-      (:handler . chatgpt-shell-openai--handle-chatgpt-command)
-      (:filter . chatgpt-shell-openai--filter-output)
-      (:payload . chatgpt-shell-openai--make-payload)
-      (:headers . chatgpt-shell-openai--make-headers)
-      (:url . chatgpt-shell-openai--make-url)
-      (:key . chatgpt-shell-openai-key)
-      (:url-base . chatgpt-shell-api-url-base)
-      (:validate-command . chatgpt-shell-openai--validate-command))
-     ((:provider . "Ollama")
-      (:label . "Ollama-qwen")
-      (:version . "qwen2.5-coder-7b-instruct-q5_k_m")
-      (:short-version)
-      (:token-width . 4)
-      (:context-window . 8192)
-      (:handler . chatgpt-shell-ollama--handle-ollama-command)
-      (:filter . chatgpt-shell-ollama--extract-ollama-response)
-      (:payload . chatgpt-shell-ollama-make-payload)
-      (:url . chatgpt-shell-ollama--make-url))
-     ((:provider . "Ollama")
-      (:label . "Ollama-llama")
-      (:version . "Llama-3.2-1B-Instruct-Q8_0")
-      (:short-version)
-      (:token-width . 4)
-      (:context-window . 8192)
-      (:handler . chatgpt-shell-ollama--handle-ollama-command)
-      (:filter . chatgpt-shell-ollama--extract-ollama-response)
-      (:payload . chatgpt-shell-ollama-make-payload)
-      (:url . chatgpt-shell-ollama--make-url)))))
+  (use-package chatgpt-shell
+    :custom
+    (chatgpt-shell-openai-key
+     (lambda ()
+       (auth-source-pass-get 'secret "openai-key")))
+    (chatgpt-shell-models
+     '(((:version . "chatgpt-4o-latest")
+        (:short-version)
+        (:label . "ChatGPT")
+        (:provider . "OpenAI")
+        (:path . "/v1/chat/completions")
+        (:token-width . 3)
+        (:context-window . 12800)
+        (:handler . chatgpt-shell-openai--handle-chatgpt-command)
+        (:filter . chatgpt-shell-openai--filter-output)
+        (:payload . chatgpt-shell-openai--make-payload)
+        (:headers . chatgpt-shell-openai--make-headers)
+        (:url . chatgpt-shell-openai--make-url)
+        (:key . chatgpt-shell-openai-key)
+        (:url-base . chatgpt-shell-api-url-base)
+        (:validate-command . chatgpt-shell-openai--validate-command))
+       ((:provider . "Ollama")
+        (:label . "Ollama-qwen")
+        (:version . "qwen2.5-coder-7b-instruct-q5_k_m")
+        (:short-version)
+        (:token-width . 4)
+        (:context-window . 8192)
+        (:handler . chatgpt-shell-ollama--handle-ollama-command)
+        (:filter . chatgpt-shell-ollama--extract-ollama-response)
+        (:payload . chatgpt-shell-ollama-make-payload)
+        (:url . chatgpt-shell-ollama--make-url))
+       ((:provider . "Ollama")
+        (:label . "Ollama-llama")
+        (:version . "Llama-3.2-1B-Instruct-Q8_0")
+        (:short-version)
+        (:token-width . 4)
+        (:context-window . 8192)
+        (:handler . chatgpt-shell-ollama--handle-ollama-command)
+        (:filter . chatgpt-shell-ollama--extract-ollama-response)
+        (:payload . chatgpt-shell-ollama-make-payload)
+        (:url . chatgpt-shell-ollama--make-url)))))
 
 #+end_src
 * selected-window-accent-mode
@@ -1592,270 +1599,270 @@ Curates configurations specific to Linux, making adjustments for paths, fonts, a
 The Selected Window Accent Mode is an Emacs package designed to visually distinguish the currently selected window by applying a unique accent color to its fringes, mode line, header line, and margins.
 
 #+begin_src elisp
-;;
-;; -> selected-window-accent-mode
-;;
+  ;;
+  ;; -> selected-window-accent-mode
+  ;;
 
-(use-package selected-window-accent-mode
-  :config (selected-window-accent-mode 1)
-  :custom
-  (selected-window-accent-fringe-thickness 10)
-  (selected-window-accent-percentage-darken 0)
-  (selected-window-accent-percentage-desaturate 0)
-  (selected-window-accent-smart-borders t)
-  (selected-window-accent-use-blend-background nil)
-  (selected-window-accent-use-blend-alpha 0)
-  (selected-window-accent-tab-accent t)
-  (selected-window-accent-use-pywal t)
-  (selected-window-accent-custom-color "cyan4")
-  (selected-window-accent-mode-style 'default))
+  (use-package selected-window-accent-mode
+    :config (selected-window-accent-mode 1)
+    :custom
+    (selected-window-accent-fringe-thickness 10)
+    (selected-window-accent-percentage-darken 0)
+    (selected-window-accent-percentage-desaturate 0)
+    (selected-window-accent-smart-borders t)
+    (selected-window-accent-use-blend-background nil)
+    (selected-window-accent-use-blend-alpha 0)
+    (selected-window-accent-tab-accent t)
+    (selected-window-accent-use-pywal t)
+    (selected-window-accent-custom-color "cyan4")
+    (selected-window-accent-mode-style 'default))
 
-(eval-after-load 'selected-window-accent-mode
-  '(progn
-     (define-key global-map (kbd "C-c w") 'selected-window-accent-transient)))
+  (eval-after-load 'selected-window-accent-mode
+    '(progn
+       (define-key global-map (kbd "C-c w") 'selected-window-accent-transient)))
 
 #+end_src
 
 * transients
 
 #+begin_src elisp
-;;
-;; -> transients
-;;
+  ;;
+  ;; -> transients
+  ;;
 
-(defvar cmake-preset
-  "build/linux/debug"
-  "cmake-preset")
+  (defvar cmake-preset
+    "build/linux/debug"
+    "cmake-preset")
 
-(defun change-directory-and-run (dir command bufname)
-  "Change to DIR and run the COMMAND."
-  (let ((default-directory dir))
-    (async-shell-command command bufname)
-    (message "Running command: %s:%s" dir command)))
+  (defun change-directory-and-run (dir command bufname)
+    "Change to DIR and run the COMMAND."
+    (let ((default-directory dir))
+      (async-shell-command command bufname)
+      (message "Running command: %s:%s" dir command)))
 
-(defun run-exe-command (dir exe bufname)
-  "Run EXE from a specified DIR."
-  (message "run-exe-command: %s:%s:%s" dir exe bufname)
-  (change-directory-and-run dir exe bufname))
+  (defun run-exe-command (dir exe bufname)
+    "Run EXE from a specified DIR."
+    (message "run-exe-command: %s:%s:%s" dir exe bufname)
+    (change-directory-and-run dir exe bufname))
 
-(defun run-cmake-command (command)
-  "Run COMMAND from the top level of the project."
-  (message command)
-  (change-directory-and-run (project-root (project-current t)) command "*cmake*"))
+  (defun run-cmake-command (command)
+    "Run COMMAND from the top level of the project."
+    (message command)
+    (change-directory-and-run (project-root (project-current t)) command "*cmake*"))
 
-(defun run-cmake-compile-command (command)
-  "Run compile COMMAND from the top level of the project."
-  (message command)
-  (let ((default-directory (project-root (project-current t))))
-    (compile command)
-    (message "Running command: %s:%s" dir command)))
+  (defun run-cmake-compile-command (command)
+    "Run compile COMMAND from the top level of the project."
+    (message command)
+    (let ((default-directory (project-root (project-current t))))
+      (compile command)
+      (message "Running command: %s:%s" dir command)))
 
-(defun kill-async-buffer (buffer-name)
-  "Kill the async buffer with BUFFER-NAME."
-  (let ((buffer (get-buffer buffer-name)))
-    (when buffer
-      (kill-buffer buffer)
-      (message "Killed buffer: %s" buffer-name))))
+  (defun kill-async-buffer (buffer-name)
+    "Kill the async buffer with BUFFER-NAME."
+    (let ((buffer (get-buffer buffer-name)))
+      (when buffer
+        (kill-buffer buffer)
+        (message "Killed buffer: %s" buffer-name))))
 
-(defun list-cmake-presets ()
-  "List available CMake presets using `cmake --list-presets=configure`."
-  (let ((output (shell-command-to-string "cmake --list-presets=configure")))
-    (delq nil
-          (mapcar (lambda (line)
-                    (if (string-match "^\\s-+\"\\([^\"]+\\)\"\\s-*$" line)
-                        (match-string 1 line)))
-                  (split-string output "\n")))))
+  (defun list-cmake-presets ()
+    "List available CMake presets using `cmake --list-presets=configure`."
+    (let ((output (shell-command-to-string "cmake --list-presets=configure")))
+      (delq nil
+            (mapcar (lambda (line)
+                      (if (string-match "^\\s-+\"\\([^\"]+\\)\"\\s-*$" line)
+                          (match-string 1 line)))
+                    (split-string output "\n")))))
 
-(defun transient-select-cmake-preset ()
-  "Function to select a CMake preset."
-  (interactive)
-  (let* ((presets (list-cmake-presets))
-         (preset (completing-read "Select CMake preset: " presets nil t)))
-    (setq cmake-preset preset)
-    (message "Selected CMake preset: %s" preset)))
+  (defun transient-select-cmake-preset ()
+    "Function to select a CMake preset."
+    (interactive)
+    (let* ((presets (list-cmake-presets))
+           (preset (completing-read "Select CMake preset: " presets nil t)))
+      (setq cmake-preset preset)
+      (message "Selected CMake preset: %s" preset)))
 
-(transient-define-prefix build-transient ()
-  "Build and Diagnostic transient commands."
-  [:description (lambda () (project-root (project-current t)))
-                ["CMake"
-                 ("p" "Set Preset" transient-select-cmake-preset)
-                 ("c" "Configure"
-                  (lambda () (interactive)
-                    (run-cmake-command (format "cmake --preset %s" cmake-preset))))
-                 ("RET" "Build"
-                  (lambda () (interactive)
-                    (run-cmake-compile-command (format "cmake --build --preset %s" cmake-preset))))
-                 ("i" "Install"
-                  (lambda () (interactive)
-                    (run-cmake-command (format "cmake --install %s" cmake-preset))))
-                 ("g" "Refresh"
-                  (lambda () (interactive)
-                    (run-cmake-command (format "cmake --preset %s --fresh" cmake-preset))))
-                 ("x" "Clean"
-                  (lambda () (interactive)
-                    (if (y-or-n-p "Are you sure you want to proceed? ")
-                        (run-cmake-command "rm -rf build"))))
-                 ;; ("m" "Toggle compilation"
-                 ;;   (lambda () (interactive)
-                 ;;     (let ((buffer (get-buffer "*compilation*")))
-                 ;;       (if buffer
-                 ;;         (if (get-buffer-window buffer 'visible)
-                 ;;           (delete-windows-on buffer)
-                 ;;           (display-buffer buffer))
-                 ;;         (message "No *compilation* buffer found.")))))
-                 ("s" "List Presets"
-                  (lambda () (interactive)
-                    (run-cmake-command "cmake --list-presets=configure")))]
-                ["Actions"
-                 ("SPC" "File Backup" my/dired-duplicate-backup-file)
-                 ("f" "Toggle Flycheck" flymake-mode)
-                 ("d" "Show Flycheck Diagnostics" flymake-show-buffer-diagnostics)]
-                ["Coding"
-                 ("e" "Fancy Stuff"
-                  (lambda () (interactive)
-                    (call-interactively 'eglot)
-                    (company-mode 1)
-                    (flymake-mode 1)))
-                 ("u" "Undo Fancy Stuff"
-                  (lambda () (interactive)
-                    (eglot-shutdown-all)
-                    (company-mode -1)
-                    (flymake-mode -1)))
-                 ("h" "Stop eglot"
-                  (lambda () (interactive)
-                    (eglot-shutdown-all)))]
-                ["Run"
-                 ("r" "All"
-                  (lambda () (interactive)
-                    (run-exe-command
-                     (concat (project-root (project-current t))
-                             "build/windows/debug/bin/Debug")
-                     "CigiDummyIG.exe" "*Running CigiDummyIG.exe*")
-                    (run-exe-command
-                     (concat (project-root (project-current t))
-                             "build/windows/debug/bin/Debug")
-                     "CigiMiniHostCSharp.exe" "*Running CigiMiniHostCSharp.exe*")))
-                 ("1" "CigiDummyIG"
-                  (lambda () (interactive)
-                    (run-exe-command
-                     (concat (project-root (project-current t))
-                             "build/windows/debug/bin/Debug")
-                     "CigiDummyIG.exe"
-                     "*Running CigiDummyIG.exe*")))
-                 ("2" "CigiMiniHost"
-                  (lambda () (interactive)
-                    (run-exe-command
-                     (concat (project-root (project-current t))
-                             "build/windows/debug/bin/Debug")
-                     "CigiMiniHost.exe"
-                     "*Running CigiMiniHost.exe*")))
-                 ("3" "CigiMiniHostCSharp"
-                  (lambda () (interactive)
-                    (run-exe-command
-                     (concat (project-root (project-current t))
-                             "build/windows/debug/bin/Debug")
-                     "CigiMiniHostCSharp.exe"
-                     "*Running CigiMiniHostCSharp.exe*")))]
-                ["Kill"
-                 ("5" "CigiDummyIG (k)"
-                  (lambda () (interactive)
-                    (kill-async-buffer "*Running CigiDummyIG.exe*")))
-                 ("6" "CigiMiniHost (k)"
-                  (lambda () (interactive)
-                    (kill-async-buffer "*Running CigiMiniHost.exe*")))
-                 ("7" "CigiMiniHostCSharp (k)"
-                  (lambda () (interactive)
-                    (kill-async-buffer "*Running CigiMiniHostCSharp.exe*")))
-                 ("k" "All (k)"
-                  (lambda () (interactive)
-                    (kill-async-buffer "*Running CigiDummyIG.exe*")
-                    (kill-async-buffer "*Running CigiMiniHost.exe*")
-                    (kill-async-buffer "*Running CigiMiniHostCSharp.exe*")))]
-                ])
+  (transient-define-prefix build-transient ()
+    "Build and Diagnostic transient commands."
+    [:description (lambda () (project-root (project-current t)))
+                  ["CMake"
+                   ("p" "Set Preset" transient-select-cmake-preset)
+                   ("c" "Configure"
+                    (lambda () (interactive)
+                      (run-cmake-command (format "cmake --preset %s" cmake-preset))))
+                   ("RET" "Build"
+                    (lambda () (interactive)
+                      (run-cmake-compile-command (format "cmake --build --preset %s" cmake-preset))))
+                   ("i" "Install"
+                    (lambda () (interactive)
+                      (run-cmake-command (format "cmake --install %s" cmake-preset))))
+                   ("g" "Refresh"
+                    (lambda () (interactive)
+                      (run-cmake-command (format "cmake --preset %s --fresh" cmake-preset))))
+                   ("x" "Clean"
+                    (lambda () (interactive)
+                      (if (y-or-n-p "Are you sure you want to proceed? ")
+                          (run-cmake-command "rm -rf build"))))
+                   ;; ("m" "Toggle compilation"
+                   ;;   (lambda () (interactive)
+                   ;;     (let ((buffer (get-buffer "*compilation*")))
+                   ;;       (if buffer
+                   ;;         (if (get-buffer-window buffer 'visible)
+                   ;;           (delete-windows-on buffer)
+                   ;;           (display-buffer buffer))
+                   ;;         (message "No *compilation* buffer found.")))))
+                   ("s" "List Presets"
+                    (lambda () (interactive)
+                      (run-cmake-command "cmake --list-presets=configure")))]
+                  ["Actions"
+                   ("SPC" "File Backup" my/dired-duplicate-backup-file)
+                   ("f" "Toggle Flycheck" flymake-mode)
+                   ("d" "Show Flycheck Diagnostics" flymake-show-buffer-diagnostics)]
+                  ["Coding"
+                   ("e" "Fancy Stuff"
+                    (lambda () (interactive)
+                      (call-interactively 'eglot)
+                      (company-mode 1)
+                      (flymake-mode 1)))
+                   ("u" "Undo Fancy Stuff"
+                    (lambda () (interactive)
+                      (eglot-shutdown-all)
+                      (company-mode -1)
+                      (flymake-mode -1)))
+                   ("h" "Stop eglot"
+                    (lambda () (interactive)
+                      (eglot-shutdown-all)))]
+                  ["Run"
+                   ("r" "All"
+                    (lambda () (interactive)
+                      (run-exe-command
+                       (concat (project-root (project-current t))
+                               "build/windows/debug/bin/Debug")
+                       "CigiDummyIG.exe" "*Running CigiDummyIG.exe*")
+                      (run-exe-command
+                       (concat (project-root (project-current t))
+                               "build/windows/debug/bin/Debug")
+                       "CigiMiniHostCSharp.exe" "*Running CigiMiniHostCSharp.exe*")))
+                   ("1" "CigiDummyIG"
+                    (lambda () (interactive)
+                      (run-exe-command
+                       (concat (project-root (project-current t))
+                               "build/windows/debug/bin/Debug")
+                       "CigiDummyIG.exe"
+                       "*Running CigiDummyIG.exe*")))
+                   ("2" "CigiMiniHost"
+                    (lambda () (interactive)
+                      (run-exe-command
+                       (concat (project-root (project-current t))
+                               "build/windows/debug/bin/Debug")
+                       "CigiMiniHost.exe"
+                       "*Running CigiMiniHost.exe*")))
+                   ("3" "CigiMiniHostCSharp"
+                    (lambda () (interactive)
+                      (run-exe-command
+                       (concat (project-root (project-current t))
+                               "build/windows/debug/bin/Debug")
+                       "CigiMiniHostCSharp.exe"
+                       "*Running CigiMiniHostCSharp.exe*")))]
+                  ["Kill"
+                   ("5" "CigiDummyIG (k)"
+                    (lambda () (interactive)
+                      (kill-async-buffer "*Running CigiDummyIG.exe*")))
+                   ("6" "CigiMiniHost (k)"
+                    (lambda () (interactive)
+                      (kill-async-buffer "*Running CigiMiniHost.exe*")))
+                   ("7" "CigiMiniHostCSharp (k)"
+                    (lambda () (interactive)
+                      (kill-async-buffer "*Running CigiMiniHostCSharp.exe*")))
+                   ("k" "All (k)"
+                    (lambda () (interactive)
+                      (kill-async-buffer "*Running CigiDummyIG.exe*")
+                      (kill-async-buffer "*Running CigiMiniHost.exe*")
+                      (kill-async-buffer "*Running CigiMiniHostCSharp.exe*")))]
+                  ])
 
-(global-set-key (kbd "M-RET") #'build-transient)
+  (global-set-key (kbd "M-RET") #'build-transient)
 
-(transient-define-prefix my/transient-outlining-and-folding ()
-  "Transient menu for outline-mode."
-  ["Outline Mode Commands"
-   ["Cycle / Folding"
-    ("g" "Cycle" outline-cycle)
-    ("O" "Cycle Buffer" outline-cycle-buffer)
-    ("F" "Global Folding at Point"
-     (lambda () (interactive)
-       (if (eq selective-display (1+ (current-column)))
-           (set-selective-display 0)
-         (set-selective-display (1+ (current-column))))))]
-   ["Visibility"
-    ("o" "Toggle Children" outline-toggle-children)
-    ("h" "Hide Sublevels" outline-hide-sublevels)
-    ("s" "Show All" outline-show-all)
-    ("i" "Hide Body" outline-hide-body)
-    ("e" "Show Entry" outline-show-entry)
-    ("H" "Hide Entry" outline-hide-entry)
-    ("c" "Hide Leaves" outline-hide-leaves)
-    ("k" "Show Branches" outline-show-branches)
-    ("t" "Hide Subtree" outline-hide-subtree)
-    ("S" "Show Subtree" outline-show-subtree)]
-   ["Motion"
-    ("n" "Next Visible Heading" outline-next-visible-heading)
-    ("p" "Previous Visible Heading" outline-previous-visible-heading)
-    ("u" "Up Heading" outline-up-heading)
-    ("f" "Forward Same Level" outline-forward-same-level)
-    ("b" "Backward Same Level" outline-backward-same-level)]
-   ["Structure"
-    ("t" "Promote Heading" outline-promote)
-    ("d" "Demote Heading" outline-demote)
-    ("P" "Move Subtree Up" outline-move-subtree-up)
-    ("N" "Move Subtree Down" outline-move-subtree-down)]
-   ["Edit"
-    ("a" "Add Heading" outline-insert-heading)
-    ("r" "Rename Heading" outline-insert-heading)
-    ("m" "Mark Subtree" outline-mark-subtree)]])
+  (transient-define-prefix my/transient-outlining-and-folding ()
+    "Transient menu for outline-mode."
+    ["Outline Mode Commands"
+     ["Cycle / Folding"
+      ("g" "Cycle" outline-cycle)
+      ("O" "Cycle Buffer" outline-cycle-buffer)
+      ("F" "Global Folding at Point"
+       (lambda () (interactive)
+         (if (eq selective-display (1+ (current-column)))
+             (set-selective-display 0)
+           (set-selective-display (1+ (current-column))))))]
+     ["Visibility"
+      ("o" "Toggle Children" outline-toggle-children)
+      ("h" "Hide Sublevels" outline-hide-sublevels)
+      ("s" "Show All" outline-show-all)
+      ("i" "Hide Body" outline-hide-body)
+      ("e" "Show Entry" outline-show-entry)
+      ("H" "Hide Entry" outline-hide-entry)
+      ("c" "Hide Leaves" outline-hide-leaves)
+      ("k" "Show Branches" outline-show-branches)
+      ("t" "Hide Subtree" outline-hide-subtree)
+      ("S" "Show Subtree" outline-show-subtree)]
+     ["Motion"
+      ("n" "Next Visible Heading" outline-next-visible-heading)
+      ("p" "Previous Visible Heading" outline-previous-visible-heading)
+      ("u" "Up Heading" outline-up-heading)
+      ("f" "Forward Same Level" outline-forward-same-level)
+      ("b" "Backward Same Level" outline-backward-same-level)]
+     ["Structure"
+      ("t" "Promote Heading" outline-promote)
+      ("d" "Demote Heading" outline-demote)
+      ("P" "Move Subtree Up" outline-move-subtree-up)
+      ("N" "Move Subtree Down" outline-move-subtree-down)]
+     ["Edit"
+      ("a" "Add Heading" outline-insert-heading)
+      ("r" "Rename Heading" outline-insert-heading)
+      ("m" "Mark Subtree" outline-mark-subtree)]])
 
-(bind-key* (kbd "C-c o") 'my/transient-outlining-and-folding)
+  (bind-key* (kbd "C-c o") 'my/transient-outlining-and-folding)
 
-(defun my/prog-folding ()
-  "Enable and configure outline minor mode for code folding.
+  (defun my/prog-folding ()
+    "Enable and configure outline minor mode for code folding.
 
-This function sets up the outline minor mode tailored for
-programming modes based on basic space / tab indentation."
-  (interactive)
-  (setq-local outline-minor-mode-use-buttons nil)
-  (setq-local outline-regexp (rx bol
-                                 (zero-or-more (any " \t"))
-                                 (not (any " \t\n"))))
-  (outline-minor-mode 1))
+  This function sets up the outline minor mode tailored for
+  programming modes based on basic space / tab indentation."
+    (interactive)
+    (setq-local outline-minor-mode-use-buttons nil)
+    (setq-local outline-regexp (rx bol
+                                   (zero-or-more (any " \t"))
+                                   (not (any " \t\n"))))
+    (outline-minor-mode 1))
 
-(add-hook 'prog-mode-hook 'my/prog-folding)
+  (add-hook 'prog-mode-hook 'my/prog-folding)
 
-(with-eval-after-load 'chatgpt-shell
-  (transient-define-prefix chatgpt-shell-transient ()
-    "Transient for ChatGPT Shell commands."
-    ["ChatGPT Shell Commands"
-     ["Code and Text"
-      ("e" "Explain Code" chatgpt-shell-explain-code)
-      ("p" "Proofread Region" chatgpt-shell-proofread-region)
-      ("g" "Write Git Commit" chatgpt-shell-write-git-commit)
-      ("s" "Send Region" chatgpt-shell-send-region)
-      ("d" "Describe Code" chatgpt-shell-describe-code)
-      ("r" "Refactor Code" chatgpt-shell-refactor-code)
-      ("u" "Generate Unit Test" chatgpt-shell-generate-unit-test)
-      ("a" "Send and Review Region" chatgpt-shell-send-and-review-region)]
-     ["Shell Operations"
-      ("l" "Start Shell" chatgpt-shell)
-      ;;    ("m" "Swap Model Version" chatgpt-shell-swap-model-version)
-      ("t" "Save Session Transcript" chatgpt-shell-save-session-transcript)]
-     ["Eshell Integrations"
-      ("o" "Summarize Last Command Output" chatgpt-shell-eshell-summarize-last-command-output)
-      ("w" "What's Wrong With Last Command" chatgpt-shell-eshell-whats-wrong-with-last-command)]
-     ["Miscellaneous"
-      ("i" "Describe Image" chatgpt-shell-describe-image)
-      ("m" "Swap Model" chatgpt-shell-swap-model)
-      ]
-     ])
+  (with-eval-after-load 'chatgpt-shell
+    (transient-define-prefix chatgpt-shell-transient ()
+      "Transient for ChatGPT Shell commands."
+      ["ChatGPT Shell Commands"
+       ["Code and Text"
+        ("e" "Explain Code" chatgpt-shell-explain-code)
+        ("p" "Proofread Region" chatgpt-shell-proofread-region)
+        ("g" "Write Git Commit" chatgpt-shell-write-git-commit)
+        ("s" "Send Region" chatgpt-shell-send-region)
+        ("d" "Describe Code" chatgpt-shell-describe-code)
+        ("r" "Refactor Code" chatgpt-shell-refactor-code)
+        ("u" "Generate Unit Test" chatgpt-shell-generate-unit-test)
+        ("a" "Send and Review Region" chatgpt-shell-send-and-review-region)]
+       ["Shell Operations"
+        ("l" "Start Shell" chatgpt-shell)
+        ;;    ("m" "Swap Model Version" chatgpt-shell-swap-model-version)
+        ("t" "Save Session Transcript" chatgpt-shell-save-session-transcript)]
+       ["Eshell Integrations"
+        ("o" "Summarize Last Command Output" chatgpt-shell-eshell-summarize-last-command-output)
+        ("w" "What's Wrong With Last Command" chatgpt-shell-eshell-whats-wrong-with-last-command)]
+       ["Miscellaneous"
+        ("i" "Describe Image" chatgpt-shell-describe-image)
+        ("m" "Swap Model" chatgpt-shell-swap-model)
+        ]
+       ])
 
-  (global-set-key (kbd "C-c g") 'chatgpt-shell-transient))
+    (global-set-key (kbd "C-c g") 'chatgpt-shell-transient))
 
 #+end_src
 
@@ -1864,36 +1871,36 @@ programming modes based on basic space / tab indentation."
 Sets up Kurecolor, a color manipulation tool, integrating it within Emacs for efficiently tweaking color values in stylesheets, theme files, or other color-related contexts.
 
 #+begin_src elisp
-;;
-;; -> kurecolor
-;;
+  ;;
+  ;; -> kurecolor
+  ;;
 
-(use-package kurecolor
-  :ensure t ; Ensure the package is installed (optional)
-  :bind (("M-<up>" . (lambda () (interactive) (kurecolor-increase-brightness-by-step 0.2)))
-         ("M-<down>" . (lambda () (interactive) (kurecolor-decrease-brightness-by-step 0.2)))
-         ("M-<prior>" . (lambda () (interactive) (kurecolor-increase-saturation-by-step 0.2)))
-         ("M-<next>" . (lambda () (interactive) (kurecolor-decrease-saturation-by-step 0.2)))
-         ("M-<left>" . (lambda () (interactive) (kurecolor-decrease-hue-by-step 0.2)))
-         ("M-<right>" . (lambda () (interactive) (kurecolor-increase-hue-by-step 0.2))))
-  :config
-  (global-set-key (kbd "M-<home>") 'my/insert-random-color-at-point))
+  (use-package kurecolor
+    :ensure t ; Ensure the package is installed (optional)
+    :bind (("M-<up>" . (lambda () (interactive) (kurecolor-increase-brightness-by-step 0.2)))
+           ("M-<down>" . (lambda () (interactive) (kurecolor-decrease-brightness-by-step 0.2)))
+           ("M-<prior>" . (lambda () (interactive) (kurecolor-increase-saturation-by-step 0.2)))
+           ("M-<next>" . (lambda () (interactive) (kurecolor-decrease-saturation-by-step 0.2)))
+           ("M-<left>" . (lambda () (interactive) (kurecolor-decrease-hue-by-step 0.2)))
+           ("M-<right>" . (lambda () (interactive) (kurecolor-increase-hue-by-step 0.2))))
+    :config
+    (global-set-key (kbd "M-<home>") 'my/insert-random-color-at-point))
 
-(defun my/insert-random-color-at-point ()
-  "Generate random color and insert at current hex color under cursor."
-  (interactive)
-  (let* ((color (format "#%06x" (random (expt 16 6))))
-         (bounds (bounds-of-thing-at-point 'sexp))
-         (start (car bounds))
-         (end (cdr bounds)))
-    (if (and bounds (> end start))
-        (progn
-          (goto-char start)
-          (unless (looking-at "#[0-9a-fA-F]\\{6\\}")
-            (error "Not on a hex color code"))
-          (delete-region start end)
-          (insert color))
-      (error "No hex color code at point"))))
+  (defun my/insert-random-color-at-point ()
+    "Generate random color and insert at current hex color under cursor."
+    (interactive)
+    (let* ((color (format "#%06x" (random (expt 16 6))))
+           (bounds (bounds-of-thing-at-point 'sexp))
+           (start (car bounds))
+           (end (cdr bounds)))
+      (if (and bounds (> end start))
+          (progn
+            (goto-char start)
+            (unless (looking-at "#[0-9a-fA-F]\\{6\\}")
+              (error "Not on a hex color code"))
+            (delete-region start end)
+            (insert color))
+        (error "No hex color code at point"))))
 
 #+end_src
 
@@ -1902,59 +1909,59 @@ Sets up Kurecolor, a color manipulation tool, integrating it within Emacs for ef
 Enhances Emacs's calendar functionalities with additional packages and configurations, highlighting integration with Org mode and customization options for calendar views and event handling.
 
 #+begin_src elisp
-;;
-;; -> calendar
-;;
+  ;;
+  ;; -> calendar
+  ;;
 
-(use-package calfw)
-(use-package calfw-org)
-(use-package calfw-cal)
+  (use-package calfw)
+  (use-package calfw-org)
+  (use-package calfw-cal)
 
-(setq calendar-holidays nil)
-(setq calendar-week-start-day 1)
+  (setq calendar-holidays nil)
+  (setq calendar-week-start-day 1)
 
-(setq cfw:org-capture-template
-      '("c" "Calendar" plain
-        (file+function
-         "~/DCIM/content/aab--calendar.org"
-         my-capture-top-level)
-        "* TODO %?\n SCHEDULED: %(cfw:org-capture-day)\n"
-        :prepend t :jump-to-captured t))
+  (setq cfw:org-capture-template
+        '("c" "Calendar" plain
+          (file+function
+           "~/DCIM/content/aab--calendar.org"
+           my-capture-top-level)
+          "* TODO %?\n SCHEDULED: %(cfw:org-capture-day)\n"
+          :prepend t :jump-to-captured t))
 
 #+end_src
 
 * plantuml
 
 #+begin_src elisp
-;;
-;; -> plantuml
-;;
+  ;;
+  ;; -> plantuml
+  ;;
 
-(use-package plantuml-mode
-  :custom
-  (plantuml-default-exec-mode 'jar)
-  (plantuml-jar-path (concat user-emacs-directory "plantuml.jar"))
-  (org-plantuml-jar-path (concat user-emacs-directory "plantuml.jar")))
+  (use-package plantuml-mode
+    :custom
+    (plantuml-default-exec-mode 'jar)
+    (plantuml-jar-path (concat user-emacs-directory "plantuml.jar"))
+    (org-plantuml-jar-path (concat user-emacs-directory "plantuml.jar")))
 
-(add-to-list
- 'org-src-lang-modes '("plantuml" . plantuml))
+  (add-to-list
+   'org-src-lang-modes '("plantuml" . plantuml))
 
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((plantuml . t)))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((plantuml . t)))
 
-(add-to-list 'auto-mode-alist '("\\.plantuml\\'" . plantuml-mode))
+  (add-to-list 'auto-mode-alist '("\\.plantuml\\'" . plantuml-mode))
 
-(add-hook 'plantuml-mode-hook (lambda ()
-                                (setq tab-width 0)
-                                (setq indent-tabs-mode nil)))
+  (add-hook 'plantuml-mode-hook (lambda ()
+                                  (setq tab-width 0)
+                                  (setq indent-tabs-mode nil)))
 
 
-(defun my-org-confirm-babel-evaluate (lang body)
-  (not (or (string= lang "plantuml")
-           (string= lang "emacs-lisp"))))
+  (defun my-org-confirm-babel-evaluate (lang body)
+    (not (or (string= lang "plantuml")
+             (string= lang "emacs-lisp"))))
 
-(setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
+  (setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
 
 #+end_src
 
@@ -1963,50 +1970,50 @@ Enhances Emacs's calendar functionalities with additional packages and configura
 Customizes the Org Agenda for a personalized task management and calendar view, adjusting settings for diary integration and custom agenda views to fit specific planning needs.
 
 #+begin_src elisp
-;;
-;; -> org-agenda
-;;
+  ;;
+  ;; -> org-agenda
+  ;;
 
-(use-package org
-  :custom
-  (org-agenda-include-diary nil)
-  (org-agenda-show-all-dates t)
-  (org-refile-targets '((org-agenda-files :maxlevel . 1)))
-  (org-agenda-files '("~/DCIM/content/aaa--aaa.org"
-                      "~/DCIM/content/aaa--todo.org"
-                      "~/DCIM/content/aab--calendar.org"
-                      "~/DCIM/content/aac--baby.org"
-                      "~/DCIM/content/aaf--kate.org"
-                      "~/DCIM/content/aag--emacs-todo.org"
-                      ))
-  :config
-  (with-eval-after-load 'org-agenda
-    (unbind-key "M-m" org-agenda-mode-map)
-    (setq org-agenda-custom-commands
-          '(("m" "Month View" agenda ""
-             ((org-agenda-start-day "today")
-              (org-agenda-span 30)
-              (org-agenda-time-grid nil)))
-            ("0" "Year View (2020)" agenda ""
-             ((org-agenda-start-day "2020-01-01")
-              (org-agenda-span 'year)
-              (org-agenda-time-grid nil)))
-            ("1" "Year View (2021)" agenda ""
-             ((org-agenda-start-day "2021-01-01")
-              (org-agenda-span 'year)
-              (org-agenda-time-grid nil)))
-            ("2" "Year View (2022)" agenda ""
-             ((org-agenda-start-day "2022-01-01")
-              (org-agenda-span 'year)
-              (org-agenda-time-grid nil)))
-            ("3" "Year View (2023)" agenda ""
-             ((org-agenda-start-day "2023-01-01")
-              (org-agenda-span 'year)
-              (org-agenda-time-grid nil)))
-            ("4" "Year View (2024)" agenda ""
-             ((org-agenda-start-day "2024-01-01")
-              (org-agenda-span 'year)
-              (org-agenda-time-grid nil)))))))
+  (use-package org
+    :custom
+    (org-agenda-include-diary nil)
+    (org-agenda-show-all-dates t)
+    (org-refile-targets '((org-agenda-files :maxlevel . 1)))
+    (org-agenda-files '("~/DCIM/content/aaa--aaa.org"
+                        "~/DCIM/content/aaa--todo.org"
+                        "~/DCIM/content/aab--calendar.org"
+                        "~/DCIM/content/aac--baby.org"
+                        "~/DCIM/content/aaf--kate.org"
+                        "~/DCIM/content/aag--emacs-todo.org"
+                        ))
+    :config
+    (with-eval-after-load 'org-agenda
+      (unbind-key "M-m" org-agenda-mode-map)
+      (setq org-agenda-custom-commands
+            '(("m" "Month View" agenda ""
+               ((org-agenda-start-day "today")
+                (org-agenda-span 30)
+                (org-agenda-time-grid nil)))
+              ("0" "Year View (2020)" agenda ""
+               ((org-agenda-start-day "2020-01-01")
+                (org-agenda-span 'year)
+                (org-agenda-time-grid nil)))
+              ("1" "Year View (2021)" agenda ""
+               ((org-agenda-start-day "2021-01-01")
+                (org-agenda-span 'year)
+                (org-agenda-time-grid nil)))
+              ("2" "Year View (2022)" agenda ""
+               ((org-agenda-start-day "2022-01-01")
+                (org-agenda-span 'year)
+                (org-agenda-time-grid nil)))
+              ("3" "Year View (2023)" agenda ""
+               ((org-agenda-start-day "2023-01-01")
+                (org-agenda-span 'year)
+                (org-agenda-time-grid nil)))
+              ("4" "Year View (2024)" agenda ""
+               ((org-agenda-start-day "2024-01-01")
+                (org-agenda-span 'year)
+                (org-agenda-time-grid nil)))))))
 
 #+end_src
 
@@ -2015,59 +2022,59 @@ Customizes the Org Agenda for a personalized task management and calendar view, 
 Demonstrates "Do What I Mean" functionalities custom to Emacs, streamlining operations like conversion, searching, and executing context-aware actions.
 
 #+begin_src elisp
-;;
-;; -> dwim
-;;
+  ;;
+  ;; -> dwim
+  ;;
 
-(when (file-exists-p "/home/jdyer/bin/category-list-uniq.txt")
-  (progn
-    (defvar my/dwim-convert-commands
-      '("ConvertNoSpace" "AudioConvert" "AudioInfo" "AudioNormalise"
-        "AudioTrimSilence" "PictureAutoColour" "PictureConvert"
-        "PictureCrush" "PictureFrompdf" "PictureInfo" "PictureMontage"
-        "PictureOrganise" "PictureCrop" "PictureRotateFlip" "PictureEmail"
-        "PictureUpdateFromCreateDate"
-        "PictureRotateLeft" "PictureRotateRight" "PictureScale"
-        "PictureUpscale" "PictureGetText" "PictureOrientation"
-        "PictureUpdateToCreateDate" "VideoConcat" "VideoConvert" "VideoConvertToGif"
-        "VideoCut" "VideoDouble" "VideoExtractAudio" "VideoExtractFrames"
-        "VideoFilter" "VideoFromFrames" "VideoInfo" "VideoRemoveAudio"
-        "VideoReplaceVideoAudio" "VideoRescale" "VideoReverse"
-        "VideoRotate" "VideoRotateLeft" "VideoRotateRight" "VideoShrink"
-        "VideoSlowDown" "VideoSpeedUp" "VideoZoom" "WhatsAppConvert"
-        "PictureCorrect" "Picture2pdf" "PictureTag" "PictureTagRename"
-        "OtherTagDate" "VideoRemoveFlips")
-      "List of commands for dwim-convert.")
+  (when (file-exists-p "/home/jdyer/bin/category-list-uniq.txt")
+    (progn
+      (defvar my/dwim-convert-commands
+        '("ConvertNoSpace" "AudioConvert" "AudioInfo" "AudioNormalise"
+          "AudioTrimSilence" "PictureAutoColour" "PictureConvert"
+          "PictureCrush" "PictureFrompdf" "PictureInfo" "PictureMontage"
+          "PictureOrganise" "PictureCrop" "PictureRotateFlip" "PictureEmail"
+          "PictureUpdateFromCreateDate"
+          "PictureRotateLeft" "PictureRotateRight" "PictureScale"
+          "PictureUpscale" "PictureGetText" "PictureOrientation"
+          "PictureUpdateToCreateDate" "VideoConcat" "VideoConvert" "VideoConvertToGif"
+          "VideoCut" "VideoDouble" "VideoExtractAudio" "VideoExtractFrames"
+          "VideoFilter" "VideoFromFrames" "VideoInfo" "VideoRemoveAudio"
+          "VideoReplaceVideoAudio" "VideoRescale" "VideoReverse"
+          "VideoRotate" "VideoRotateLeft" "VideoRotateRight" "VideoShrink"
+          "VideoSlowDown" "VideoSpeedUp" "VideoZoom" "WhatsAppConvert"
+          "PictureCorrect" "Picture2pdf" "PictureTag" "PictureTagRename"
+          "OtherTagDate" "VideoRemoveFlips")
+        "List of commands for dwim-convert.")
 
-    (defun my/read-lines (file-path)
-      "Return a list of lines of a file at FILE-PATH."
-      (with-temp-buffer
-        (insert-file-contents file-path)
-        (split-string (buffer-string) "\n" t)))
+      (defun my/read-lines (file-path)
+        "Return a list of lines of a file at FILE-PATH."
+        (with-temp-buffer
+          (insert-file-contents file-path)
+          (split-string (buffer-string) "\n" t)))
 
-    (defun my/dwim-convert-generic (command)
-      "Execute a dwim-shell-command-on-marked-files with the given COMMAND."
-      (let* ((unique-text-file "~/bin/category-list-uniq.txt")
-             (user-selection nil)
-             (files (dired-get-marked-files nil current-prefix-arg))
-             (command-and-files (concat command " " (mapconcat 'identity files " "))))
-        (when (string= command "PictureTag")
-          (setq user-selection (completing-read "Choose an option: "
-                                                (my/read-lines unique-text-file)
-                                                nil t)))
-        (async-shell-command (if user-selection
-                                 (concat command " " user-selection " " (mapconcat 'identity files " "))
-                               (concat command " " (mapconcat 'identity files " ")))
-                             "*convert*")))
+      (defun my/dwim-convert-generic (command)
+        "Execute a dwim-shell-command-on-marked-files with the given COMMAND."
+        (let* ((unique-text-file "~/bin/category-list-uniq.txt")
+               (user-selection nil)
+               (files (dired-get-marked-files nil current-prefix-arg))
+               (command-and-files (concat command " " (mapconcat 'identity files " "))))
+          (when (string= command "PictureTag")
+            (setq user-selection (completing-read "Choose an option: "
+                                                  (my/read-lines unique-text-file)
+                                                  nil t)))
+          (async-shell-command (if user-selection
+                                   (concat command " " user-selection " " (mapconcat 'identity files " "))
+                                 (concat command " " (mapconcat 'identity files " ")))
+                               "*convert*")))
 
-    (defun my/dwim-convert-with-selection ()
-      "Prompt user to choose command and execute dwim-shell-command-on-marked-files."
-      (interactive)
-      (let ((chosen-command (completing-read "Choose command: "
-                                             my/dwim-convert-commands)))
-        (my/dwim-convert-generic chosen-command)))
+      (defun my/dwim-convert-with-selection ()
+        "Prompt user to choose command and execute dwim-shell-command-on-marked-files."
+        (interactive)
+        (let ((chosen-command (completing-read "Choose command: "
+                                               my/dwim-convert-commands)))
+          (my/dwim-convert-generic chosen-command)))
 
-    (global-set-key (kbd "C-c v") 'my/dwim-convert-with-selection)))
+      (global-set-key (kbd "C-c v") 'my/dwim-convert-with-selection)))
 
 #+end_src
 
@@ -2076,124 +2083,124 @@ Demonstrates "Do What I Mean" functionalities custom to Emacs, streamlining oper
 Customizes Org Capture templates for quickly capturing notes, tasks, and other items with predefined templates, optimizing personal organization and productivity workflows.
 
 #+begin_src elisp
-;;
-;; -> org-capture
-;;
+  ;;
+  ;; -> org-capture
+  ;;
 
-(setq bookmark-fringe-mark nil)
+  (setq bookmark-fringe-mark nil)
 
-(defun my-capture-top-level ()
-  "Function to capture a new entry at the top level of the given file."
-  (goto-char (point-min))
-  (or (outline-next-heading)
-      (goto-char (point-max)))
-  (unless (bolp) (insert "\n")))
+  (defun my-capture-top-level ()
+    "Function to capture a new entry at the top level of the given file."
+    (goto-char (point-min))
+    (or (outline-next-heading)
+        (goto-char (point-max)))
+    (unless (bolp) (insert "\n")))
 
-(setq org-capture-templates
-      '(
-        ("t" "Tagged" plain
-         (file+function
-          "~/DCIM/content/tags--all.org"
-          my-capture-top-level)
-         "* DONE %^{title} tagged :%\\1:
-:PROPERTIES:
-:EXPORT_FILE_NAME: index
-:EXPORT_HUGO_SECTION: tagged/%\\1
-:EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
-:EXPORT_HUGO_TYPE: gallery
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /tagged/%\\1.jpg
-:END:
-%\\1 tagged
-%?
-" :prepend t :jump-to-captured t)
+  (setq org-capture-templates
+        '(
+          ("t" "Tagged" plain
+           (file+function
+            "~/DCIM/content/tags--all.org"
+            my-capture-top-level)
+           "* DONE %^{title} tagged :%\\1:
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: index
+  :EXPORT_HUGO_SECTION: tagged/%\\1
+  :EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
+  :EXPORT_HUGO_TYPE: gallery
+  :EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /tagged/%\\1.jpg
+  :END:
+  %\\1 tagged
+  %?
+  " :prepend t :jump-to-captured t)
 
-        ("b" "Blog" plain
-         (file+function
-          "~/DCIM/content/blog--all.org"
-          my-capture-top-level)
-         "* TODO %^{title} :%(format-time-string \"%Y\"):
-:PROPERTIES:
-:EXPORT_FILE_NAME: %<%Y%m%d%H%M%S>-blog--%\\1
-:EXPORT_HUGO_SECTION: blog
-:EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /blog/%<%Y%m%d%H%M%S>-blog--%\\1.jpg
-:END:
-%?
-" :prepend t :jump-to-captured t)
+          ("b" "Blog" plain
+           (file+function
+            "~/DCIM/content/blog--all.org"
+            my-capture-top-level)
+           "* TODO %^{title} :%(format-time-string \"%Y\"):
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: %<%Y%m%d%H%M%S>-blog--%\\1
+  :EXPORT_HUGO_SECTION: blog
+  :EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
+  :EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /blog/%<%Y%m%d%H%M%S>-blog--%\\1.jpg
+  :END:
+  %?
+  " :prepend t :jump-to-captured t)
 
-        ("g" "Gallery" plain
-         (file+function
-          "~/DCIM/content/blog--all.org"
-          my-capture-top-level)
-         (function my/org-hugo-new-subtree-post-capture-template)
-         :prepend t :jump-to-captured t)
+          ("g" "Gallery" plain
+           (file+function
+            "~/DCIM/content/blog--all.org"
+            my-capture-top-level)
+           (function my/org-hugo-new-subtree-post-capture-template)
+           :prepend t :jump-to-captured t)
 
-        ("e" "Emacs" plain
-         (file+function
-          "~/DCIM/content/emacs--all.org"
-          my-capture-top-level)
-         "* TODO %^{title} :emacs:%(format-time-string \"%Y\"):
-:PROPERTIES:
-:EXPORT_FILE_NAME: %<%Y%m%d%H%M%S>-emacs--%\\1
-:EXPORT_HUGO_SECTION: emacs
-:EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /emacs/%<%Y%m%d%H%M%S>-emacs--%\\1.jpg
-:END:
-%?
-" :prepend t :jump-to-captured t)
+          ("e" "Emacs" plain
+           (file+function
+            "~/DCIM/content/emacs--all.org"
+            my-capture-top-level)
+           "* TODO %^{title} :emacs:%(format-time-string \"%Y\"):
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: %<%Y%m%d%H%M%S>-emacs--%\\1
+  :EXPORT_HUGO_SECTION: emacs
+  :EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
+  :EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /emacs/%<%Y%m%d%H%M%S>-emacs--%\\1.jpg
+  :END:
+  %?
+  " :prepend t :jump-to-captured t)
 
-        ("l" "Linux" plain
-         (file+function
-          "~/DCIM/content/linux--all.org"
-          my-capture-top-level)
-         "* TODO %^{title} :%(format-time-string \"%Y\"):
-:PROPERTIES:
-:EXPORT_FILE_NAME: %<%Y%m%d%H%M%S>-linux--%\\1
-:EXPORT_HUGO_SECTION: linux
-:EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /linux/%<%Y%m%d%H%M%S>-emacs--%\\1.jpg
-:END:
-%?
-" :prepend t :jump-to-captured t)
+          ("l" "Linux" plain
+           (file+function
+            "~/DCIM/content/linux--all.org"
+            my-capture-top-level)
+           "* TODO %^{title} :%(format-time-string \"%Y\"):
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: %<%Y%m%d%H%M%S>-linux--%\\1
+  :EXPORT_HUGO_SECTION: linux
+  :EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
+  :EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /linux/%<%Y%m%d%H%M%S>-emacs--%\\1.jpg
+  :END:
+  %?
+  " :prepend t :jump-to-captured t)
 
-        ("a" "Art")
+          ("a" "Art")
 
-        ("av" "Art Videos" plain
-         (file+function
-          "~/DCIM/content/art--all.org"
-          my-capture-top-level)
-         "* TODO %^{title} :videos:painter:krita:artrage:%(format-time-string \"%Y\"):
-:PROPERTIES:
-:EXPORT_FILE_NAME: %<%Y%m%d%H%M%S>--%\\1-%\\2
-:EXPORT_HUGO_SECTION: art--videos
-:EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /art--videos/%<%Y%m%d%H%M%S>--%\\1-%\\2.jpg
-:VIDEO:
-:END:
-,#+begin_export md
-{{< youtube %^{youtube} >}}
-,#+end_export
-%?
-" :prepend t :jump-to-captured t)
+          ("av" "Art Videos" plain
+           (file+function
+            "~/DCIM/content/art--all.org"
+            my-capture-top-level)
+           "* TODO %^{title} :videos:painter:krita:artrage:%(format-time-string \"%Y\"):
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: %<%Y%m%d%H%M%S>--%\\1-%\\2
+  :EXPORT_HUGO_SECTION: art--videos
+  :EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
+  :EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /art--videos/%<%Y%m%d%H%M%S>--%\\1-%\\2.jpg
+  :VIDEO:
+  :END:
+  ,#+begin_export md
+  {{< youtube %^{youtube} >}}
+  ,#+end_export
+  %?
+  " :prepend t :jump-to-captured t)
 
-        ("aa" "Art" plain
-         (file+function
-          "~/DCIM/content/art--all.org"
-          my-capture-top-level)
-         "* TODO %^{title} :painter:krita:artrage:%(format-time-string \"%Y\"):
-:PROPERTIES:
-:EXPORT_FILE_NAME: %\\1
-:EXPORT_HUGO_SECTION: art--all
-:EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /art--all/%\\1.jpg
-:VIDEO:
-:END:
-,#+attr_org: :width 300px
-,#+attr_html: :width 100%
-,#+begin_export md
-,#+end_export
-%?
-" :prepend t :jump-to-captured t)))
+          ("aa" "Art" plain
+           (file+function
+            "~/DCIM/content/art--all.org"
+            my-capture-top-level)
+           "* TODO %^{title} :painter:krita:artrage:%(format-time-string \"%Y\"):
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: %\\1
+  :EXPORT_HUGO_SECTION: art--all
+  :EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
+  :EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /art--all/%\\1.jpg
+  :VIDEO:
+  :END:
+  ,#+attr_org: :width 300px
+  ,#+attr_html: :width 100%
+  ,#+begin_export md
+  ,#+end_export
+  %?
+  " :prepend t :jump-to-captured t)))
 
 #+end_src
 
@@ -2202,46 +2209,46 @@ Customizes Org Capture templates for quickly capturing notes, tasks, and other i
 Demonstrates the use of `use-package` to neatly organize package configuration and lazy loading, improving startup times and making the configuration more readable.
 
 #+begin_src elisp
-;;
-;; -> use-package
-;;
-(use-package doom-themes)
-(use-package ef-themes)
-(use-package gruvbox-theme)
-(use-package htmlize)
-(use-package org-kanban)
+  ;;
+  ;; -> use-package
+  ;;
+  (use-package doom-themes)
+  (use-package ef-themes)
+  (use-package gruvbox-theme)
+  (use-package htmlize)
+  (use-package org-kanban)
 
-(use-package rainbow-mode
-  :diminish rainbow-mode
-  :hook
-  (prog-mode . rainbow-mode)
-  (conf-space-mode . rainbow-mode)
-  (org-mode . rainbow-mode))
+  (use-package rainbow-mode
+    :diminish rainbow-mode
+    :hook
+    (prog-mode . rainbow-mode)
+    (conf-space-mode . rainbow-mode)
+    (org-mode . rainbow-mode))
 
-(use-package ox-hugo
-  :defer t
-  :config
-  (setq org-hugo-front-matter-format "yaml"))
+  (use-package ox-hugo
+    :defer t
+    :config
+    (setq org-hugo-front-matter-format "yaml"))
 
-(use-package deadgrep
-  :config
-  (setq-default deadgrep--search-case 'ignore)
-  :custom
-  (deadgrep-max-buffers 1)
-  (deadgrep-extra-arguments '("--no-config")))
-;; (deadgrep-extra-arguments '("--no-config" "--no-ignore" "--no-ignore-vcs")))
+  (use-package deadgrep
+    :config
+    (setq-default deadgrep--search-case 'ignore)
+    :custom
+    (deadgrep-max-buffers 1)
+    (deadgrep-extra-arguments '("--no-config")))
+  ;; (deadgrep-extra-arguments '("--no-config" "--no-ignore" "--no-ignore-vcs")))
 
-(use-package ready-player
-  :init
-  (ready-player-mode 1)
-  :custom
-  (ready-player-thumbnail-max-pixel-height 200)
-  (ready-player-autoplay nil)
-  (ready-player-repeat t)
-  (ready-player-shuffle t)
-  (ready-player-open-playback-commands
-   '((ready-player-is-audio-p "mplayer")
-     (ready-player-is-video-p "mpv"))))
+  (use-package ready-player
+    :init
+    (ready-player-mode 1)
+    :custom
+    (ready-player-thumbnail-max-pixel-height 200)
+    (ready-player-autoplay nil)
+    (ready-player-repeat t)
+    (ready-player-shuffle t)
+    (ready-player-open-playback-commands
+     '((ready-player-is-audio-p "mplayer")
+       (ready-player-is-video-p "mpv"))))
 
 #+end_src
 
