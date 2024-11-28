@@ -875,23 +875,35 @@ and displaying only specified PROPERTIES-TO-DISPLAY (e.g., '(\"ID\" \"PRIORITY\"
 (setq tab-bar-close-button-show nil)
 
 ;;
-;; -> windows-specific-core
+;; -> windows-specific
 ;;
+
 (when (eq system-type 'windows-nt)
   (setq home-dir "c:/users/jimbo")
   (let ((xPaths
          `(,(expand-file-name "~/bin")
+           ,(expand-file-name "~/bin/PortableGit/bin")
+           ,(expand-file-name "~/bin/PortableGit/usr/bin")
+           ,(expand-file-name "~/bin/Apache-Subversion/bin/")
+           ,(expand-file-name "~/bin/svn2git-2.4.0/bin")
+           ,(expand-file-name "~/bin/clang/bin")
+           ,(expand-file-name "~/bin/find")
+           ,(expand-file-name "~/bin/omnisharp-win-x64")
            "c:/GnuWin32/bin"
            "c:/GNAT/2021/bin")))
     (setenv "PATH" (mapconcat 'identity xPaths ";"))
     (setq exec-path (append xPaths (list "." exec-directory))))
+
   (custom-theme-set-faces
    'user
-   '(variable-pitch ((t (:family "Consolas" :height 140 :weight normal))))
-   '(fixed-pitch ((t ( :family "Consolas" :height 140)))))
-  (setq font-general "Consolas 14")
+   '(variable-pitch ((t (:family "Consolas" :height 110 :weight normal))))
+   '(fixed-pitch ((t ( :family "Consolas" :height 110)))))
+
+  (setq font-general "Consolas 11")
   (set-frame-font font-general nil t)
   (add-to-list 'default-frame-alist `(font . ,font-general)))
+
+(setq tab-bar-show 1)
 
 ;;
 ;; -> linux-specific-core
@@ -1902,10 +1914,10 @@ programming modes based on basic space / tab indentation."
 ;; -> completion
 ;;
 
-(use-package capf-autosuggest
-  :hook
-  (eshell-mode . capf-autosuggest-mode)
-  (shell-mode . capf-autosuggest-mode))
+(use-package capf-autosuggest)
+
+(add-hook 'eshell-mode-hook #'capf-autosuggest-mode)
+(add-hook 'shell-mode-hook #'capf-autosuggest-mode)
 
 (use-package eglot
   :hook
@@ -1997,6 +2009,7 @@ programming modes based on basic space / tab indentation."
 ;; -> keys-other
 ;;
 (global-set-key (kbd "M-s e") #'my/push-block)
+(bind-key* (kbd "M-s c") #'cfw:open-org-calendar)
 
 ;;
 ;; -> keybinding
@@ -2004,6 +2017,9 @@ programming modes based on basic space / tab indentation."
 
 (global-set-key (kbd "C-c b") #'(lambda ()(interactive)(async-shell-command "do_backup home" "*backup*")))
 (global-set-key (kbd "C-c c") #'org-capture)
+(bind-key* (kbd "C-c ,") #'embark-act)
+(define-key minibuffer-local-map (kbd "C-c c") #'embark-collect)
+(define-key minibuffer-local-map (kbd "C-c e") #'embark-export)
 
 ;;
 ;; -> defun
@@ -2116,21 +2132,13 @@ programming modes based on basic space / tab indentation."
       ("t" "Synonyms" powerthesaurus-lookup-synonyms-dwim)
       ("a" "Antonyms" powerthesaurus-lookup-antonyms-dwim)]
      ["Spelling Tools"
-      ("s" "Jinx" (lambda ()(interactive)
-                    (flymake-proselint-setup)
+      ("l" "Jinx" (lambda ()(interactive)
                     (call-interactively 'jinx-mode)
                     (call-interactively 'writegood-mode)
                     (call-interactively 'flymake-mode)))
-      ("j" "Jinx correct" jinx-correct)
-      ("l" "Jinx correct" jinx-correct)]
+      ("s" "Jinx correct" jinx-correct)]
      ["Dictionary"
-      ("d" "Lookup" dictionary-lookup-definition)]
-     ["languagetool"
-      ("m" "Server Mode" languagetool-server-mode)
-      ("c" "Correct" languagetool-correct-at-point)
-      ("e" "Server Start" languagetool-server-start)
-      ("p" "Server Stop" languagetool-server-stop)
-      ]]
+      ("d" "Lookup" dictionary-lookup-definition)]]
     )
   :bind
   ("C-c s" . my/transient-spelling))
@@ -2202,37 +2210,6 @@ programming modes based on basic space / tab indentation."
 
 (bind-key* (kbd "C-c '") #'popper-toggle)
 (bind-key* (kbd "C-c ;") #'popper-toggle-type)
-
-;;
-;; -> windows-specific
-;;
-
-(when (eq system-type 'windows-nt)
-  (setq home-dir "c:/users/jimbo")
-  (let ((xPaths
-         `(,(expand-file-name "~/bin")
-           ,(expand-file-name "~/bin/PortableGit/bin")
-           ,(expand-file-name "~/bin/PortableGit/usr/bin")
-           ,(expand-file-name "~/bin/Apache-Subversion/bin/")
-           ,(expand-file-name "~/bin/svn2git-2.4.0/bin")
-           ,(expand-file-name "~/bin/clang/bin")
-           ,(expand-file-name "~/bin/find")
-           ,(expand-file-name "~/bin/omnisharp-win-x64")
-           "c:/GnuWin32/bin"
-           "c:/GNAT/2021/bin")))
-    (setenv "PATH" (mapconcat 'identity xPaths ";"))
-    (setq exec-path (append xPaths (list "." exec-directory))))
-
-  (custom-theme-set-faces
-   'user
-   '(variable-pitch ((t (:family "Consolas" :height 110 :weight normal))))
-   '(fixed-pitch ((t ( :family "Consolas" :height 110)))))
-
-  (setq font-general "Consolas 11")
-  (set-frame-font font-general nil t)
-  (add-to-list 'default-frame-alist `(font . ,font-general)))
-
-(setq tab-bar-show 1)
 
 ;;
 ;; -> linux specific
@@ -2379,3 +2356,45 @@ programming modes based on basic space / tab indentation."
       (:filter . chatgpt-shell-ollama--extract-ollama-response)
       (:payload . chatgpt-shell-ollama-make-payload)
       (:url . chatgpt-shell-ollama--make-url)))))
+
+;;
+;; -> project
+;;
+
+(defun my/project-root ()
+  "Return project root defined by user."
+  (interactive)
+  (let ((root default-directory)
+        (project (project-current)))
+    (when project
+      (cond ((fboundp 'project-root)
+             (setq root (project-root project)))))))
+
+(add-to-list 'project-switch-commands '(project-dired "Dired") t)
+
+(defun my/project-create-compilation-search-path ()
+  "Populate the 'compilation-search-path' variable.
+With directories under project root using find."
+  (interactive)
+  (let ((find-command
+         (concat "find " (project-root (project-current t))
+                 " \\( -path \\*/.local -o -path \\*/.config -o -path \\*/.svn -o -path \\*/.git -o -path \\*/nas \\) -prune -o -type d -print")))
+    (setq compilation-search-path
+          (split-string
+           (shell-command-to-string find-command)
+           "\n" t))))
+
+(defun my/project-compile (arg)
+  "Bespoke project compile based on ARG."
+  (interactive "p")
+  (let ((default-directory (project-root (project-current t))))
+    (cond ((= arg 1)
+           (setq compile-command
+                 (concat "make " buffer-file-name)))
+          (t
+           (setq compile-command "make")))
+    (compile compile-command)))
+
+(setq project-vc-extra-root-markers '(".project"))
+
+(global-set-key (kbd "C-x p c") 'my/project-compile)
