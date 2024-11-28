@@ -2540,21 +2540,13 @@ Configures spell checking tools and dictionaries, integrating external tools lik
       ("t" "Synonyms" powerthesaurus-lookup-synonyms-dwim)
       ("a" "Antonyms" powerthesaurus-lookup-antonyms-dwim)]
      ["Spelling Tools"
-      ("s" "Jinx" (lambda ()(interactive)
-                    (flymake-proselint-setup)
+      ("l" "Jinx" (lambda ()(interactive)
                     (call-interactively 'jinx-mode)
                     (call-interactively 'writegood-mode)
                     (call-interactively 'flymake-mode)))
-      ("j" "Jinx correct" jinx-correct)
-      ("l" "Jinx correct" jinx-correct)]
+      ("s" "Jinx correct" jinx-correct)]
      ["Dictionary"
-      ("d" "Lookup" dictionary-lookup-definition)]
-     ["languagetool"
-      ("m" "Server Mode" languagetool-server-mode)
-      ("c" "Correct" languagetool-correct-at-point)
-      ("e" "Server Start" languagetool-server-start)
-      ("p" "Server Stop" languagetool-server-stop)
-      ]]
+      ("d" "Lookup" dictionary-lookup-definition)]]
     )
   :bind
   ("C-c s" . my/transient-spelling))
