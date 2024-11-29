@@ -809,6 +809,24 @@ and displaying only specified PROPERTIES-TO-DISPLAY (e.g., '(\"ID\" \"PRIORITY\"
 (add-hook 'ediff-prepare-buffer-hook (lambda () (visual-line-mode -1)))
 
 ;;
+;; -> project
+;;
+
+(defun my/project-create-compilation-search-path ()
+  "Populate the 'compilation-search-path' variable.
+With directories under project root using find."
+  (interactive)
+  (let ((find-command
+         (concat "find " (project-root (project-current t))
+                 " \\( -path \\*/.local -o -path \\*/.config -o -path \\*/.svn -o -path \\*/.git -o -path \\*/nas \\) -prune -o -type d -print")))
+    (setq compilation-search-path
+          (split-string
+           (shell-command-to-string find-command)
+           "\n" t))))
+
+(setq project-vc-extra-root-markers '(".project"))
+
+;;
 ;; -> indentation
 ;;
 (setq-default indent-tabs-mode nil)
@@ -922,52 +940,46 @@ and displaying only specified PROPERTIES-TO-DISPLAY (e.g., '(\"ID\" \"PRIORITY\"
 ;;
 (global-set-key (kbd "C-c t") 'toggle-centered-buffer)
 ;;
-(defun my/md-to-org-convert-buffer (&optional offset)
-  "Convert the current buffer from Markdown to Org-mode format, adjusting heading levels by OFFSET.
-    If OFFSET is positive, promote headings (move left). If OFFSET is negative, demote headings (move right)."
-  (interactive "p") ;; `p` allows capturing the universal argument as an integer
-  (let ((offset (or offset 0))) ;; Default to 0 if no argument is provided
-    (save-excursion
-      ;; Lists: Translate `-`, `*`, or `+` lists to Org-mode lists
-      (goto-char (point-min))
-      (while (re-search-forward "^\\([ \t]*\\)[*-+] \\(.*\\)$" nil t)
-        (replace-match (concat (match-string 1) "- \\2")))
-      ;; Bold: `**bold**` -> `*bold*` only if directly adjacent
-      (goto-char (point-min))
-      (while (re-search-forward "\\b\\*\\*\\([^ ]\\(.*?\\)[^ ]\\)\\*\\*\\b" nil t)
-        (replace-match "*\\1*"))
-      ;; Italics: `_italic_` -> `/italic/`
-      (goto-char (point-min))
-      (while (re-search-forward "\\b_\\([^ ]\\(.*?\\)[^ ]\\)_\\b" nil t)
-        (replace-match "/\\1/"))
-      ;; Links: `[text](url)` -> `[[url][text]]`
-      (goto-char (point-min))
-      (while (re-search-forward "\\[\\(.*?\\)\\](\\(.*?\\))" nil t)
-        (replace-match "[[\\2][\\1]]"))
-      ;; Code blocks: Markdown ```lang ... ``` to Org #+begin_src ... #+end_src
-      (goto-char (point-min))
-      (while (re-search-forward "```\\(.*?\\)\\(?:\n\\|\\s-\\)\\(\\(?:.\\|\n\\)*?\\)```" nil t)
-        (replace-match "#+begin_src \\1\n\\2#+end_src"))
-      ;; Inline code: `code` -> =code=
-      (goto-char (point-min))
-      (while (re-search-forward "`\\(.*?\\)`" nil t)
-        (replace-match "=\\1="))
-      ;; Horizontal rules: `---` or `***` -> `-----`
-      (goto-char (point-min))
-      (while (re-search-forward "^\\(-{3,}\\|\\*{3,}\\)$" nil t)
-        (replace-match "-----"))
-      ;; Images: `![alt text](url)` -> `[[url]]`
-      (goto-char (point-min))
-      (while (re-search-forward "!\\[.*?\\](\\(.*?\\))" nil t)
-        (replace-match "[[\\1]]"))
-      (goto-char (point-min))
-      ;; Headers: Adjust '#' based on OFFSET
-      (while (re-search-forward "^\\(#+\\) \\(.*\\)$" nil t)
-        (let* ((current-level (length (match-string 1)))
-               (new-level (max 1 (+ current-level offset)))) ;; Ensure level doesn't go below 1
-          (replace-match (concat (make-string new-level ?*) " \\2"))))
-      ;; Remove any trailing whitespace for a clean Org-mode file
-      (delete-trailing-whitespace))))
+(defun my/md-to-org-convert-buffer ()
+  "Convert the current buffer from Markdown to Org-mode format"
+  (interactive)
+  (save-excursion
+    ;; Lists: Translate `-`, `*`, or `+` lists to Org-mode lists
+    (goto-char (point-min))
+    (while (re-search-forward "^\\([ \t]*\\)[*-+] \\(.*\\)$" nil t)
+      (replace-match (concat (match-string 1) "- \\2")))
+    ;; Bold: `**bold**` -> `*bold*` only if directly adjacent
+    (goto-char (point-min))
+    (while (re-search-forward "\\*\\*\\([^ ]\\(.*?\\)[^ ]\\)\\*\\*" nil t)
+      (replace-match "*\\1*"))
+    ;; Italics: `_italic_` -> `/italic/`
+    (goto-char (point-min))
+    (while (re-search-forward "\\b_\\([^ ]\\(.*?\\)[^ ]\\)_\\b" nil t)
+      (replace-match "/\\1/"))
+    ;; Links: `[text](url)` -> `[[url][text]]`
+    (goto-char (point-min))
+    (while (re-search-forward "\\[\\(.*?\\)\\](\\(.*?\\))" nil t)
+      (replace-match "[[\\2][\\1]]"))
+    ;; Code blocks: Markdown ```lang ... ``` to Org #+begin_src ... #+end_src
+    (goto-char (point-min))
+    (while (re-search-forward "```\\(.*?\\)\\(?:\n\\|\\s-\\)\\(\\(?:.\\|\n\\)*?\\)```" nil t)
+      (replace-match "#+begin_src \\1\n\\2#+end_src"))
+    ;; Inline code: `code` -> =code=
+    (goto-char (point-min))
+    (while (re-search-forward "`\\(.*?\\)`" nil t)
+      (replace-match "=\\1="))
+    ;; Horizontal rules: `---` or `***` -> `-----`
+    (goto-char (point-min))
+    (while (re-search-forward "^\\(-{3,}\\|\\*{3,}\\)$" nil t)
+      (replace-match "-----"))
+    ;; Images: `![alt text](url)` -> `[[url]]`
+    (goto-char (point-min))
+    (while (re-search-forward "!\\[.*?\\](\\(.*?\\))" nil t)
+      (replace-match "[[\\1]]"))
+    (goto-char (point-min))
+    ;; Headers: Adjust '#'
+    (while (re-search-forward "^\\(#+\\)" nil t)
+      (replace-match (make-string (length (match-string 1)) ?*) nil nil))))
 ;;
 (defun my/md-to-org-convert-file (input-file output-file)
   "Convert a Markdown file INPUT-FILE to an Org-mode file OUTPUT-FILE."
@@ -976,30 +988,26 @@ and displaying only specified PROPERTIES-TO-DISPLAY (e.g., '(\"ID\" \"PRIORITY\"
     (md-to-org-convert-buffer)
     (write-file output-file)))
 ;;
-(defun my/convert-markdown-clipboard-to-org (&optional arg)
-  "Convert Markdown content from clipboard to Org format and insert it at point.
-    With a universal argument ARG, adjust heading levels based on ARG."
-  (interactive "P") ;; Capture universal argument
+(defun my/convert-markdown-clipboard-to-org ()
+  "Convert Markdown content from clipboard to Org format and insert it at point."
+  (interactive)
   (let ((markdown-content (current-kill 0))
         (original-buffer (current-buffer)))
     (with-temp-buffer
       (insert markdown-content)
-      (my/md-to-org-convert-buffer (prefix-numeric-value arg))
+      (my/md-to-org-convert-buffer)
       (let ((org-content (buffer-string)))
         (with-current-buffer original-buffer
           (insert org-content))))))
 ;;
-(global-set-key (kbd "M-s i") #'my/convert-markdown-clipboard-to-org)
-;;
-;; (setq org-export-with-drawers t)
-;;
-(defun org-promote-all-headings ()
+(defun org-promote-all-headings (&optional arg)
   "Promote all headings in the current Org buffer along with their subheadings."
-  (interactive)
-  (save-excursion
-    (goto-char (point-min))
-    (while (outline-next-heading)
-      (org-promote-subtree))))
+  (interactive "p")
+  (org-map-entries
+   (lambda () 
+     (dotimes (_ arg) (org-promote)))))
+;;
+(global-set-key (kbd "M-s i") #'my/convert-markdown-clipboard-to-org)
 
 ;;
 ;; -> LLM-core
