@@ -109,14 +109,16 @@ Defines custom keybindings for navigating through files and Emacs features like 
 (define-key my-jump-keymap (kbd "f") #'find-name-dired)
 (define-key my-jump-keymap (kbd "g") (lambda () (interactive) (find-file "~/.config")))
 (define-key my-jump-keymap (kbd "h") (lambda () (interactive) (find-file "~")))
-(define-key my-jump-keymap (kbd "j") (lambda () (interactive) (find-file "/mnt/hgfs/SharedVM/aaa--todo.org")))
-(define-key my-jump-keymap (kbd "k") (lambda () (interactive) (find-file "/mnt/hgfs/SharedVM/confluence--emacs-init.org")))
+(define-key my-jump-keymap (kbd "j") (lambda () (interactive) (find-file "~/DCIM/content/aaa--todo.org")))
+(define-key my-jump-keymap (kbd "k")
+            (lambda () (interactive)
+              (find-file (concat user-emacs-directory "emacs--core.org"))))
 (define-key my-jump-keymap (kbd "l") #'recentf-open-files)
 (define-key my-jump-keymap (kbd "m") #'customize-themes)
 (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/nas")))
 (define-key my-jump-keymap (kbd "o") #'bookmark-jump)
 (define-key my-jump-keymap (kbd "r") (lambda () (interactive) (switch-to-buffer "*scratch*")))
-(define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "/mnt/hgfs/SharedVM")))
+(define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
 (define-key my-jump-keymap (kbd "-") #'tab-close)
 #+end_src
 
@@ -160,7 +162,6 @@ Configures a sparse keymap for miscellaneous actions like evaluating expressions
 (global-set-key (kbd "M-s g") #'rgrep)
 (global-set-key (kbd "M-s h") #'my/mark-block)
 (global-set-key (kbd "M-s j") #'eval-defun)
-(global-set-key (kbd "M-s f") #'my/find-file)
 (global-set-key (kbd "M-s l") #'eval-expression)
 (global-set-key (kbd "M-s =") #'ediff-buffers)
 (global-set-key (kbd "M-s w") #'(lambda ()(interactive)
@@ -171,7 +172,7 @@ Configures a sparse keymap for miscellaneous actions like evaluating expressions
                                   (org-odt-export-to-odt)
                                   (async-shell-command
                                    "libreoffice --headless --convert-to docx confluence--setup-sles.odt" "*create-docs*")))
-(global-set-key (kbd "M-s z") #'my/copy-buffer-to-kill-ring)
+(global-set-key (kbd "M-s ;") #'my/copy-buffer-to-kill-ring)
 #+end_src
 
 * keybinding-core
@@ -183,6 +184,7 @@ Demonstrates a broad set of global keybindings for common actions like saving bu
 ;; -> keybinding-core
 ;;
 (global-set-key (kbd "C-=") (lambda ()(interactive)(text-scale-adjust 1)))
+(global-set-key (kbd "C--") (lambda ()(interactive)(text-scale-adjust -1)))
 (global-set-key (kbd "C-c a") #'org-agenda)
 (global-set-key (kbd "C-c d") #'my/dired-duplicate-file)
 (global-set-key (kbd "C-c h") #'my/shell-create)
@@ -213,7 +215,6 @@ Demonstrates a broad set of global keybindings for common actions like saving bu
 (global-set-key (kbd "M-3") #'split-window-horizontally)
 (global-set-key (kbd "M-1") #'delete-other-windows)
 (global-set-key (kbd "M-9") #'hippie-expand)
-;;  (global-set-key (kbd "M-;") 'my/comment-or-uncomment)
 (global-set-key (kbd "M-;") 'delete-other-windows)
 (global-set-key (kbd "M-[") #'yank)
 (global-set-key (kbd "M-]") #'yank-pop)
@@ -227,7 +228,6 @@ Demonstrates a broad set of global keybindings for common actions like saving bu
 (global-set-key (kbd "M-u") #'tab-bar-switch-to-prev-tab)
 (global-unset-key (kbd "C-h h"))
 (global-unset-key (kbd "C-t"))
-(global-set-key (kbd "C--") (lambda ()(interactive)(text-scale-adjust -1)))
 (with-eval-after-load 'ibuffer
   (define-key ibuffer-mode-map (kbd "C-o") nil)
   (define-key ibuffer-mode-map (kbd "M-j") nil))
@@ -278,7 +278,6 @@ This broad category includes a wide range of `setq` configurations that modify t
 (setq completion-styles '(basic partial-completion emacs22))
 (setq custom-safe-themes t)
 (setq delete-selection-mode nil)
-(setq dired-dwim-target t)
 (setq enable-local-variables :all)
 (setq frame-title-format "%f")
 (setq kill-whole-line t)
@@ -349,7 +348,7 @@ Places for `custom-set-variables` and `custom-set-faces` used by Emacs's customi
  '(window-divider ((t (:foreground "black"))))
  '(org-tag ((t (:height 0.99))))
  '(vertical-border ((t (:foreground "#000000")))))
-
+;;
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -753,13 +752,12 @@ Enhances Dired, the directory editor, with additional functionalities like async
 ;;
 ;; -> dired-core
 ;;
+(setq dired-dwim-target t)
 (setq dired-listing-switches "-alGgh")
-;; I don't ever want a confirmation of a deletion
 (setq dired-auto-revert-buffer t)
 (setq dired-confirm-shell-command nil)
 (setq dired-no-confirm t)
 (setq dired-deletion-confirmer '(lambda (x) t))
-;; always recursively delete
 (setq dired-recursive-deletes 'always)
 (with-eval-after-load 'dired
   (define-key dired-mode-map (kbd "C-o") nil)
@@ -795,7 +793,6 @@ Customizes the Imenu index-building functionality for improved navigation within
 ;;
 ;; -> imenu-core
 ;;
-
 (defun my-imenu-create-index ()
   "Create an index using definitions starting with ';; ->'."
   (let ((index-alist '())
@@ -810,9 +807,9 @@ Customizes the Imenu index-building functionality for improved navigation within
                               index-alist
                               (lambda (a b)
                                 (string< (car a) (car b)))))))
-
+;;
 ;; (setq imenu-create-index-function #'my-imenu-create-index)
-
+;;
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
             (setq truncate-lines t)
@@ -820,14 +817,13 @@ Customizes the Imenu index-building functionality for improved navigation within
             (setq imenu-generic-expression
                   '((nil "^;;[[:space:]]+-> \\(.*\\)$" 1)))
             (imenu-add-menubar-index)))
-
+;;
 (add-hook 'conf-space-mode-hook
           (lambda ()
             (setq imenu-sort-function 'imenu--sort-by-name)
             (setq imenu-generic-expression
                   '((nil "^#[[:space:]]+-> \\(.*\\)$" 1)))
             (imenu-add-menubar-index)))
-
 #+end_src
 
 * recentf-core
@@ -866,9 +862,9 @@ Customizes the modeline for displaying active modes, buffer names, or other cont
        'mode-line-modes
        'mode-line-misc-info
        '(:eval (format " | Point: %d" (point)))))
-
+;;
 (setq-default mode-line-format my/mode-line-format)
-
+;;
 (defun my/toggle-mode-line ()
   "Toggle the visibility of the mode-line by checking its current state."
   (interactive)
@@ -880,7 +876,6 @@ Customizes the modeline for displaying active modes, buffer names, or other cont
       (setq-default mode-line-format nil)
       (setq frame-title-format mode-line-format)))
   (force-mode-line-update t))
-
 #+end_src
 
 * find-core
@@ -944,6 +939,7 @@ Configures spell checking tools and dictionaries, integrating external tools lik
                                     (flyspell-buffer)
                                     (flyspell-mode)))
 (global-set-key (kbd "C-c s s") #'ispell-word)
+(global-set-key (kbd "C-c s j") #'ispell-word)
 #+end_src
 
 * gdb-core
@@ -1000,21 +996,21 @@ Customizes Emacs's project management features for handling multiple projects, d
 ;;
 ;; -> project-core
 ;;
-
 (defun my/project-create-compilation-search-path ()
   "Populate the 'compilation-search-path' variable.
 With directories under project root using find."
   (interactive)
   (let ((find-command
          (concat "find " (project-root (project-current t))
-                 " \\( -path \\*/.local -o -path \\*/.config -o -path \\*/.svn -o -path \\*/.git -o -path \\*/nas \\) -prune -o -type d -print")))
+                 " \\( -path \\*/.local -o -path \\*/.config -o
+ -path \\*/.svn -o -path \\*/.git -o -path \\*/nas \\) -prune -o
+ -type d -print")))
     (setq compilation-search-path
           (split-string
            (shell-command-to-string find-command)
            "\n" t))))
 
 (setq project-vc-extra-root-markers '(".project"))
-
 #+end_src
 
 * identation-core
@@ -1617,7 +1613,6 @@ The Selected Window Accent Mode is an Emacs package designed to visually disting
 
 (defun my/prog-folding ()
   "Enable and configure outline minor mode for code folding.
-
 This function sets up the outline minor mode tailored for
 programming modes based on basic space / tab indentation."
   (interactive)
@@ -1651,8 +1646,7 @@ programming modes based on basic space / tab indentation."
       ("w" "What's Wrong With Last Command" chatgpt-shell-eshell-whats-wrong-with-last-command)]
      ["Miscellaneous"
       ("i" "Describe Image" chatgpt-shell-describe-image)
-      ("m" "Swap Model" chatgpt-shell-swap-model)
-      ]
+      ("m" "Swap Model" chatgpt-shell-swap-model)]
      ])
 
   (global-set-key (kbd "C-c g") 'chatgpt-shell-transient))
@@ -2113,6 +2107,7 @@ Note that due to my window split bindings with numeric keys I have unbound those
        ("~/source/repos" . 2)
        ("~/bin" . 1)
        ("~/.emacs.d" . 1)
+       ("~/.emacs.d.core" . 1)
        ("~/DCIM/Art/Content" . 2)
        ("~/DCIM/themes" . 2)))))
 
@@ -2172,6 +2167,7 @@ Demonstrates the use of `use-package` to neatly organize package configuration a
   (org-mode . org-superstar-mode))
 
 #+end_src
+
 * image-dired
 
 Customizes the behaviour and appearance of Image-Dired, the image management extension of Dired, streamlining the browsing and manipulation of image files.
@@ -2293,7 +2289,10 @@ Customizes the behaviour and appearance of Image-Dired, the image management ext
 ;; -> keys-navigation
 ;;
 
-(define-key my-jump-keymap (kbd "k") (lambda () (interactive) (find-file (concat user-emacs-directory "emacs--init.org"))))
+(define-key my-jump-keymap (kbd "f") #'my/find-file)
+(define-key my-jump-keymap (kbd "k")
+            (lambda () (interactive)
+              (find-file (concat user-emacs-directory "emacs--init.org"))))
 (define-key my-jump-keymap (kbd "l") #'recentf-open)
 
 #+end_src
@@ -2472,11 +2471,6 @@ Defines a suite of custom functions to extend Emacs's functionality tailored to 
           (message "Copied to kill ring: %s" org-link))
       (message "No file under the cursor"))))
 ;;
-(defun my/copy-buffer-to-kill-ring ()
-  "Copy the entire buffer to the kill ring without changing the point."
-  (interactive)
-  (save-excursion
-    (kill-ring-save (point-min) (point-max))))
 #+end_src
 
 * org
@@ -2491,13 +2485,11 @@ Extends and customizes Org mode for document structuring, note-taking, and proje
 (setq org-src-tab-acts-natively t
       org-edit-src-content-indentation 0
       org-log-done t
-      org-use-speed-commands t
       org-tags-sort-function 'org-string-collate-greaterp
       org-export-with-sub-superscripts nil
       org-deadline-warning-days 365
       org-hugo-base-dir "~/DCIM"
       org-image-actual-width (list 50)
-      org-startup-indented t
       org-return-follows-link t
       org-use-fast-todo-selection 'expert
       org-todo-keywords
@@ -2522,8 +2514,8 @@ Configures various visual aspects of Emacs, including menu bar, toolbar, and scr
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 80)
-(add-to-list 'default-frame-alist '(alpha-background . 80))
+(set-frame-parameter nil 'alpha-background 90)
+(add-to-list 'default-frame-alist '(alpha-background . 90))
 #+end_src
 
 * dired
@@ -2535,11 +2527,8 @@ Enhances Dired, the directory editor, with additional functionalities like async
 ;; -> dired
 ;;
 (with-eval-after-load 'dired
-  (define-key dired-mode-map (kbd "C-o") nil)
   (define-key dired-mode-map (kbd "W") 'dired-do-async-shell-command)
-  (define-key dired-mode-map (kbd "-") 'dired-jump)
   (define-key dired-mode-map (kbd "b") 'my/dired-file-to-org-link)
-  (define-key dired-mode-map (kbd "_") 'dired-create-empty-file)
   (define-key dired-mode-map (kbd "C-c i") 'my/image-dired-sort)
   (define-key dired-mode-map (kbd "C-c u") 'my/dired-du)
   (define-key dired-mode-map (kbd "C-c d") 'my/dired-duplicate-file))
@@ -2579,6 +2568,7 @@ Configures spell checking tools and dictionaries, integrating external tools lik
                     (call-interactively 'jinx-mode)
                     (call-interactively 'writegood-mode)
                     (call-interactively 'flymake-mode)))
+      ("j" "Jinx correct" jinx-correct)
       ("s" "Jinx correct" jinx-correct)]
      ["Dictionary"
       ("d" "Lookup" dictionary-lookup-definition)]]
@@ -2586,8 +2576,6 @@ Configures spell checking tools and dictionaries, integrating external tools lik
   :bind
   ("C-c s" . my/transient-spelling))
 
-(setq ispell-local-dictionary "en_GB")
-(setq ispell-program-name "hunspell")
 (setq dictionary-default-dictionary "*")
 (setq dictionary-server "dict.org")
 (setq dictionary-use-single-buffer t)
@@ -2621,12 +2609,6 @@ Demonstrates customizations for shell integration within Emacs, optimizing setti
   ;; (define-key eshell-mode-map (kbd "<tab>") #'company-complete)
   (define-key eshell-hist-mode-map (kbd "M-r") #'consult-history))
 
-(defun my/shell-hook ()
-  "Set up company completions to be a little more fish like."
-  (interactive)
-  ;; (define-key shell-mode-map (kbd "<tab>") #'company-complete)
-  (define-key shell-mode-map (kbd "M-r") #'consult-history))
-
 (use-package eshell
   :config
   (setq eshell-scroll-to-bottom-on-input t)
@@ -2636,12 +2618,6 @@ Demonstrates customizations for shell integration within Emacs, optimizing setti
   (setq eshell-hist-ignoredups t) ;; Ignore duplicates
   :hook
   (eshell-mode . my/eshell-hook))
-
-(use-package shell
-  :config
-  (setq-local tab-always-indent 'complete)
-  :hook
-  (shell-mode . my/shell-hook))
 
 (use-package popper
   :init
@@ -2682,19 +2658,6 @@ Curates configurations specific to Linux, making adjustments for paths, fonts, a
   (define-key my-jump-keymap (kbd "y") #'emms)
 
   (setq diary-file "~/DCIM/content/diary.org")
-
-  (custom-theme-set-faces
-   'user
-   '(variable-pitch ((t (:family "DejaVu Sans" :height 110 :weight normal))))
-   '(fixed-pitch ((t ( :family "Source Code Pro" :height 120)))))
-
-  ;; (setq font-general "Noto Sans Mono 11")
-  ;; (setq font-general "Source Code Pro 11")
-  ;; (setq font-general "Source Code Pro Light 11")
-  (setq font-general "Nimbus Mono PS 13")
-  ;; (setq font-general "Monospace 11")
-  (set-frame-font font-general nil t)
-  (add-to-list 'default-frame-alist `(font . ,font-general))
 
   (when (file-exists-p "~/source/repos/fd-find")
     (use-package fd-find
@@ -2830,6 +2793,7 @@ Turns on various modes like `global-font-lock-mode` for syntax highlighting and 
       (:url . chatgpt-shell-ollama--make-url)))))
 
 #+end_src
+
 * project
 
 Customizes Emacs's project management features for handling multiple projects, demonstrating configurations for project discovery, switching, and build command integration.
@@ -2838,29 +2802,6 @@ Customizes Emacs's project management features for handling multiple projects, d
 ;;
 ;; -> project
 ;;
-
-(defun my/project-root ()
-  "Return project root defined by user."
-  (interactive)
-  (let ((root default-directory)
-        (project (project-current)))
-    (when project
-      (cond ((fboundp 'project-root)
-             (setq root (project-root project)))))))
-
-(add-to-list 'project-switch-commands '(project-dired "Dired") t)
-
-(defun my/project-create-compilation-search-path ()
-  "Populate the 'compilation-search-path' variable.
-With directories under project root using find."
-  (interactive)
-  (let ((find-command
-         (concat "find " (project-root (project-current t))
-                 " \\( -path \\*/.local -o -path \\*/.config -o -path \\*/.svn -o -path \\*/.git -o -path \\*/nas \\) -prune -o -type d -print")))
-    (setq compilation-search-path
-          (split-string
-           (shell-command-to-string find-command)
-           "\n" t))))
 
 (defun my/project-compile (arg)
   "Bespoke project compile based on ARG."
@@ -2872,8 +2813,6 @@ With directories under project root using find."
           (t
            (setq compile-command "make")))
     (compile compile-command)))
-
-(setq project-vc-extra-root-markers '(".project"))
 
 (global-set-key (kbd "C-x p c") 'my/project-compile)
 
