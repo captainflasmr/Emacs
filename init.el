@@ -84,6 +84,35 @@
 (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
 (define-key my-jump-keymap (kbd "-") #'tab-close)
 
+(defun my/quick-window-jump ()
+  "Jump to a window by typing its assigned character label.
+Windows are labeled starting from the top-left window and proceed clockwise."
+  (interactive)
+  (let* ((window-list (my/get-windows-clockwise))
+         (window-keys (seq-take '("j" "k" "l" ";" "a" "s" "d" "f")
+                                (length window-list)))
+         (window-map (cl-pairlis window-keys window-list))
+         (key (read-key (format "Select window [%s]: " (string-join window-keys ", ")))))
+    (if-let ((selected-window (cdr (assoc (char-to-string key) window-map))))
+        (select-window selected-window)
+      (message "No window assigned to key: %c" key))))
+
+(defun my/get-windows-clockwise ()
+  "Return a list of windows in the current frame, ordered clockwise starting from the top-left window."
+  (let ((windows (window-list nil 'no-mini)))
+    (mapcar #'car
+            (sort (mapcar (lambda (w)
+                            (cons w (window-edges w)))
+                          windows)
+                  (lambda (a b)
+                    (let ((edges-a (cdr a))
+                          (edges-b (cdr b)))
+                      (or (< (cadr edges-a) (cadr edges-b))
+                          (and (= (cadr edges-a) (cadr edges-b)) ; Then compare left edges
+                               (< (car edges-a) (car edges-b))))))))))
+
+(global-set-key (kbd "M-a") #'my/quick-window-jump)
+
 ;;
 ;; -> keys-visual-core
 ;;
@@ -357,7 +386,8 @@
     (set-transient-map map t)))
 ;;
 (defun my/sync-tab-bar-to-theme ()
-  "Synchronize tab-bar faces with the current theme, and set mode-line background color interactively using `read-color`."
+  "Synchronize tab-bar faces with the current theme, and set
+mode-line background color interactively using `read-color`."
   (interactive)
   ;; Use `read-color` to get the mode-line background color from the user
   (let ((selected-color (read-color)))
@@ -380,11 +410,19 @@
                                             :box (:line-width 2 :color ,default-bg :style released-button)))))))))
 ;;
 (defun my/dired-du ()
-  "Run 'du -hc' on the directory under the cursor in Dired."
+  "Run 'du -hc' and count the total number of files in the directory under
+the cursor in Dired, then display the output in a buffer named *dired-du*."
   (interactive)
   (let ((current-dir (dired-get-file-for-visit)))
     (if (file-directory-p current-dir)
-        (dired-do-async-shell-command "du -hc" nil (list current-dir))
+        (let ((output-buffer-name "*dired-du*"))
+          (with-current-buffer (get-buffer-create output-buffer-name)
+            (erase-buffer)) ; Clear the buffer before running the command
+          (async-shell-command
+           (format "du -hc --max-depth=1 %s && echo && echo 'File counts per subdirectory:' && find %s -maxdepth 2 -type d -exec sh -c 'echo -n \"{}: \"; find \"{}\" -type f | wc -l' \\;"
+                   (shell-quote-argument current-dir)
+                   (shell-quote-argument current-dir))
+           output-buffer-name))
       (message "The current point is not a directory."))))
 ;;
 (defun darken-color (color percent)
@@ -649,6 +687,7 @@ and displaying only specified PROPERTIES-TO-DISPLAY (e.g., '(\"ID\" \"PRIORITY\"
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
 (setq inhibit-startup-screen t)
+(setq use-dialog-box nil)
 (setq window-divider-default-bottom-width 2)
 (setq window-divider-default-right-width 2)
 (setq window-divider-default-places t)
@@ -2021,6 +2060,7 @@ programming modes based on basic space / tab indentation."
 ;; -> keys-other
 ;;
 (global-set-key (kbd "M-s e") #'my/push-block)
+(global-set-key (kbd "M-s g") #'my/grep)
 (bind-key* (kbd "M-s c") #'cfw:open-org-calendar)
 
 ;;
@@ -2066,6 +2106,18 @@ programming modes based on basic space / tab indentation."
           (message "Copied to kill ring: %s" org-link))
       (message "No file under the cursor"))))
 ;;
+(defun my/grep (arg)
+  "Wrapper to grep with ARG."
+  (interactive "p")
+  (let ((search-term
+         (if (equal major-mode 'dired-mode)
+             (read-from-minibuffer "Search : ")
+           (read-from-minibuffer "Search : " (thing-at-point 'symbol)))))
+    (if (= arg 1)
+        (deadgrep search-term default-directory)
+      (progn
+        (setq current-prefix-arg nil)
+        (deadgrep search-term "~")))))
 
 ;;
 ;; -> org
@@ -2349,3 +2401,59 @@ programming modes based on basic space / tab indentation."
     (compile compile-command)))
 
 (global-set-key (kbd "C-x p c") 'my/project-compile)
+
+;;
+;; -> window-positioning
+;;
+(add-to-list 'display-buffer-alist
+             '("\\*kmonad" display-buffer-no-window
+               (allow-no-window . t)))
+
+(add-to-list 'display-buffer-alist
+             '("\\*Async" display-buffer-no-window
+               (allow-no-window . t)))
+
+(add-to-list 'display-buffer-alist
+             '("\\*Proced" display-buffer-same-window))
+
+(add-to-list 'display-buffer-alist
+             '("\\*Messages" display-buffer-same-window))
+
+(add-to-list 'display-buffer-alist
+             '("magit:" display-buffer-same-window))
+
+(add-to-list 'display-buffer-alist
+             '("\\*deadgrep"
+               (display-buffer-reuse-window display-buffer-in-direction)
+               (direction . leftmost)
+               (dedicated . t)
+               (window-width . 0.33)
+               (inhibit-same-window . t)))
+
+(add-to-list 'display-buffer-alist
+             '("\\*compilation"
+               (display-buffer-reuse-window display-buffer-in-direction)
+               (direction . leftmost)
+               (dedicated . t)
+               (window-width . 0.3)
+               (inhibit-same-window . t)))
+
+(add-to-list 'display-buffer-alist
+             '("consult-ripgrep"
+               (display-buffer-reuse-window display-buffer-in-direction)
+               (direction . leftmost)
+               (dedicated . t)
+               (window-width . 0.33)
+               (inhibit-same-window . t)))
+
+(add-to-list 'display-buffer-alist
+             '("\\Running"
+               (display-buffer-reuse-window display-buffer-in-direction)
+               (direction . leftmost)
+               (dedicated . t)
+               (window-width . 0.33)
+               (inhibit-same-window . t)))
+
+(add-to-list 'display-buffer-alist
+             '("\\*Help\\*"
+               (display-buffer-reuse-window display-buffer-same-window)))
