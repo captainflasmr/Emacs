@@ -86,9 +86,9 @@
 
 (defun my/quick-window-jump ()
   "Jump to a window by typing its assigned character label.
-Windows are labeled starting from the top-left window and proceed clockwise."
+Windows are labeled starting from the top-left window and proceed top to bottom left to right."
   (interactive)
-  (let* ((window-list (my/get-windows-clockwise))
+  (let* ((window-list (my/get-windows))
          (window-keys (seq-take '("j" "k" "l" ";" "a" "s" "d" "f")
                                 (length window-list)))
          (window-map (cl-pairlis window-keys window-list))
@@ -97,19 +97,15 @@ Windows are labeled starting from the top-left window and proceed clockwise."
         (select-window selected-window)
       (message "No window assigned to key: %c" key))))
 
-(defun my/get-windows-clockwise ()
-  "Return a list of windows in the current frame, ordered clockwise starting from the top-left window."
-  (let ((windows (window-list nil 'no-mini)))
-    (mapcar #'car
-            (sort (mapcar (lambda (w)
-                            (cons w (window-edges w)))
-                          windows)
-                  (lambda (a b)
-                    (let ((edges-a (cdr a))
-                          (edges-b (cdr b)))
-                      (or (< (cadr edges-a) (cadr edges-b))
-                          (and (= (cadr edges-a) (cadr edges-b)) ; Then compare left edges
-                               (< (car edges-a) (car edges-b))))))))))
+(defun my/get-windows ()
+  "Return a list of windows in the current frame, ordered from top to bottom, left to right."
+  (sort (window-list nil 'no-mini)
+        (lambda (w1 w2)
+          (let ((edges1 (window-edges w1))
+                (edges2 (window-edges w2)))
+            (or (< (car edges1) (car edges2)) ; Compare top edges
+                (and (= (car edges1) (car edges2)) ; If equal, compare left edges
+                     (< (cadr edges1) (cadr edges2))))))))
 
 (global-set-key (kbd "M-a") #'my/quick-window-jump)
 
@@ -2135,6 +2131,7 @@ programming modes based on basic space / tab indentation."
       org-image-actual-width (list 50)
       org-return-follows-link t
       org-use-fast-todo-selection 'expert
+      org-reverse-note-order t
       org-todo-keywords
       ;; '((sequence "TODO(t)" "DOING(d)" "ORDR(o)" "SENT(s)" "|" "DONE(n)" "CANCELLED(c)"))
       '((sequence "TODO" "DOING" "ORDR" "SENT" "|" "DONE" "CANCELLED"))
@@ -2150,8 +2147,8 @@ programming modes based on basic space / tab indentation."
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 90)
-(add-to-list 'default-frame-alist '(alpha-background . 90))
+(set-frame-parameter nil 'alpha-background 75)
+(add-to-list 'default-frame-alist '(alpha-background . 75))
 
 ;;
 ;; -> dired
@@ -2261,6 +2258,13 @@ programming modes based on basic space / tab indentation."
   (define-key my-jump-keymap (kbd "j") (lambda () (interactive) (find-file "~/DCIM/content/aaa--todo.org")))
   (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
   (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
+  ;; (setq font-general "Noto Sans Mono 11")
+  ;; (setq font-general "Source Code Pro 11")
+  ;; (setq font-general "Source Code Pro Light 11")
+  ;; (setq font-general "Monospace 11")
+  (setq font-general "Nimbus Mono PS 13")
+  (set-frame-font font-general nil t)
+  (add-to-list 'default-frame-alist `(font . ,font-general))
   (setq diary-file "~/DCIM/content/diary.org"))
 
 ;;
@@ -2446,3 +2450,26 @@ programming modes based on basic space / tab indentation."
 (add-to-list 'display-buffer-alist
              '("\\*Help\\*"
                (display-buffer-reuse-window display-buffer-same-window)))
+
+;;
+;; -> programming
+;;
+
+(setq my/old-ada-mode (concat user-emacs-directory "old-ada-mode"))
+(when (file-exists-p my/old-ada-mode)
+  (use-package ada-mode
+    :load-path my/old-ada-mode))
+
+(use-package yaml-mode)
+
+(add-hook 'yaml-mode-hook
+          #'(lambda ()
+              (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
+
+(setq eldoc-echo-area-use-multiline-p nil)
+
+(use-package flycheck)
+(use-package package-lint)
+(use-package cmake-mode)
+
+(setq vc-handled-backends '(SVN Git))
