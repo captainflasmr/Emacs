@@ -84,18 +84,23 @@
 (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
 (define-key my-jump-keymap (kbd "-") #'tab-close)
 
+(defvar my/quick-window-overlays nil
+  "List of overlays used to temporarily display window labels.")
+
 (defun my/quick-window-jump ()
   "Jump to a window by typing its assigned character label.
-Windows are labeled starting from the top-left window and proceed top to bottom left to right."
+Windows are labeled starting from the top-left window and proceeding top to bottom, then left to right."
   (interactive)
   (let* ((window-list (my/get-windows))
          (window-keys (seq-take '("j" "k" "l" ";" "a" "s" "d" "f")
                                 (length window-list)))
-         (window-map (cl-pairlis window-keys window-list))
-         (key (read-key (format "Select window [%s]: " (string-join window-keys ", ")))))
-    (if-let ((selected-window (cdr (assoc (char-to-string key) window-map))))
-        (select-window selected-window)
-      (message "No window assigned to key: %c" key))))
+         (window-map (cl-pairlis window-keys window-list)))
+    (my/add-window-key-overlays window-map)
+    (let ((key (read-key (format "Select window [%s]: " (string-join window-keys ", ")))))
+      (my/remove-window-key-overlays)
+      (if-let ((selected-window (cdr (assoc (char-to-string key) window-map))))
+          (select-window selected-window)
+        (message "No window assigned to key: %c" key)))))
 
 (defun my/get-windows ()
   "Return a list of windows in the current frame, ordered from top to bottom, left to right."
@@ -106,6 +111,26 @@ Windows are labeled starting from the top-left window and proceed top to bottom 
             (or (< (car edges1) (car edges2)) ; Compare top edges
                 (and (= (car edges1) (car edges2)) ; If equal, compare left edges
                      (< (cadr edges1) (cadr edges2))))))))
+
+(defun my/add-window-key-overlays (window-map)
+  "Add temporary overlays to windows with their assigned key labels from WINDOW-MAP."
+  (setq my/quick-window-overlays nil)
+  (dolist (entry window-map)
+    (let* ((key (car entry))
+           (window (cdr entry))
+           (start (window-start window))
+           (overlay (make-overlay start start (window-buffer window))))
+      (overlay-put overlay 'after-string
+                   (propertize (format " [%s] " key)
+                               'face '(:foreground "white" :background "blue"
+                                                   :weight bold)))
+      (overlay-put overlay 'window window)
+      (push overlay my/quick-window-overlays))))
+
+(defun my/remove-window-key-overlays ()
+  "Remove all temporary overlays used to display key labels in windows."
+  (mapc 'delete-overlay my/quick-window-overlays)
+  (setq my/quick-window-overlays nil))
 
 (global-set-key (kbd "M-a") #'my/quick-window-jump)
 
@@ -602,8 +627,7 @@ and displaying only specified PROPERTIES-TO-DISPLAY (e.g., '(\"ID\" \"PRIORITY\"
 (defun my/copy-buffer-to-kill-ring ()
   "Copy the entire buffer to the kill ring without changing the point."
   (interactive)
-  (save-excursion
-    (kill-ring-save (point-min) (point-max)))
+  (kill-ring-save (point-min) (point-max))
   (message (concat (buffer-file-name) " Copied")))
 ;;
 (defun my/sync-tab-bar-to-theme ()
@@ -2147,8 +2171,8 @@ programming modes based on basic space / tab indentation."
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 75)
-(add-to-list 'default-frame-alist '(alpha-background . 75))
+(set-frame-parameter nil 'alpha-background 80)
+(add-to-list 'default-frame-alist '(alpha-background . 80))
 
 ;;
 ;; -> dired
@@ -2157,14 +2181,14 @@ programming modes based on basic space / tab indentation."
   (define-key dired-mode-map (kbd "W") 'dired-do-async-shell-command)
   (define-key dired-mode-map (kbd "b") 'my/dired-file-to-org-link)
   (define-key dired-mode-map (kbd "C-c i") 'my/image-dired-sort)
-(setq dired-guess-shell-alist-user
-      '(("\\.\\(jpg\\|jpeg\\|png\\|gif\\|bmp\\)$" "gthumb")
-        ("\\.\\(mp4\\|mkv\\|avi\\|mov\\|wmv\\|flv\\|mpg\\)$" "mpv")
-        ("\\.\\(mp3\\|wav\\|ogg\\|\\)$" "mpv")
-        ("\\.\\(kra\\)$" "org.kde.krita")
-        ("\\.\\(odt\\|ods\\)$" "libreoffice")
-        ("\\.\\(html\\|htm\\)$" "firefox")
-        ("\\.\\(pdf\\|epub\\)$" "xournalpp"))))
+  (setq dired-guess-shell-alist-user
+        '(("\\.\\(jpg\\|jpeg\\|png\\|gif\\|bmp\\)$" "gthumb")
+          ("\\.\\(mp4\\|mkv\\|avi\\|mov\\|wmv\\|flv\\|mpg\\)$" "mpv")
+          ("\\.\\(mp3\\|wav\\|ogg\\|\\)$" "mpv")
+          ("\\.\\(kra\\)$" "org.kde.krita")
+          ("\\.\\(odt\\|ods\\)$" "libreoffice")
+          ("\\.\\(html\\|htm\\)$" "firefox")
+          ("\\.\\(pdf\\|epub\\)$" "xournalpp"))))
 
 ;;
 ;; -> spelling
@@ -2259,10 +2283,10 @@ programming modes based on basic space / tab indentation."
   (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
   (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
   ;; (setq font-general "Noto Sans Mono 11")
-  ;; (setq font-general "Source Code Pro 11")
+  (setq font-general "Source Code Pro 11")
   ;; (setq font-general "Source Code Pro Light 11")
   ;; (setq font-general "Monospace 11")
-  (setq font-general "Nimbus Mono PS 13")
+  ;;(setq font-general "Nimbus Mono PS 13")
   (set-frame-font font-general nil t)
   (add-to-list 'default-frame-alist `(font . ,font-general))
   (setq diary-file "~/DCIM/content/diary.org"))
@@ -2460,16 +2484,16 @@ programming modes based on basic space / tab indentation."
   (use-package ada-mode
     :load-path my/old-ada-mode))
 
+(defun my/eglot-dir-locals ()
+  "Create .dir-locals.el file for eglot ada-mode using the selected DIRED path."
+  (interactive)
+  (add-dir-local-variable
+   'ada-mode
+   'eglot-workspace-configuration
+   `((ada . (:projectFile ,(dired-get-filename))))))
+
 (use-package yaml-mode)
 
-(add-hook 'yaml-mode-hook
-          #'(lambda ()
-              (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
-
 (setq eldoc-echo-area-use-multiline-p nil)
-
-(use-package flycheck)
-(use-package package-lint)
-(use-package cmake-mode)
 
 (setq vc-handled-backends '(SVN Git))
