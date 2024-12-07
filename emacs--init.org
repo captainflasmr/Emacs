@@ -135,9 +135,8 @@ Windows are labeled starting from the top-left window and proceeding top to bott
     (my/add-window-key-overlays window-map)
     (let ((key (read-key (format "Select window [%s]: " (string-join window-keys ", ")))))
       (my/remove-window-key-overlays)
-      (if-let ((selected-window (cdr (assoc (char-to-string key) window-map))))
-          (select-window selected-window)
-        (message "No window assigned to key: %c" key)))))
+      (when-let ((selected-window (cdr (assoc (char-to-string key) window-map))))
+        (select-window selected-window)))))
 
 (defun my/get-windows ()
   "Return a list of windows in the current frame, ordered from top to bottom, left to right."
@@ -145,29 +144,31 @@ Windows are labeled starting from the top-left window and proceeding top to bott
         (lambda (w1 w2)
           (let ((edges1 (window-edges w1))
                 (edges2 (window-edges w2)))
-            (or (< (car edges1) (car edges2)) ; Compare top edges
-                (and (= (car edges1) (car edges2)) ; If equal, compare left edges
+            (or (< (car edges1) (car edges2))
+                (and (= (car edges1) (car edges2))
                      (< (cadr edges1) (cadr edges2))))))))
 
 (defun my/add-window-key-overlays (window-map)
   "Add temporary overlays to windows with their assigned key labels from WINDOW-MAP."
-  (setq my/quick-window-overlays nil)
-  (dolist (entry window-map)
-    (let* ((key (car entry))
-           (window (cdr entry))
-           (start (window-start window))
-           (overlay (make-overlay start start (window-buffer window))))
-      (overlay-put overlay 'after-string
-                   (propertize (format " [%s] " key)
-                               'face '(:foreground "white" :background "blue"
-                                                   :weight bold)))
-      (overlay-put overlay 'window window)
-      (push overlay my/quick-window-overlays))))
+  (setq my/quick-window-overlays
+        (mapcar (lambda (entry)
+                  (let* ((key (car entry))
+                         (window (cdr entry))
+                         (start (window-start window))
+                         (overlay (make-overlay start start (window-buffer window))))
+                    (overlay-put overlay 'after-string (my/label-overlay key))
+                    (overlay-put overlay 'window window)
+                    overlay))
+                window-map)))
 
 (defun my/remove-window-key-overlays ()
   "Remove all temporary overlays used to display key labels in windows."
-  (mapc 'delete-overlay my/quick-window-overlays)
+  (mapc #'delete-overlay my/quick-window-overlays)
   (setq my/quick-window-overlays nil))
+
+(defun my/label-overlay (key)
+  (propertize (format " [%s] " key)
+              'face '(:foreground "white" :background "blue" :weight bold)))
 
 (global-set-key (kbd "M-a") #'my/quick-window-jump)
 
