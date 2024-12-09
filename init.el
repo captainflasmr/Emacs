@@ -84,53 +84,38 @@
 (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
 (define-key my-jump-keymap (kbd "-") #'tab-close)
 
-(defvar my/quick-window-overlays nil
-  "List of overlays used to temporarily display window labels.")
-
 (defun my/quick-window-jump ()
   "Jump to a window by typing its assigned character label.
 Windows are labeled starting from the top-left window and proceeding top to bottom, then left to right."
   (interactive)
-  (let* ((window-list (my/get-windows))
+  (let* ((my/quick-window-overlays nil)
+         (window-list (sort (window-list nil 'no-mini)
+                            (lambda (w1 w2)
+                              (let ((edges1 (window-edges w1))
+                                    (edges2 (window-edges w2)))
+                                (or (< (car edges1) (car edges2))
+                                    (and (= (car edges1) (car edges2))
+                                         (< (cadr edges1) (cadr edges2))))))))
          (window-keys (seq-take '("j" "k" "l" ";" "a" "s" "d" "f")
                                 (length window-list)))
          (window-map (cl-pairlis window-keys window-list)))
-    (my/add-window-key-overlays window-map)
+    (setq my/quick-window-overlays
+          (mapcar (lambda (entry)
+                    (let* ((key (car entry))
+                           (window (cdr entry))
+                           (start (window-start window))
+                           (overlay (make-overlay start start (window-buffer window))))
+                      (overlay-put overlay 'after-string 
+                                   (propertize (format "[%s]" key)
+                                               'face '(:foreground "white" :background "blue" :weight bold)))
+                      (overlay-put overlay 'window window)
+                      overlay))
+                  window-map))
     (let ((key (read-key (format "Select window [%s]: " (string-join window-keys ", ")))))
-      (my/remove-window-key-overlays)
-      (if-let ((selected-window (cdr (assoc (char-to-string key) window-map))))
-          (select-window selected-window)
-        (message "No window assigned to key: %c" key)))))
-
-(defun my/get-windows ()
-  "Return a list of windows in the current frame, ordered from top to bottom, left to right."
-  (sort (window-list nil 'no-mini)
-        (lambda (w1 w2)
-          (let ((edges1 (window-edges w1))
-                (edges2 (window-edges w2)))
-            (or (< (car edges1) (car edges2)) ; Compare top edges
-                (and (= (car edges1) (car edges2)) ; If equal, compare left edges
-                     (< (cadr edges1) (cadr edges2))))))))
-
-(defun my/add-window-key-overlays (window-map)
-  "Add temporary overlays to windows with their assigned key labels from WINDOW-MAP."
-  (setq my/quick-window-overlays nil)
-  (dolist (entry window-map)
-    (let* ((key (car entry))
-           (window (cdr entry))
-           (start (window-start window))
-           (overlay (make-overlay start start (window-buffer window))))
-      (overlay-put overlay 'after-string
-                   (propertize (format " [%s] " key)
-                               'face '(:foreground "white" :background "blue"
-                                                   :weight bold)))
-      (overlay-put overlay 'window window)
-      (push overlay my/quick-window-overlays))))
-
-(defun my/remove-window-key-overlays ()
-  "Remove all temporary overlays used to display key labels in windows."
-  (mapc 'delete-overlay my/quick-window-overlays)
-  (setq my/quick-window-overlays nil))
+      (mapc #'delete-overlay my/quick-window-overlays)
+      (setq my/quick-window-overlays nil)
+      (when-let ((selected-window (cdr (assoc (char-to-string key) window-map))))
+        (select-window selected-window)))))
 
 (global-set-key (kbd "M-a") #'my/quick-window-jump)
 
@@ -719,6 +704,27 @@ mode-line background color interactively using `read-color`."
 (defvar my/internal-border-width 0 "Default internal border width for toggling.")
 (modify-all-frames-parameters `((internal-border-width . ,my/internal-border-width)))
 (set-fringe-mode '(20 . 20))
+;;
+(defun my/rainbow-mode ()
+  "Overlay colors represented as hex values in the current buffer."
+  (interactive)
+  (remove-overlays (point-min) (point-max))
+  (let ((hex-color-regex "#[0-9a-fA-F]\\{6\\}"))
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward hex-color-regex nil t)
+        (let* ((color (match-string 0))
+               (overlay (make-overlay (match-beginning 0) (match-end 0))))
+          (overlay-put overlay 'face `(:background ,color :foreground "black")))))))
+;;
+(defun my/rainbow-mode-clear ()
+  "Remove all hex color overlays in the current buffer."
+  (interactive)
+  (remove-overlays (point-min) (point-max)))
+;;
+(add-hook 'prog-mode-hook #'my/rainbow-mode)
+(add-hook 'org-mode-hook #'my/rainbow-mode)
+(add-hook 'conf-space-mode-hook #'my/rainbow-mode)
 
 ;;
 ;; -> imenu-core
@@ -1042,8 +1048,8 @@ With directories under project root using find."
       (replace-match "[[\\1]]"))
     (goto-char (point-min))
     ;; Headers: Adjust '#'
-    (while (re-search-forward "^\\(#+\\)" nil t)
-      (replace-match (make-string (length (match-string 1)) ?*) nil nil))))
+    (while (re-search-forward "^\\(#+\\) " nil t)
+      (replace-match (make-string (length (match-string 1)) ?*) nil nil nil 1))))
 ;;
 (defun my/md-to-org-convert-file (input-file output-file)
   "Convert a Markdown file INPUT-FILE to an Org-mode file OUTPUT-FILE."
@@ -1150,6 +1156,21 @@ With directories under project root using find."
           (?\C-g (message "Quit ChatGPT Shell menu."))
           (_ (message "Invalid key: %c" key))))))
   (global-set-key (kbd "C-c g") 'chatgpt-shell-menu))
+
+;;
+;; -> programming-core
+;;
+;;
+
+(defun my/eglot-dir-locals ()
+  "Create .dir-locals.el file for eglot ada-mode using the selected DIRED path."
+  (interactive)
+  (add-dir-local-variable
+   'ada-mode
+   'eglot-workspace-configuration
+   `((ada . (:projectFile ,(dired-get-filename))))))
+
+(setq vc-handled-backends '(SVN Git))
 
 ;;
 ;; -> selected-window-accent-mode
@@ -1832,13 +1853,6 @@ programming modes based on basic space / tab indentation."
 (use-package embark)
 (use-package embark-consult)
 
-(use-package rainbow-mode
-  :diminish rainbow-mode
-  :hook
-  (prog-mode . rainbow-mode)
-  (conf-space-mode . rainbow-mode)
-  (org-mode . rainbow-mode))
-
 (use-package ox-hugo
   :defer t
   :config
@@ -2292,22 +2306,6 @@ programming modes based on basic space / tab indentation."
   (setq diary-file "~/DCIM/content/diary.org"))
 
 ;;
-;; -> development
-;;
-(defun without-gc (&rest args)
-  (let ((gc-cons-threshold most-positive-fixnum))
-    (apply args)))
-
-(defun my/push-block ()
-  "Export content from one file to another in various formats given VALUE."
-  (interactive)
-  (save-excursion
-    (without-gc #'org-hugo-export-wim-to-md)
-    (mapc 'shell-command
-          '("web rsync emacs" "web rsync art"
-            "web rsync dyerdwelling"))))
-
-;;
 ;; -> modes
 ;;
 (server-mode 1)
@@ -2497,3 +2495,21 @@ programming modes based on basic space / tab indentation."
 (setq eldoc-echo-area-use-multiline-p nil)
 
 (setq vc-handled-backends '(SVN Git))
+
+;;
+;; -> development
+;;
+(defun without-gc (&rest args)
+  (let ((gc-cons-threshold most-positive-fixnum))
+    (apply args)))
+
+(defun my/push-block ()
+  "Export content from one file to another in various formats given VALUE."
+  (interactive)
+  (save-excursion
+    (without-gc #'org-hugo-export-wim-to-md)
+    (mapc 'shell-command
+          '("web rsync emacs" "web rsync art"
+            "web rsync dyerdwelling"))))
+
+(add-hook 'org-mode-hook 'org-indent-mode)
