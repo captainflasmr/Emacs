@@ -1,0 +1,3 @@
+[submodule "Emacs-core"]
+	path = Emacs-core
+	url = git@github.com:captainflasmr/Emacs-core.git
