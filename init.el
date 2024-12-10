@@ -76,17 +76,17 @@
 (define-key my-jump-keymap (kbd "k")
             (lambda () (interactive)
               (find-file (concat user-emacs-directory "emacs--core.org"))))
-(define-key my-jump-keymap (kbd "l") #'recentf-open-files)
+(define-key my-jump-keymap (kbd "l") #'my/recentf-open)
 (define-key my-jump-keymap (kbd "m") #'customize-themes)
 (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/nas")))
 (define-key my-jump-keymap (kbd "o") #'bookmark-jump)
 (define-key my-jump-keymap (kbd "r") (lambda () (interactive) (switch-to-buffer "*scratch*")))
 (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
 (define-key my-jump-keymap (kbd "-") #'tab-close)
-
+;;
 (defun my/quick-window-jump ()
   "Jump to a window by typing its assigned character label.
-Windows are labeled starting from the top-left window and proceeding top to bottom, then left to right."
+   Windows are labeled starting from the top-left window and proceeding top to bottom, then left to right."
   (interactive)
   (let* ((my/quick-window-overlays nil)
          (window-list (sort (window-list nil 'no-mini)
@@ -116,7 +116,7 @@ Windows are labeled starting from the top-left window and proceeding top to bott
       (setq my/quick-window-overlays nil)
       (when-let ((selected-window (cdr (assoc (char-to-string key) window-map))))
         (select-window selected-window)))))
-
+;;
 (global-set-key (kbd "M-a") #'my/quick-window-jump)
 
 ;;
@@ -172,7 +172,7 @@ Windows are labeled starting from the top-left window and proceeding top to bott
 (global-set-key (kbd "C--") (lambda ()(interactive)(text-scale-adjust -1)))
 (global-set-key (kbd "C-c a") #'org-agenda)
 (global-set-key (kbd "C-c h") #'my/shell-create)
-(global-set-key (kbd "C-c n") #'my/repeat-window-size)
+(global-set-key (kbd "C-c j") #'my/repeat-window-size)
 (global-set-key (kbd "C-c o h") #'outline-hide-sublevels)
 (global-set-key (kbd "C-c o s") #'outline-show-all)
 (global-set-key (kbd "C-o") #'other-window)
@@ -328,7 +328,7 @@ Windows are labeled starting from the top-left window and proceeding top to bott
 ;;
 (defun my/dired-duplicate-file (arg)
   "Duplicate a file from DIRED with an incremented number.
-                              If ARG is provided, it sets the counter."
+                                If ARG is provided, it sets the counter."
   (interactive "p")
   (let* ((file (dired-get-file-for-visit))
          (dir (file-name-directory file))
@@ -377,25 +377,53 @@ Windows are labeled starting from the top-left window and proceeding top to bott
                                 (tab-bar-history-forward)))
     (set-transient-map map t)))
 ;;
+(defun my/get-window-position ()
+  "Return the position of the current window as 'left', 'right', 'top', or 'bottom'."
+  (let* ((edges (window-edges))
+         (min-x (nth 0 edges))
+         (min-y (nth 1 edges))
+         (max-x (nth 2 edges))
+         (max-y (nth 3 edges))
+         (frame-width (frame-width))
+         (frame-height (frame-height)))
+    (cond
+     ((<= min-x 0) 'left)
+     ((>= max-x frame-width) 'right)
+     ((= min-y 0) 'top)
+     ((= max-y frame-height) 'bottom)
+     (t 'center))))
+
+(defun my/adaptive-resize (horizontal delta)
+  "Resize the current window adaptively based on its position.
+HORIZONTAL is non-nil for horizontal resizing (left/right).
+DELTA is the amount to resize (positive to grow, negative to shrink)."
+  (let ((pos (my/get-window-position)))
+    (cond
+     ((and horizontal (eq pos 'left)) (enlarge-window (- delta) t))
+     ((and horizontal (eq pos 'right)) (enlarge-window delta t))
+     ((and (not horizontal) (eq pos 'top)) (enlarge-window delta nil))
+     ((and (not horizontal) (eq pos 'bottom)) (enlarge-window (- delta) nil))
+     (t (enlarge-window delta horizontal)))))
+
 (defun my/repeat-window-size ()
-  "Sset up a sparse keymap for repeating window actions."
+  "Set up a sparse keymap for repeating window actions with adaptive resizing."
   (interactive)
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "n") (lambda () (interactive)
                                 (window-swap-states)))
     (define-key map (kbd "h") (lambda () (interactive)
-                                (enlarge-window 2 t)))
+                                (my/adaptive-resize t 2)))
     (define-key map (kbd "l") (lambda () (interactive)
-                                (enlarge-window -2 t)))
+                                (my/adaptive-resize t -2)))
     (define-key map (kbd "j") (lambda () (interactive)
-                                (enlarge-window 1 nil)))
+                                (my/adaptive-resize nil 1)))
     (define-key map (kbd "k") (lambda () (interactive)
-                                (enlarge-window -1 nil)))
+                                (my/adaptive-resize nil -1)))
     (set-transient-map map t)))
 ;;
 (defun my/dired-du ()
   "Run 'du -hc' and count the total number of files in the directory under
-the cursor in Dired, then display the output in a buffer named *dired-du*."
+  the cursor in Dired, then display the output in a buffer named *dired-du*."
   (interactive)
   (let ((current-dir (dired-get-file-for-visit)))
     (if (file-directory-p current-dir)
@@ -418,7 +446,7 @@ the cursor in Dired, then display the output in a buffer named *dired-du*."
 ;;
 (defun set-hl-line-darker-background ()
   "Set the hl-line background to a slightly darker shade of the default background,
-                                          preserving the original foreground colors of the current line."
+                                            preserving the original foreground colors of the current line."
   (interactive)
   (require 'hl-line)
   (unless global-hl-line-mode
@@ -439,7 +467,7 @@ the cursor in Dired, then display the output in a buffer named *dired-du*."
 ;;
 (defun my/switch-to-thing ()
   "Switch to a buffer, open a recent file, jump to a bookmark,
-                                      or change the theme from a unified interface."
+                                        or change the theme from a unified interface."
   (interactive)
   (let* ((buffers (mapcar #'buffer-name (buffer-list)))
          (recent-files recentf-list)
@@ -482,7 +510,7 @@ the cursor in Dired, then display the output in a buffer named *dired-du*."
 ;;
 (defun my/html-org-table-highlight ()
   "Open the exported HTML file, find tables with specific classes,
-                                                      and add background styles to rows containing keywords in <td> or <th> elements."
+                                                        and add background styles to rows containing keywords in <td> or <th> elements."
   (interactive)
   (let* ((org-file (buffer-file-name))
          (html-file (concat (file-name-sans-extension org-file) ".html")))
@@ -508,7 +536,7 @@ the cursor in Dired, then display the output in a buffer named *dired-du*."
 ;;
 (defun my/format-to-table (&optional match properties-to-display)
   "Format Org headings into a structured alist, optionally filtered by MATCH
-and displaying only specified PROPERTIES-TO-DISPLAY (e.g., '(\"ID\" \"PRIORITY\"))."
+  and displaying only specified PROPERTIES-TO-DISPLAY (e.g., '(\"ID\" \"PRIORITY\"))."
   (interactive)
   (let ((rows '())
         (header '("TODO" "Tags" "Title" "Comments")) ;; Start without "Properties"
@@ -617,7 +645,7 @@ and displaying only specified PROPERTIES-TO-DISPLAY (e.g., '(\"ID\" \"PRIORITY\"
 ;;
 (defun my/sync-tab-bar-to-theme ()
   "Synchronize tab-bar faces with the current theme, and set
-mode-line background color interactively using `read-color`."
+  mode-line background color interactively using `read-color`."
   (interactive)
   ;; Use `read-color` to get the mode-line background color from the user
   (let ((selected-color (read-color)))
@@ -638,6 +666,17 @@ mode-line background color interactively using `read-color`."
        `(tab-bar-tab ((t (:inherit 'highlight :background ,selected-color :foreground "#000000"))))
        `(tab-bar-tab-inactive ((t (:inherit default :background ,default-bg :foreground ,inactive-fg
                                             :box (:line-width 2 :color ,default-bg :style released-button)))))))))
+;;
+(defun my/recentf-open (file)
+  "Prompt for FILE in `recentf-list' and visit it.
+Enable `recentf-mode' if it isn't already."
+  (interactive
+   (list
+    (progn (unless recentf-mode (recentf-mode 1))
+           (completing-read (format-prompt "Open recent file" nil)
+                            recentf-list nil t))))
+  (when file
+    (funcall recentf-menu-action file)))
 
 ;;
 ;; -> window-positioning-core
@@ -709,13 +748,15 @@ mode-line background color interactively using `read-color`."
   "Overlay colors represented as hex values in the current buffer."
   (interactive)
   (remove-overlays (point-min) (point-max))
-  (let ((hex-color-regex "#[0-9a-fA-F]\\{6\\}"))
+  (let ((hex-color-regex "#[0-9a-fA-F]\\{3,6\\}"))
     (save-excursion
       (goto-char (point-min))
       (while (re-search-forward hex-color-regex nil t)
         (let* ((color (match-string 0))
                (overlay (make-overlay (match-beginning 0) (match-end 0))))
-          (overlay-put overlay 'face `(:background ,color :foreground "black")))))))
+          (if (string-greaterp color "#888888")
+              (overlay-put overlay 'face `(:background ,color :foreground "black"))
+            (overlay-put overlay 'face `(:background ,color :foreground "white"))))))))
 ;;
 (defun my/rainbow-mode-clear ()
   "Remove all hex color overlays in the current buffer."
@@ -1006,6 +1047,95 @@ With directories under project root using find."
   (add-to-list 'default-frame-alist `(font . ,font-general)))
 
 ;;
+;; -> LLM-core
+;;
+;;
+(defun safe-add-to-load-path (dir)
+  "Add DIR to `load-path` if it exists."
+  (when (file-directory-p dir)
+    (add-to-list 'load-path dir)))
+;; Add directories to load-path only if they exist
+(safe-add-to-load-path (expand-file-name "lisp/shell-maker" user-emacs-directory))
+(safe-add-to-load-path (expand-file-name "lisp/chatgpt-shell" user-emacs-directory))
+(safe-add-to-load-path (expand-file-name "lisp/gptel" user-emacs-directory))
+;; Conditionally require and configure packages if their files exist
+(when (locate-library "gptel")
+  (require 'gptel)
+  (require 'gptel-ollama)
+  (require 'gptel-curl)
+  (gptel-make-ollama "llama3_2"
+    :host "localhost:11434"
+    :stream t
+    :models '(llama3_2:latest))
+  (setq gptel-model 'qwen2.5-coder-7b-instruct-q5_k_m:latest
+        gptel-backend (gptel-make-ollama "llama3_2"
+                        :host "localhost:11434"
+                        :stream t
+                        :models '(llama3_2:latest))))
+;;
+(when (locate-library "shell-maker")
+  (require 'shell-maker))
+;;
+(when (locate-library "chatgpt-shell")
+  (require 'chatgpt-shell)
+  (setq chatgpt-shell-models
+        '(((:provider . "Ollama")
+           (:label . "Ollama-llama")
+           (:version . "llama3_2")
+           (:short-version)
+           (:token-width . 4)
+           (:context-window . 8192)
+           (:handler . chatgpt-shell-ollama--handle-ollama-command)
+           (:filter . chatgpt-shell-ollama--extract-ollama-response)
+           (:payload . chatgpt-shell-ollama-make-payload)
+           (:url . chatgpt-shell-ollama--make-url))))
+  (with-eval-after-load 'chatgpt-shell
+    (defun chatgpt-shell-menu ()
+      "Menu for ChatGPT Shell commands."
+      (interactive)
+      (let ((key (read-key
+                  (propertize
+                   "ChatGPT Shell Commands:\n
+      e: Explain Code      d: Describe Code           l: Start Shell
+      p: Proofread Region  r: Refactor Code           t: Save Session Transcript
+      g: Write Git Commit  u: Generate Unit Test      o: Summarize Last Command Output
+      s: Send Region       a: Send and Review Region  m: Swap Model\n
+        q: Quit\n\nPress a key: " 'face 'minibuffer-prompt))))
+        (pcase key
+          (?e (call-interactively 'chatgpt-shell-explain-code))
+          (?p (call-interactively 'chatgpt-shell-proofread-region))
+          (?g (call-interactively 'chatgpt-shell-write-git-commit))
+          (?s (call-interactively 'chatgpt-shell-send-region))
+          (?d (call-interactively 'chatgpt-shell-describe-code))
+          (?r (call-interactively 'chatgpt-shell-refactor-code))
+          (?u (call-interactively 'chatgpt-shell-generate-unit-test))
+          (?a (call-interactively 'chatgpt-shell-send-and-review-region))
+          (?l (call-interactively 'chatgpt-shell))
+          (?t (call-interactively 'chatgpt-shell-save-session-transcript))
+          (?o (call-interactively 'chatgpt-shell-eshell-summarize-last-command-output))
+          (?w (call-interactively 'chatgpt-shell-eshell-whats-wrong-with-last-command))
+          (?i (call-interactively 'chatgpt-shell-describe-image))
+          (?m (call-interactively 'chatgpt-shell-swap-model))
+          (?q (message "Quit ChatGPT Shell menu."))
+          (?\C-g (message "Quit ChatGPT Shell menu."))
+          (_ (message "Invalid key: %c" key))))))
+  (global-set-key (kbd "C-c g") 'chatgpt-shell-menu))
+
+;;
+;; -> programming-core
+;;
+;;
+(defun my/eglot-dir-locals ()
+  "Create .dir-locals.el file for eglot ada-mode using the selected DIRED path."
+  (interactive)
+  (add-dir-local-variable
+   'ada-mode
+   'eglot-workspace-configuration
+   `((ada . (:projectFile ,(dired-get-filename))))))
+;;
+(setq vc-handled-backends '(SVN Git))
+
+;;
 ;; -> development-core
 ;;
 (global-set-key (kbd "C-c t") 'toggle-centered-buffer)
@@ -1079,98 +1209,42 @@ With directories under project root using find."
 ;;
 (global-set-key (kbd "M-s i") #'my/convert-markdown-clipboard-to-org)
 (global-set-key (kbd "M-s u") #'my/org-promote-all-headings)
-
 ;;
-;; -> LLM-core
-;;
-;;
-(defun safe-add-to-load-path (dir)
-  "Add DIR to `load-path` if it exists."
-  (when (file-directory-p dir)
-    (add-to-list 'load-path dir)))
-
-;; Add directories to load-path only if they exist
-(safe-add-to-load-path (expand-file-name "lisp/shell-maker" user-emacs-directory))
-(safe-add-to-load-path (expand-file-name "lisp/chatgpt-shell" user-emacs-directory))
-(safe-add-to-load-path (expand-file-name "lisp/gptel" user-emacs-directory))
-
-;; Conditionally require and configure packages if their files exist
-(when (locate-library "gptel")
-  (require 'gptel)
-  (require 'gptel-ollama)
-  (require 'gptel-curl)
-  (gptel-make-ollama "llama3_2"
-    :host "localhost:11434"
-    :stream t
-    :models '(llama3_2:latest))
-  (setq gptel-model 'qwen2.5-coder-7b-instruct-q5_k_m:latest
-        gptel-backend (gptel-make-ollama "llama3_2"
-                        :host "localhost:11434"
-                        :stream t
-                        :models '(llama3_2:latest))))
-
-(when (locate-library "shell-maker")
-  (require 'shell-maker))
-
-(when (locate-library "chatgpt-shell")
-  (require 'chatgpt-shell)
-  (setq chatgpt-shell-models
-        '(((:provider . "Ollama")
-           (:label . "Ollama-llama")
-           (:version . "llama3_2")
-           (:short-version)
-           (:token-width . 4)
-           (:context-window . 8192)
-           (:handler . chatgpt-shell-ollama--handle-ollama-command)
-           (:filter . chatgpt-shell-ollama--extract-ollama-response)
-           (:payload . chatgpt-shell-ollama-make-payload)
-           (:url . chatgpt-shell-ollama--make-url))))
-  (with-eval-after-load 'chatgpt-shell
-    (defun chatgpt-shell-menu ()
-      "Menu for ChatGPT Shell commands."
-      (interactive)
-      (let ((key (read-key
-                  (propertize
-                   "ChatGPT Shell Commands:\n
-    e: Explain Code      d: Describe Code           l: Start Shell
-    p: Proofread Region  r: Refactor Code           t: Save Session Transcript
-    g: Write Git Commit  u: Generate Unit Test      o: Summarize Last Command Output
-    s: Send Region       a: Send and Review Region  m: Swap Model\n
-      q: Quit\n\nPress a key: " 'face 'minibuffer-prompt))))
-        (pcase key
-          (?e (call-interactively 'chatgpt-shell-explain-code))
-          (?p (call-interactively 'chatgpt-shell-proofread-region))
-          (?g (call-interactively 'chatgpt-shell-write-git-commit))
-          (?s (call-interactively 'chatgpt-shell-send-region))
-          (?d (call-interactively 'chatgpt-shell-describe-code))
-          (?r (call-interactively 'chatgpt-shell-refactor-code))
-          (?u (call-interactively 'chatgpt-shell-generate-unit-test))
-          (?a (call-interactively 'chatgpt-shell-send-and-review-region))
-          (?l (call-interactively 'chatgpt-shell))
-          (?t (call-interactively 'chatgpt-shell-save-session-transcript))
-          (?o (call-interactively 'chatgpt-shell-eshell-summarize-last-command-output))
-          (?w (call-interactively 'chatgpt-shell-eshell-whats-wrong-with-last-command))
-          (?i (call-interactively 'chatgpt-shell-describe-image))
-          (?m (call-interactively 'chatgpt-shell-swap-model))
-          (?q (message "Quit ChatGPT Shell menu."))
-          (?\C-g (message "Quit ChatGPT Shell menu."))
-          (_ (message "Invalid key: %c" key))))))
-  (global-set-key (kbd "C-c g") 'chatgpt-shell-menu))
-
-;;
-;; -> programming-core
-;;
-;;
-
-(defun my/eglot-dir-locals ()
-  "Create .dir-locals.el file for eglot ada-mode using the selected DIRED path."
+(defun my-icomplete-copy-candidate ()
+  "Copy the current Icomplete candidate to the kill ring."
   (interactive)
-  (add-dir-local-variable
-   'ada-mode
-   'eglot-workspace-configuration
-   `((ada . (:projectFile ,(dired-get-filename))))))
+  (let ((candidate (car completion-all-sorted-completions)))
+    (when candidate
+      (kill-new (substring-no-properties candidate))
+      (abort-recursive-edit))))
+;;
+(define-key minibuffer-local-completion-map (kbd "C-c ,") 'my-icomplete-copy-candidate)
+;;
+(defun prot/keyboard-quit-dwim ()
+  "Do-What-I-Mean behaviour for a general `keyboard-quit'.
 
-(setq vc-handled-backends '(SVN Git))
+    The generic `keyboard-quit' does not do the expected thing when
+    the minibuffer is open.  Whereas we want it to close the
+    minibuffer, even without explicitly focusing it.
+
+    The DWIM behaviour of this command is as follows:
+
+    - When the region is active, disable it.
+    - When a minibuffer is open, but not focused, close the minibuffer.
+    - When the Completions buffer is selected, close it.
+    - In every other case use the regular `keyboard-quit'."
+  (interactive)
+  (cond
+   ((region-active-p)
+    (keyboard-quit))
+   ((derived-mode-p 'completion-list-mode)
+    (delete-completion-window))
+   ((> (minibuffer-depth) 0)
+    (abort-recursive-edit))
+   (t
+    (keyboard-quit))))
+;;
+(define-key global-map (kbd "C-g") #'prot/keyboard-quit-dwim)
 
 ;;
 ;; -> selected-window-accent-mode
@@ -1521,6 +1595,7 @@ programming modes based on basic space / tab indentation."
   (org-refile-targets '((org-agenda-files :maxlevel . 1)))
   (org-agenda-files '("~/DCIM/content/aaa--aaa.org"
                       "~/DCIM/content/aaa--todo.org"
+                      "~/DCIM/content/aaa--house.org"
                       "~/DCIM/content/aab--calendar.org"
                       "~/DCIM/content/aac--baby.org"
                       "~/DCIM/content/aaf--kate.org"
@@ -2088,6 +2163,7 @@ programming modes based on basic space / tab indentation."
 ;;
 ;; -> keys-visual
 ;;
+(define-key my-win-keymap (kbd "a") #'selected-window-accent-mode)
 (define-key my-win-keymap (kbd "m") #'consult-theme)
 (define-key my-win-keymap (kbd "w") #'org-wc-display)
 
@@ -2185,8 +2261,8 @@ programming modes based on basic space / tab indentation."
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 80)
-(add-to-list 'default-frame-alist '(alpha-background . 80))
+(set-frame-parameter nil 'alpha-background 75)
+(add-to-list 'default-frame-alist '(alpha-background . 75))
 
 ;;
 ;; -> dired
@@ -2297,7 +2373,7 @@ programming modes based on basic space / tab indentation."
   (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
   (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
   ;; (setq font-general "Noto Sans Mono 11")
-  (setq font-general "Source Code Pro 11")
+  (setq font-general "Source Code Pro 12")
   ;; (setq font-general "Source Code Pro Light 11")
   ;; (setq font-general "Monospace 11")
   ;;(setq font-general "Nimbus Mono PS 13")
@@ -2481,14 +2557,6 @@ programming modes based on basic space / tab indentation."
 (when (file-exists-p my/old-ada-mode)
   (use-package ada-mode
     :load-path my/old-ada-mode))
-
-(defun my/eglot-dir-locals ()
-  "Create .dir-locals.el file for eglot ada-mode using the selected DIRED path."
-  (interactive)
-  (add-dir-local-variable
-   'ada-mode
-   'eglot-workspace-configuration
-   `((ada . (:projectFile ,(dired-get-filename))))))
 
 (use-package yaml-mode)
 
