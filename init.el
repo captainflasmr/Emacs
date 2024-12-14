@@ -69,7 +69,7 @@
             (lambda ()
               (interactive)
               (find-file (expand-file-name "init.el" user-emacs-directory))))
-(define-key my-jump-keymap (kbd "f") #'find-name-dired)
+(define-key my-jump-keymap (kbd "f") #'my/find-file)
 (define-key my-jump-keymap (kbd "g") (lambda () (interactive) (find-file "~/.config")))
 (define-key my-jump-keymap (kbd "h") (lambda () (interactive) (find-file "~")))
 (define-key my-jump-keymap (kbd "j") (lambda () (interactive) (find-file "~/DCIM/content/aaa--todo.org")))
@@ -228,7 +228,6 @@ If there are only two windows, jump directly to the other window."
 (show-paren-mode t)
 (tab-bar-history-mode 1)
 (global-font-lock-mode t)
-(server-mode 1)
 
 ;;
 ;; -> bell-core
@@ -688,6 +687,13 @@ Enable `recentf-mode' if it isn't already."
                (direction . bottommost)
                (dedicated . t)
                (window-height . 0.2)
+               (inhibit-same-window . t)))
+(add-to-list 'display-buffer-alist
+             '("\\*grep"
+               (display-buffer-reuse-window display-buffer-in-direction)
+               (direction . leftmost)
+               (dedicated . t)
+               (window-width . 0.4)
                (inhibit-same-window . t)))
 (add-to-list 'display-buffer-alist
              '("\\*Messages" display-buffer-same-window))
@@ -1450,22 +1456,26 @@ It doesn't define any keybindings. In comparison with `ada-mode',
 ;;
 (define-key global-map (kbd "C-g") #'prot/keyboard-quit-dwim)
 ;;
-(defun my/grep (search-term directory glob)
-  "Run ripgrep (rg) with SEARCH-TERM in DIRECTORY and GLOB if available,
-otherwise fall back to Emacs's rgrep command. Highlights SEARCH-TERM in results."
+(defun my/grep (search-term &optional directory glob)
+  "Run ripgrep (rg) with SEARCH-TERM and optionally DIRECTORY and GLOB.
+If ripgrep is unavailable, fall back to Emacs's rgrep command. Highlights SEARCH-TERM in results.
+
+By default, only the SEARCH-TERM needs to be provided. If called with a
+universal argument, DIRECTORY and GLOB are prompted for as well."
   (interactive
-   (list
-    (read-string "Search for: ")
-    (read-directory-name "Directory: ")
-    (read-string "File pattern (glob, default: *): " nil nil "*")))
-  (let ((directory (expand-file-name directory))) ;; Expand directory to absolute path
+   (let ((univ-arg current-prefix-arg))
+     (list
+      (read-string "Search for: ")
+      (when univ-arg (read-directory-name "Directory: "))
+      (when univ-arg (read-string "File pattern (glob, default: *): " nil nil "*")))))
+  (let* ((directory (or directory default-directory)) ;; Use the provided directory or default to `default-directory`
+         (directory (expand-file-name directory))) ;; Expand directory to absolute path
     (if (executable-find "rg")
         ;; Use ripgrep if available
-        (let* ((buffer-name "*my-rg-results*")
-               (home-dir (expand-file-name "~"))
+        (let* ((buffer-name "*grep*")
                (rg-command (format "rg --color=never --column --line-number --no-heading --smart-case -e %s --glob %s %s"
                                    (shell-quote-argument search-term)
-                                   (shell-quote-argument glob)
+                                   (shell-quote-argument (or glob "*")) ;; Default glob to "*"
                                    directory))
                (raw-output (shell-command-to-string rg-command))
                (formatted-output
@@ -1499,7 +1509,7 @@ otherwise fall back to Emacs's rgrep command. Highlights SEARCH-TERM in results.
               (goto-char (point-min)))))
       ;; Fall back to rgrep if ripgrep is not available
       (let ((default-directory directory))
-        (rgrep search-term glob directory)))))
+        (rgrep search-term (or glob "*") directory)))))
 ;;
 (add-to-list 'display-buffer-alist
              '("\\*my-rg-results"
@@ -2197,14 +2207,6 @@ programming modes based on basic space / tab indentation."
   :config
   (setq org-hugo-front-matter-format "yaml"))
 
-(use-package deadgrep
-  :config
-  (setq-default deadgrep--search-case 'ignore)
-  :custom
-  (deadgrep-max-buffers 1)
-  (deadgrep-extra-arguments '("--no-config")))
-;; (deadgrep-extra-arguments '("--no-config" "--no-ignore" "--no-ignore-vcs")))
-
 (use-package ready-player
   :init
   (ready-player-mode 1)
@@ -2481,19 +2483,6 @@ programming modes based on basic space / tab indentation."
           (kill-new org-link)
           (message "Copied to kill ring: %s" org-link))
       (message "No file under the cursor"))))
-;;
-(defun my/grep (arg)
-  "Wrapper to grep with ARG."
-  (interactive "p")
-  (let ((search-term
-         (if (equal major-mode 'dired-mode)
-             (read-from-minibuffer "Search : ")
-           (read-from-minibuffer "Search : " (thing-at-point 'symbol)))))
-    (if (= arg 1)
-        (deadgrep search-term default-directory)
-      (progn
-        (setq current-prefix-arg nil)
-        (deadgrep search-term "~")))))
 
 ;;
 ;; -> org
@@ -2735,14 +2724,6 @@ programming modes based on basic space / tab indentation."
 
 (add-to-list 'display-buffer-alist
              '("\\*Messages" display-buffer-same-window))
-
-(add-to-list 'display-buffer-alist
-             '("\\*deadgrep"
-               (display-buffer-reuse-window display-buffer-in-direction)
-               (direction . leftmost)
-               (dedicated . t)
-               (window-width . 0.33)
-               (inhibit-same-window . t)))
 
 (add-to-list 'display-buffer-alist
              '("\\*compilation"
