@@ -1,7 +1,7 @@
 ;;
 ;; -> core-configuration
 ;;
-(load-file (concat user-emacs-directory "Emacs-core/init.el"))
+(load-file "~/.emacs.d/Emacs-core/init.el")
 
 ;;
 ;; -> package-archives

@@ -13,7 +13,7 @@ The core configuration is loaded from the generated .el file which will be tangl
 ;;
 ;; -> core-configuration
 ;;
-(load-file (concat user-emacs-directory "Emacs-core/init.el"))
+(load-file "~/.emacs.d/Emacs-core/init.el")
 #+end_src
 
 * package-archives
