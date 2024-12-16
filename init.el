@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 ;;
 ;; -> core-configuration
 ;;
@@ -714,6 +716,7 @@ programming modes based on basic space / tab indentation."
 (use-package embark)
 (use-package embark-consult)
 (use-package org-wc)
+(use-package git-timemachine)
 
 (use-package ox-hugo
   :defer t
@@ -1026,8 +1029,8 @@ programming modes based on basic space / tab indentation."
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 75)
-(add-to-list 'default-frame-alist '(alpha-background . 75))
+(set-frame-parameter nil 'alpha-background 50)
+(add-to-list 'default-frame-alist '(alpha-background . 50))
 
 ;;
 ;; -> dired

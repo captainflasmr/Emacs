@@ -5,6 +5,10 @@
 #+startup: overview
 #+TOC: headlines 1 local
 
+#+begin_src emacs-lisp
+;; -*- lexical-binding: t; -*-
+#+end_src
+
 * core-configuration
 
 The core configuration is loaded from the generated .el file which will be tangled separately.
@@ -800,6 +804,7 @@ Demonstrates the use of `use-package` to neatly organize package configuration a
 (use-package embark)
 (use-package embark-consult)
 (use-package org-wc)
+(use-package git-timemachine)
 
 (use-package ox-hugo
   :defer t
@@ -1169,8 +1174,8 @@ Configures various visual aspects of Emacs, including menu bar, toolbar, and scr
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 75)
-(add-to-list 'default-frame-alist '(alpha-background . 75))
+(set-frame-parameter nil 'alpha-background 50)
+(add-to-list 'default-frame-alist '(alpha-background . 50))
 #+end_src
 
 * dired
