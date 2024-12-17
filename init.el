@@ -710,6 +710,10 @@ programming modes based on basic space / tab indentation."
 (use-package doom-themes)
 (use-package ef-themes)
 (use-package gruvbox-theme)
+
+;;
+;; -> use-package
+;;
 (use-package htmlize)
 (use-package org-kanban)
 (use-package org-ql)
@@ -747,7 +751,6 @@ programming modes based on basic space / tab indentation."
 (define-key my-jump-keymap (kbd "k")
             (lambda () (interactive)
               (find-file (concat user-emacs-directory "emacs--init.org"))))
-(define-key my-jump-keymap (kbd "l") #'recentf-open)
 
 ;;
 ;; -> completion
@@ -813,18 +816,7 @@ programming modes based on basic space / tab indentation."
   (setq company-minimum-prefix-length 1)
   (setq company-idle-delay nil))
 
-(use-package emacs
-  :init
-  ;; TAB cycle if there are only few candidates
-  (setq completion-cycle-threshold 3)
-  ;; Enable indentation+completion using the TAB key.
-  ;; `completion-at-point' is often bound to M-TAB.
-  (setq tab-always-indent 'complete))
-
 (use-package tempel
-  :diminish tempel-abbrev-mode global-tempel-abbrev-mode abbrev-mode
-  :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
-         ("M-*" . tempel-insert))
   :init
   (defun tempel-setup-capf ()
     (setq-local completion-at-point-functions
@@ -853,7 +845,6 @@ programming modes based on basic space / tab indentation."
 ;;
 
 (global-set-key (kbd "C-c b") #'(lambda ()(interactive)(async-shell-command "do_backup home" "*backup*")))
-(global-set-key (kbd "C-c c") #'org-capture)
 (bind-key* (kbd "C-c ,") #'embark-act)
 (define-key minibuffer-local-map (kbd "C-c c") #'embark-collect)
 (define-key minibuffer-local-map (kbd "C-c e") #'embark-export)
@@ -872,25 +863,6 @@ programming modes based on basic space / tab indentation."
      `(tab-bar-tab ((t (:inherit default :background ,default-fg :foreground ,default-bg))))
      `(tab-bar-tab-inactive ((t (:inherit default :background ,default-bg :foreground ,inactive-fg)))))))
 (my/sync-tab-bar-to-theme)
-;;
-(defun my/dired-file-to-org-link ()
-  "Transform the file path under the cursor in Dired to an Org mode
-  link and copy to kill ring.
-  This function transforms the current file path in Dired mode into
-  an Org link with attributes for both org-mode and HTML width
-  settings. The generated link is then copied to the kill ring for
-  easy pasting."
-  (interactive)
-  (let ((file-path (dired-get-file-for-visit)))
-    (if file-path
-        (let* ((relative-path (file-relative-name file-path
-                                                  (project-root (project-current t))))
-               (org-link (concat "#+attr_org: :width 300px\n"
-                                 "#+attr_html: :width 100%\n"
-                                 "[[file:" relative-path "]]\n")))
-          (kill-new org-link)
-          (message "Copied to kill ring: %s" org-link))
-      (message "No file under the cursor"))))
 
 ;;
 ;; -> org
@@ -922,23 +894,8 @@ programming modes based on basic space / tab indentation."
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 50)
-(add-to-list 'default-frame-alist '(alpha-background . 50))
-
-;;
-;; -> dired
-;;
-(with-eval-after-load 'dired
-  (define-key dired-mode-map (kbd "W") 'dired-do-async-shell-command)
-  (define-key dired-mode-map (kbd "b") 'my/dired-file-to-org-link)
-  (setq dired-guess-shell-alist-user
-        '(("\\.\\(jpg\\|jpeg\\|png\\|gif\\|bmp\\)$" "gthumb")
-          ("\\.\\(mp4\\|mkv\\|avi\\|mov\\|wmv\\|flv\\|mpg\\)$" "mpv")
-          ("\\.\\(mp3\\|wav\\|ogg\\|\\)$" "mpv")
-          ("\\.\\(kra\\)$" "org.kde.krita")
-          ("\\.\\(odt\\|ods\\)$" "libreoffice")
-          ("\\.\\(html\\|htm\\)$" "firefox")
-          ("\\.\\(pdf\\|epub\\)$" "xournalpp"))))
+(set-frame-parameter nil 'alpha-background 80)
+(add-to-list 'default-frame-alist '(alpha-background . 80))
 
 ;;
 ;; -> shell
@@ -986,9 +943,7 @@ programming modes based on basic space / tab indentation."
 ;;
 
 (when (eq system-type 'gnu/linux)
-  (define-key my-jump-keymap (kbd "b") (lambda () (interactive) (find-file "~/bin")))
   (define-key my-jump-keymap (kbd "c") (lambda () (interactive) (find-file "~/DCIM/Camera")))
-  (define-key my-jump-keymap (kbd "g") (lambda () (interactive) (find-file "~/.config")))
   (define-key my-jump-keymap (kbd "j") (lambda () (interactive) (find-file "~/DCIM/content/aaa--todo.org")))
   (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
   (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
@@ -1092,36 +1047,6 @@ programming modes based on basic space / tab indentation."
       (:url . chatgpt-shell-ollama--make-url)))))
 
 ;;
-;; -> window-positioning
-;;
-(add-to-list 'display-buffer-alist
-             '("\\*Async" display-buffer-no-window
-               (allow-no-window . t)))
-
-(add-to-list 'display-buffer-alist
-             '("\\*Messages" display-buffer-same-window))
-
-(add-to-list 'display-buffer-alist
-             '("\\*compilation"
-               (display-buffer-reuse-window display-buffer-in-direction)
-               (direction . leftmost)
-               (dedicated . t)
-               (window-width . 0.3)
-               (inhibit-same-window . t)))
-
-(add-to-list 'display-buffer-alist
-             '("\\Running"
-               (display-buffer-reuse-window display-buffer-in-direction)
-               (direction . leftmost)
-               (dedicated . t)
-               (window-width . 0.33)
-               (inhibit-same-window . t)))
-
-(add-to-list 'display-buffer-alist
-             '("\\*Help\\*"
-               (display-buffer-reuse-window display-buffer-same-window)))
-
-;;
 ;; -> programming
 ;;
 
@@ -1132,17 +1057,9 @@ programming modes based on basic space / tab indentation."
 
 (use-package yaml-mode)
 
-(setq eldoc-echo-area-use-multiline-p nil)
-
-(setq vc-handled-backends '(SVN Git))
-
 ;;
 ;; -> development
 ;;
-(defun without-gc (&rest args)
-  (let ((gc-cons-threshold most-positive-fixnum))
-    (apply args)))
-
 (defun my/push-block ()
   "Export content from one file to another in various formats given VALUE."
   (interactive)
@@ -1151,8 +1068,6 @@ programming modes based on basic space / tab indentation."
     (mapc 'shell-command
           '("web rsync emacs" "web rsync art"
             "web rsync dyerdwelling"))))
-
-(add-hook 'org-mode-hook 'org-indent-mode)
 
 (defun my/org-ql-tags-search-in-current-buffer ()
   "Prompt the user for a tag from the current buffer and generate a TODO list ordered by timestamp."
