@@ -22,7 +22,7 @@
 (define-abbrev-table 'global-abbrev-table
   '(
     ("jT" "" (lambda nil (interactive) (insert (format-time-string "%Y%m%d%H%M%S"))) :count 0)
-    ("ja" "" (lambda nil (interactive) (insert (format-time-string "%Y-%m-%d"))) :count 1)
+    ("ja" "" (lambda nil (interactive) (insert (format-time-string "<%Y-%m-%d>"))) :count 1)
     ("ji" "(interactive)" nil :count 1)
     ("jl" "(lambda ()" nil :count 0)
     ("jt" "" (lambda nil (interactive) (insert (format-time-string "%Y%m%d"))) :count 0)
