@@ -1015,23 +1015,6 @@ Demonstrates customizations for shell integration within Emacs, optimizing setti
   :hook
   (eshell-mode . my/eshell-hook))
 
-(use-package popper
-  :init
-  (setq popper-reference-buffers
-        '("\\*eshell.*"
-          "\\*convert.*"
-          "\\*eldoc.*"
-          flymake-diagnostics-buffer-mode
-          help-mode
-          compilation-mode))
-  (popper-mode 1)
-  (popper-echo-mode 1)
-  :custom
-  (popper-window-height 18))
-
-(bind-key* (kbd "C-c '") #'popper-toggle)
-(bind-key* (kbd "C-c ;") #'popper-toggle-type)
-
 #+end_src
 
 * linux specific
