@@ -440,11 +440,10 @@ Customizes the Org Agenda for a personalized task management and calendar view, 
   (org-agenda-show-all-dates t)
   (org-refile-targets '((org-agenda-files :maxlevel . 1)))
   (org-agenda-files '("~/DCIM/content/aaa--aaa.org"
+                      "~/DCIM/content/aaa--calendar.org"
                       "~/DCIM/content/aaa--todo.org"
                       "~/DCIM/content/aab--house.org"
-                      "~/DCIM/content/aaa--calendar.org"
                       "~/DCIM/content/aac--baby.org"
-                      "~/DCIM/content/aaf--kate.org"
                       "~/DCIM/content/aag--emacs-todo.org"
                       ))
   :config
