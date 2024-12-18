@@ -668,50 +668,6 @@ programming modes based on basic space / tab indentation."
                "\n")))
 
 ;;
-;; -> magit
-;;
-
-(when (executable-find "git")
-  (use-package magit
-    :defer 5
-    :config
-    (magit-add-section-hook
-     'magit-status-sections-hook 'magit-insert-tracked-files nil 'append)
-    :custom
-    (magit-section-initial-visibility-alist (quote ((untracked . hide))))
-    (magit-repolist-column-flag-alist
-     '((magit-untracked-files . "N")
-       (magit-unstaged-files . "U")
-       (magit-staged-files . "S")))
-    (magit-repolist-columns
-     '(("Name" 25 magit-repolist-column-ident nil)
-       ("" 3 magit-repolist-column-flag)
-       ("Version" 25 magit-repolist-column-version
-        ((:sort magit-repolist-version<)))
-       ("B<U" 3 magit-repolist-column-unpulled-from-upstream
-        ((:right-align t)
-         (:sort <)))
-       ("B>U" 3 magit-repolist-column-unpushed-to-upstream
-        ((:right-align t)
-         (:sort <)))
-       ("Path" 99 magit-repolist-column-path nil)))
-    (magit-repository-directories
-     '(("~/.config" . 0)
-       ("~/source/repos" . 2)
-       ("~/bin" . 1)
-       ("~/.emacs.d" . 1)
-       ("~/.emacs.d.core" . 1)
-       ("~/DCIM/Art/Content" . 2)
-       ("~/DCIM/themes" . 2)))))
-
-;;
-;; -> use-package
-;;
-(use-package doom-themes)
-(use-package ef-themes)
-(use-package gruvbox-theme)
-
-;;
 ;; -> use-package
 ;;
 (use-package htmlize)
@@ -815,17 +771,6 @@ programming modes based on basic space / tab indentation."
   :config
   (setq company-minimum-prefix-length 1)
   (setq company-idle-delay nil))
-
-(use-package tempel
-  :init
-  (defun tempel-setup-capf ()
-    (setq-local completion-at-point-functions
-                (cons #'tempel-expand
-                      completion-at-point-functions)))
-  (add-hook 'conf-mode-hook #'tempel-setup-capf)
-  (add-hook 'prog-mode-hook #'tempel-setup-capf)
-  (add-hook 'text-mode-hook #'tempel-setup-capf)
-  (global-tempel-abbrev-mode))
 
 ;;
 ;; -> keys-visual
@@ -1091,3 +1036,5 @@ programming modes based on basic space / tab indentation."
 ;; -> modes
 ;;
 (server-mode 1)
+
+

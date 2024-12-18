@@ -745,7 +745,7 @@ Customizes Org Capture templates for quickly capturing notes, tasks, and other i
 
 Additional themes that make my Emacs look all pretty.
 
-#+begin_src elisp
+#+begin_src elisp :tangle no
 ;;
 ;; -> use-package
 ;;
@@ -876,17 +876,6 @@ Simple completion
   :config
   (setq company-minimum-prefix-length 1)
   (setq company-idle-delay nil))
-
-(use-package tempel
-  :init
-  (defun tempel-setup-capf ()
-    (setq-local completion-at-point-functions
-                (cons #'tempel-expand
-                      completion-at-point-functions)))
-  (add-hook 'conf-mode-hook #'tempel-setup-capf)
-  (add-hook 'prog-mode-hook #'tempel-setup-capf)
-  (add-hook 'text-mode-hook #'tempel-setup-capf)
-  (global-tempel-abbrev-mode))
 #+end_src
 
 * keys-visual
