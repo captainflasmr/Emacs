@@ -375,48 +375,12 @@ programming modes based on basic space / tab indentation."
 ;;
 ;; -> org-agenda
 ;;
-
-(use-package org
-  :custom
-  (org-agenda-include-diary nil)
-  (org-agenda-show-all-dates t)
-  (org-refile-targets '((org-agenda-files :maxlevel . 1)))
-  (org-agenda-files '("~/DCIM/content/aaa--aaa.org"
-                      "~/DCIM/content/aaa--todo.org"
-                      "~/DCIM/content/aab--house.org"
-                      "~/DCIM/content/aaa--calendar.org"
-                      "~/DCIM/content/aac--baby.org"
-                      "~/DCIM/content/aaf--kate.org"
-                      "~/DCIM/content/aag--emacs-todo.org"
-                      ))
-  :config
-  (with-eval-after-load 'org-agenda
-    (unbind-key "M-m" org-agenda-mode-map)
-    (setq org-agenda-custom-commands
-          '(("m" "Month View" agenda ""
-             ((org-agenda-start-day "today")
-              (org-agenda-span 30)
-              (org-agenda-time-grid nil)))
-            ("0" "Year View (2020)" agenda ""
-             ((org-agenda-start-day "2020-01-01")
-              (org-agenda-span 'year)
-              (org-agenda-time-grid nil)))
-            ("1" "Year View (2021)" agenda ""
-             ((org-agenda-start-day "2021-01-01")
-              (org-agenda-span 'year)
-              (org-agenda-time-grid nil)))
-            ("2" "Year View (2022)" agenda ""
-             ((org-agenda-start-day "2022-01-01")
-              (org-agenda-span 'year)
-              (org-agenda-time-grid nil)))
-            ("3" "Year View (2023)" agenda ""
-             ((org-agenda-start-day "2023-01-01")
-              (org-agenda-span 'year)
-              (org-agenda-time-grid nil)))
-            ("4" "Year View (2024)" agenda ""
-             ((org-agenda-start-day "2024-01-01")
-              (org-agenda-span 'year)
-              (org-agenda-time-grid nil)))))))
+(setq org-agenda-files '("~/DCIM/content/aaa--aaa.org"
+                         "~/DCIM/content/aaa--calendar.org"
+                         "~/DCIM/content/aaa--todo.org"
+                         "~/DCIM/content/aab--house.org"
+                         "~/DCIM/content/aac--baby.org"
+                         "~/DCIM/content/aag--emacs-todo.org"))
 
 ;;
 ;; -> dwim
@@ -1019,42 +983,3 @@ programming modes based on basic space / tab indentation."
 ;; -> modes
 ;;
 (server-mode 1)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-enabled-themes '(wombat))
- '(org-agenda-files
-   '("~/.emacs.d/Emacs-enhanced/README.org" "/home/jdyer/DCIM/content/aaa--aaa.org" "/home/jdyer/DCIM/content/aaa--todo.org" "/home/jdyer/DCIM/content/aab--house.org" "/home/jdyer/DCIM/content/aaa--calendar.org" "/home/jdyer/DCIM/content/aac--baby.org" "/home/jdyer/DCIM/content/aaf--kate.org" "/home/jdyer/DCIM/content/aag--emacs-todo.org") nil nil "Customized with use-package org")
- '(warning-suppress-log-types '((frameset)))
- '(warning-suppress-types '((frameset))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(ediff-current-diff-A ((t (:extend t :background "#b5daeb" :foreground "#000000"))))
- '(ediff-even-diff-A ((t (:background "#bafbba" :foreground "#000000" :extend t))))
- '(ediff-fine-diff-A ((t (:background "#f4bd92" :foreground "#000000" :extend t))))
- '(ediff-odd-diff-A ((t (:background "#b8fbb8" :foreground "#000000" :extend t))))
- '(fixed-pitch ((t (:family "Source Code Pro" :height 110))))
- '(font-lock-warning-face ((t (:foreground "#930000" :inverse-video nil))))
- '(fringe ((t (:foreground "#242424" :background "#242424"))))
- '(hl-line ((t (:background "#1e1e1e"))))
- '(indent-guide-face ((t (:background "#282828" :foreground "#666666"))))
- '(org-level-1 ((t (:inherit default :weight regular :height 1.0))))
- '(org-level-2 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-3 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-4 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-5 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-6 ((t (:inherit default :weight light :height 1.0))))
- '(org-link ((t (:underline nil))))
- '(org-tag ((t (:height 0.99))))
- '(tab-bar ((t (:inherit default :background "#242424" :foreground "#f6f3e8"))))
- '(tab-bar-tab ((t (:inherit 'highlight :background "#ff4444" :foreground "#000000"))))
- '(tab-bar-tab-inactive ((t (:inherit default :background "#242424" :foreground "#aaaaaa" :box (:line-width 2 :color "#242424" :style released-button)))))
- '(variable-pitch ((t (:family "DejaVu Sans" :height 120 :weight normal))))
- '(vertical-border ((t (:foreground "#000000"))))
- '(widget-button ((t (:inherit fixed-pitch :weight regular))))
- '(window-divider ((t (:foreground "black")))))
