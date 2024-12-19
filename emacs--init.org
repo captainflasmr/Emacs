@@ -1,9 +1,9 @@
 -*- mode: org; fill-column: 80; eval: (display-fill-column-indicator-mode -1); -*-
-#+title: Emacs Configuration
+#+title: Emacs Main Configuration
+#+author: James Dyer
 #+options: toc:nil author:t title:t
-#+property: header-args :tangle ~/.emacs.d/init.el
 #+startup: overview
-#+TOC: headlines 1 local
+#+property: header-args :tangle ~/.emacs.d/init.el
 
 #+begin_src emacs-lisp
 ;; -*- lexical-binding: t; -*-
