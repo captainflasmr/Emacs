@@ -244,46 +244,6 @@ The Selected Window Accent Mode is an Emacs package designed to visually disting
 
 (global-set-key (kbd "M-RET") #'build-transient)
 
-(transient-define-prefix my/transient-outlining-and-folding ()
-  "Transient menu for outline-mode."
-  ["Outline Mode Commands"
-   ["Cycle / Folding"
-    ("g" "Cycle" outline-cycle)
-    ("O" "Cycle Buffer" outline-cycle-buffer)
-    ("F" "Global Folding at Point"
-     (lambda () (interactive)
-       (if (eq selective-display (1+ (current-column)))
-           (set-selective-display 0)
-         (set-selective-display (1+ (current-column))))))]
-   ["Visibility"
-    ("o" "Toggle Children" outline-toggle-children)
-    ("h" "Hide Sublevels" outline-hide-sublevels)
-    ("s" "Show All" outline-show-all)
-    ("i" "Hide Body" outline-hide-body)
-    ("e" "Show Entry" outline-show-entry)
-    ("H" "Hide Entry" outline-hide-entry)
-    ("c" "Hide Leaves" outline-hide-leaves)
-    ("k" "Show Branches" outline-show-branches)
-    ("t" "Hide Subtree" outline-hide-subtree)
-    ("S" "Show Subtree" outline-show-subtree)]
-   ["Motion"
-    ("n" "Next Visible Heading" outline-next-visible-heading)
-    ("p" "Previous Visible Heading" outline-previous-visible-heading)
-    ("u" "Up Heading" outline-up-heading)
-    ("f" "Forward Same Level" outline-forward-same-level)
-    ("b" "Backward Same Level" outline-backward-same-level)]
-   ["Structure"
-    ("t" "Promote Heading" outline-promote)
-    ("d" "Demote Heading" outline-demote)
-    ("P" "Move Subtree Up" outline-move-subtree-up)
-    ("N" "Move Subtree Down" outline-move-subtree-down)]
-   ["Edit"
-    ("a" "Add Heading" outline-insert-heading)
-    ("r" "Rename Heading" outline-insert-heading)
-    ("m" "Mark Subtree" outline-mark-subtree)]])
-
-(bind-key* (kbd "C-c o") 'my/transient-outlining-and-folding)
-
 (defun my/prog-folding ()
   "Enable and configure outline minor mode for code folding.
 This function sets up the outline minor mode tailored for
