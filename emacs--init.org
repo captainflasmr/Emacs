@@ -704,20 +704,6 @@ Customizes Org Capture templates for quickly capturing notes, tasks, and other i
 
 #+end_src
 
-* themes
-
-Additional themes that make my Emacs look all pretty.
-
-#+begin_src elisp :tangle no
-;;
-;; -> use-package
-;;
-(use-package doom-themes)
-(use-package ef-themes)
-(use-package gruvbox-theme)
-
-#+end_src
-
 * use-package
 
 Demonstrates the use of `use-package` to neatly organize package configuration and lazy loading, improving startup times and making the configuration more readable.
