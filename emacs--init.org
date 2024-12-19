@@ -510,9 +510,6 @@ Customizes Org Capture templates for quickly capturing notes, tasks, and other i
 ;;
 ;; -> org-capture
 ;;
-
-(setq bookmark-fringe-mark nil)
-
 (defun my-capture-top-level ()
   "Function to capture a new entry at the top level of the given file."
   (goto-char (point-min))
