@@ -256,34 +256,6 @@ programming modes based on basic space / tab indentation."
   (outline-minor-mode 1))
 
 (add-hook 'prog-mode-hook 'my/prog-folding)
-
-(with-eval-after-load 'chatgpt-shell
-  (transient-define-prefix chatgpt-shell-transient ()
-    "Transient for ChatGPT Shell commands."
-    ["ChatGPT Shell Commands"
-     ["Code and Text"
-      ("e" "Explain Code" chatgpt-shell-explain-code)
-      ("p" "Proofread Region" chatgpt-shell-proofread-region)
-      ("g" "Write Git Commit" chatgpt-shell-write-git-commit)
-      ("s" "Send Region" chatgpt-shell-send-region)
-      ("d" "Describe Code" chatgpt-shell-describe-code)
-      ("r" "Refactor Code" chatgpt-shell-refactor-code)
-      ("u" "Generate Unit Test" chatgpt-shell-generate-unit-test)
-      ("a" "Send and Review Region" chatgpt-shell-send-and-review-region)]
-     ["Shell Operations"
-      ("l" "Start Shell" chatgpt-shell)
-      ;;    ("m" "Swap Model Version" chatgpt-shell-swap-model-version)
-      ("t" "Save Session Transcript" chatgpt-shell-save-session-transcript)]
-     ["Eshell Integrations"
-      ("o" "Summarize Last Command Output" chatgpt-shell-eshell-summarize-last-command-output)
-      ("w" "What's Wrong With Last Command" chatgpt-shell-eshell-whats-wrong-with-last-command)]
-     ["Miscellaneous"
-      ("i" "Describe Image" chatgpt-shell-describe-image)
-      ("m" "Swap Model" chatgpt-shell-swap-model)]
-     ])
-
-  (global-set-key (kbd "C-c g") 'chatgpt-shell-transient))
-
 #+end_src
 
 * kurecolor
