@@ -85,26 +85,6 @@ The Selected Window Accent Mode is an Emacs package designed to visually disting
 
 #+end_src
 
-* transients
-
-#+begin_src elisp
-;;
-;; -> transients
-;;
-(defun my/prog-folding ()
-  "Enable and configure outline minor mode for code folding.
-This function sets up the outline minor mode tailored for
-programming modes based on basic space / tab indentation."
-  (interactive)
-  (setq-local outline-minor-mode-use-buttons nil)
-  (setq-local outline-regexp (rx bol
-                                 (zero-or-more (any " \t"))
-                                 (not (any " \t\n"))))
-  (outline-minor-mode 1))
-
-(add-hook 'prog-mode-hook 'my/prog-folding)
-#+end_src
-
 * calendar
 
 Enhances Emacs's calendar functionalities with additional packages and configurations, highlighting integration with Org mode and customization options for calendar views and event handling.
