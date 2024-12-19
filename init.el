@@ -59,199 +59,6 @@
 ;;
 ;; -> transients
 ;;
-
-(defvar cmake-preset
-  "build/linux/debug"
-  "cmake-preset")
-
-(defun change-directory-and-run (dir command bufname)
-  "Change to DIR and run the COMMAND."
-  (let ((default-directory dir))
-    (async-shell-command command bufname)
-    (message "Running command: %s:%s" dir command)))
-
-(defun run-exe-command (dir exe bufname)
-  "Run EXE from a specified DIR."
-  (message "run-exe-command: %s:%s:%s" dir exe bufname)
-  (change-directory-and-run dir exe bufname))
-
-(defun run-cmake-command (command)
-  "Run COMMAND from the top level of the project."
-  (message command)
-  (change-directory-and-run (project-root (project-current t)) command "*cmake*"))
-
-(defun run-cmake-compile-command (command)
-  "Run compile COMMAND from the top level of the project."
-  (message command)
-  (let ((default-directory (project-root (project-current t))))
-    (compile command)
-    (message "Running command: %s:%s" dir command)))
-
-(defun kill-async-buffer (buffer-name)
-  "Kill the async buffer with BUFFER-NAME."
-  (let ((buffer (get-buffer buffer-name)))
-    (when buffer
-      (kill-buffer buffer)
-      (message "Killed buffer: %s" buffer-name))))
-
-(defun list-cmake-presets ()
-  "List available CMake presets using `cmake --list-presets=configure`."
-  (let ((output (shell-command-to-string "cmake --list-presets=configure")))
-    (delq nil
-          (mapcar (lambda (line)
-                    (if (string-match "^\\s-+\"\\([^\"]+\\)\"\\s-*$" line)
-                        (match-string 1 line)))
-                  (split-string output "\n")))))
-
-(defun transient-select-cmake-preset ()
-  "Function to select a CMake preset."
-  (interactive)
-  (let* ((presets (list-cmake-presets))
-         (preset (completing-read "Select CMake preset: " presets nil t)))
-    (setq cmake-preset preset)
-    (message "Selected CMake preset: %s" preset)))
-
-(transient-define-prefix build-transient ()
-  "Build and Diagnostic transient commands."
-  [:description (lambda () (project-root (project-current t)))
-                ["CMake"
-                 ("p" "Set Preset" transient-select-cmake-preset)
-                 ("c" "Configure"
-                  (lambda () (interactive)
-                    (run-cmake-command (format "cmake --preset %s" cmake-preset))))
-                 ("RET" "Build"
-                  (lambda () (interactive)
-                    (run-cmake-compile-command (format "cmake --build --preset %s" cmake-preset))))
-                 ("i" "Install"
-                  (lambda () (interactive)
-                    (run-cmake-command (format "cmake --install %s" cmake-preset))))
-                 ("g" "Refresh"
-                  (lambda () (interactive)
-                    (run-cmake-command (format "cmake --preset %s --fresh" cmake-preset))))
-                 ("x" "Clean"
-                  (lambda () (interactive)
-                    (if (y-or-n-p "Are you sure you want to proceed? ")
-                        (run-cmake-command "rm -rf build"))))
-                 ;; ("m" "Toggle compilation"
-                 ;;   (lambda () (interactive)
-                 ;;     (let ((buffer (get-buffer "*compilation*")))
-                 ;;       (if buffer
-                 ;;         (if (get-buffer-window buffer 'visible)
-                 ;;           (delete-windows-on buffer)
-                 ;;           (display-buffer buffer))
-                 ;;         (message "No *compilation* buffer found.")))))
-                 ("s" "List Presets"
-                  (lambda () (interactive)
-                    (run-cmake-command "cmake --list-presets=configure")))]
-                ["Actions"
-                 ("SPC" "File Backup" my/dired-duplicate-backup-file)
-                 ("f" "Toggle Flycheck" flymake-mode)
-                 ("d" "Show Flycheck Diagnostics" flymake-show-buffer-diagnostics)]
-                ["Coding"
-                 ("e" "Fancy Stuff"
-                  (lambda () (interactive)
-                    (call-interactively 'eglot)
-                    (company-mode 1)
-                    (flymake-mode 1)))
-                 ("u" "Undo Fancy Stuff"
-                  (lambda () (interactive)
-                    (eglot-shutdown-all)
-                    (company-mode -1)
-                    (flymake-mode -1)))
-                 ("h" "Stop eglot"
-                  (lambda () (interactive)
-                    (eglot-shutdown-all)))]
-                ["Run"
-                 ("r" "All"
-                  (lambda () (interactive)
-                    (run-exe-command
-                     (concat (project-root (project-current t))
-                             "build/windows/debug/bin/Debug")
-                     "CigiDummyIG.exe" "*Running CigiDummyIG.exe*")
-                    (run-exe-command
-                     (concat (project-root (project-current t))
-                             "build/windows/debug/bin/Debug")
-                     "CigiMiniHostCSharp.exe" "*Running CigiMiniHostCSharp.exe*")))
-                 ("1" "CigiDummyIG"
-                  (lambda () (interactive)
-                    (run-exe-command
-                     (concat (project-root (project-current t))
-                             "build/windows/debug/bin/Debug")
-                     "CigiDummyIG.exe"
-                     "*Running CigiDummyIG.exe*")))
-                 ("2" "CigiMiniHost"
-                  (lambda () (interactive)
-                    (run-exe-command
-                     (concat (project-root (project-current t))
-                             "build/windows/debug/bin/Debug")
-                     "CigiMiniHost.exe"
-                     "*Running CigiMiniHost.exe*")))
-                 ("3" "CigiMiniHostCSharp"
-                  (lambda () (interactive)
-                    (run-exe-command
-                     (concat (project-root (project-current t))
-                             "build/windows/debug/bin/Debug")
-                     "CigiMiniHostCSharp.exe"
-                     "*Running CigiMiniHostCSharp.exe*")))]
-                ["Kill"
-                 ("5" "CigiDummyIG (k)"
-                  (lambda () (interactive)
-                    (kill-async-buffer "*Running CigiDummyIG.exe*")))
-                 ("6" "CigiMiniHost (k)"
-                  (lambda () (interactive)
-                    (kill-async-buffer "*Running CigiMiniHost.exe*")))
-                 ("7" "CigiMiniHostCSharp (k)"
-                  (lambda () (interactive)
-                    (kill-async-buffer "*Running CigiMiniHostCSharp.exe*")))
-                 ("k" "All (k)"
-                  (lambda () (interactive)
-                    (kill-async-buffer "*Running CigiDummyIG.exe*")
-                    (kill-async-buffer "*Running CigiMiniHost.exe*")
-                    (kill-async-buffer "*Running CigiMiniHostCSharp.exe*")))]
-                ])
-
-(global-set-key (kbd "M-RET") #'build-transient)
-
-(transient-define-prefix my/transient-outlining-and-folding ()
-  "Transient menu for outline-mode."
-  ["Outline Mode Commands"
-   ["Cycle / Folding"
-    ("g" "Cycle" outline-cycle)
-    ("O" "Cycle Buffer" outline-cycle-buffer)
-    ("F" "Global Folding at Point"
-     (lambda () (interactive)
-       (if (eq selective-display (1+ (current-column)))
-           (set-selective-display 0)
-         (set-selective-display (1+ (current-column))))))]
-   ["Visibility"
-    ("o" "Toggle Children" outline-toggle-children)
-    ("h" "Hide Sublevels" outline-hide-sublevels)
-    ("s" "Show All" outline-show-all)
-    ("i" "Hide Body" outline-hide-body)
-    ("e" "Show Entry" outline-show-entry)
-    ("H" "Hide Entry" outline-hide-entry)
-    ("c" "Hide Leaves" outline-hide-leaves)
-    ("k" "Show Branches" outline-show-branches)
-    ("t" "Hide Subtree" outline-hide-subtree)
-    ("S" "Show Subtree" outline-show-subtree)]
-   ["Motion"
-    ("n" "Next Visible Heading" outline-next-visible-heading)
-    ("p" "Previous Visible Heading" outline-previous-visible-heading)
-    ("u" "Up Heading" outline-up-heading)
-    ("f" "Forward Same Level" outline-forward-same-level)
-    ("b" "Backward Same Level" outline-backward-same-level)]
-   ["Structure"
-    ("t" "Promote Heading" outline-promote)
-    ("d" "Demote Heading" outline-demote)
-    ("P" "Move Subtree Up" outline-move-subtree-up)
-    ("N" "Move Subtree Down" outline-move-subtree-down)]
-   ["Edit"
-    ("a" "Add Heading" outline-insert-heading)
-    ("r" "Rename Heading" outline-insert-heading)
-    ("m" "Mark Subtree" outline-mark-subtree)]])
-
-(bind-key* (kbd "C-c o") 'my/transient-outlining-and-folding)
-
 (defun my/prog-folding ()
   "Enable and configure outline minor mode for code folding.
 This function sets up the outline minor mode tailored for
@@ -264,64 +71,6 @@ programming modes based on basic space / tab indentation."
   (outline-minor-mode 1))
 
 (add-hook 'prog-mode-hook 'my/prog-folding)
-
-(with-eval-after-load 'chatgpt-shell
-  (transient-define-prefix chatgpt-shell-transient ()
-    "Transient for ChatGPT Shell commands."
-    ["ChatGPT Shell Commands"
-     ["Code and Text"
-      ("e" "Explain Code" chatgpt-shell-explain-code)
-      ("p" "Proofread Region" chatgpt-shell-proofread-region)
-      ("g" "Write Git Commit" chatgpt-shell-write-git-commit)
-      ("s" "Send Region" chatgpt-shell-send-region)
-      ("d" "Describe Code" chatgpt-shell-describe-code)
-      ("r" "Refactor Code" chatgpt-shell-refactor-code)
-      ("u" "Generate Unit Test" chatgpt-shell-generate-unit-test)
-      ("a" "Send and Review Region" chatgpt-shell-send-and-review-region)]
-     ["Shell Operations"
-      ("l" "Start Shell" chatgpt-shell)
-      ;;    ("m" "Swap Model Version" chatgpt-shell-swap-model-version)
-      ("t" "Save Session Transcript" chatgpt-shell-save-session-transcript)]
-     ["Eshell Integrations"
-      ("o" "Summarize Last Command Output" chatgpt-shell-eshell-summarize-last-command-output)
-      ("w" "What's Wrong With Last Command" chatgpt-shell-eshell-whats-wrong-with-last-command)]
-     ["Miscellaneous"
-      ("i" "Describe Image" chatgpt-shell-describe-image)
-      ("m" "Swap Model" chatgpt-shell-swap-model)]
-     ])
-
-  (global-set-key (kbd "C-c g") 'chatgpt-shell-transient))
-
-;;
-;; -> kurecolor
-;;
-
-(use-package kurecolor
-  :ensure t ; Ensure the package is installed (optional)
-  :bind (("M-<up>" . (lambda () (interactive) (kurecolor-increase-brightness-by-step 0.2)))
-         ("M-<down>" . (lambda () (interactive) (kurecolor-decrease-brightness-by-step 0.2)))
-         ("M-<prior>" . (lambda () (interactive) (kurecolor-increase-saturation-by-step 0.2)))
-         ("M-<next>" . (lambda () (interactive) (kurecolor-decrease-saturation-by-step 0.2)))
-         ("M-<left>" . (lambda () (interactive) (kurecolor-decrease-hue-by-step 0.2)))
-         ("M-<right>" . (lambda () (interactive) (kurecolor-increase-hue-by-step 0.2))))
-  :config
-  (global-set-key (kbd "M-<home>") 'my/insert-random-color-at-point))
-
-(defun my/insert-random-color-at-point ()
-  "Generate random color and insert at current hex color under cursor."
-  (interactive)
-  (let* ((color (format "#%06x" (random (expt 16 6))))
-         (bounds (bounds-of-thing-at-point 'sexp))
-         (start (car bounds))
-         (end (cdr bounds)))
-    (if (and bounds (> end start))
-        (progn
-          (goto-char start)
-          (unless (looking-at "#[0-9a-fA-F]\\{6\\}")
-            (error "Not on a hex color code"))
-          (delete-region start end)
-          (insert color))
-      (error "No hex color code at point"))))
 
 ;;
 ;; -> calendar
@@ -365,7 +114,6 @@ programming modes based on basic space / tab indentation."
                                 (setq tab-width 0)
                                 (setq indent-tabs-mode nil)))
 
-
 (defun my-org-confirm-babel-evaluate (lang body)
   (not (or (string= lang "plantuml")
            (string= lang "emacs-lisp"))))
@@ -383,65 +131,8 @@ programming modes based on basic space / tab indentation."
                          "~/DCIM/content/aag--emacs-todo.org"))
 
 ;;
-;; -> dwim
-;;
-
-(when (file-exists-p "/home/jdyer/bin/category-list-uniq.txt")
-  (progn
-    (defvar my/dwim-convert-commands
-      '("ConvertNoSpace" "AudioConvert" "AudioInfo" "AudioNormalise"
-        "AudioTrimSilence" "PictureAutoColour" "PictureConvert"
-        "PictureCrush" "PictureFrompdf" "PictureInfo" "PictureMontage"
-        "PictureOrganise" "PictureCrop" "PictureRotateFlip" "PictureEmail"
-        "PictureUpdateFromCreateDate"
-        "PictureRotateLeft" "PictureRotateRight" "PictureScale"
-        "PictureUpscale" "PictureGetText" "PictureOrientation"
-        "PictureUpdateToCreateDate" "VideoConcat" "VideoConvert" "VideoConvertToGif"
-        "VideoCut" "VideoDouble" "VideoExtractAudio" "VideoExtractFrames"
-        "VideoFilter" "VideoFromFrames" "VideoInfo" "VideoRemoveAudio"
-        "VideoReplaceVideoAudio" "VideoRescale" "VideoReverse"
-        "VideoRotate" "VideoRotateLeft" "VideoRotateRight" "VideoShrink"
-        "VideoSlowDown" "VideoSpeedUp" "VideoZoom" "WhatsAppConvert"
-        "PictureCorrect" "Picture2pdf" "PictureTag" "PictureTagRename"
-        "OtherTagDate" "VideoRemoveFlips")
-      "List of commands for dwim-convert.")
-
-    (defun my/read-lines (file-path)
-      "Return a list of lines of a file at FILE-PATH."
-      (with-temp-buffer
-        (insert-file-contents file-path)
-        (split-string (buffer-string) "\n" t)))
-
-    (defun my/dwim-convert-generic (command)
-      "Execute a dwim-shell-command-on-marked-files with the given COMMAND."
-      (let* ((unique-text-file "~/bin/category-list-uniq.txt")
-             (user-selection nil)
-             (files (dired-get-marked-files nil current-prefix-arg))
-             (command-and-files (concat command " " (mapconcat 'identity files " "))))
-        (when (string= command "PictureTag")
-          (setq user-selection (completing-read "Choose an option: "
-                                                (my/read-lines unique-text-file)
-                                                nil t)))
-        (async-shell-command (if user-selection
-                                 (concat command " " user-selection " " (mapconcat 'identity files " "))
-                               (concat command " " (mapconcat 'identity files " ")))
-                             "*convert*")))
-
-    (defun my/dwim-convert-with-selection ()
-      "Prompt user to choose command and execute dwim-shell-command-on-marked-files."
-      (interactive)
-      (let ((chosen-command (completing-read "Choose command: "
-                                             my/dwim-convert-commands)))
-        (my/dwim-convert-generic chosen-command)))
-
-    (global-set-key (kbd "C-c v") 'my/dwim-convert-with-selection)))
-
-;;
 ;; -> org-capture
 ;;
-
-(setq bookmark-fringe-mark nil)
-
 (defun my-capture-top-level ()
   "Function to capture a new entry at the top level of the given file."
   (goto-char (point-min))
@@ -637,8 +328,6 @@ programming modes based on basic space / tab indentation."
 (use-package htmlize)
 (use-package org-kanban)
 (use-package org-ql)
-(use-package embark)
-(use-package embark-consult)
 (use-package org-wc)
 (use-package git-timemachine)
 
@@ -714,28 +403,6 @@ programming modes based on basic space / tab indentation."
      ))
   (eglot-send-changes-idle-time 2.0))
 
-(use-package corfu
-  :custom
-  (corfu-auto-delay 0.1)
-  (corfu-auto-prefix 2)
-  (corfu-cycle t)
-  (corfu-auto nil)
-  (corfu-separator ?\s)
-  (corfu-quit-at-boundary nil)
-  (corfu-quit-no-match nil)
-  (corfu-preview-current nil)
-  (corfu-preselect 'first)
-  (corfu-on-exact-match nil)
-  (corfu-scroll-margin 5))
-
-(use-package company
-  :bind
-  (:map company-active-map
-        ("<tab>" . company-complete-selection))
-  :config
-  (setq company-minimum-prefix-length 1)
-  (setq company-idle-delay nil))
-
 ;;
 ;; -> keys-visual
 ;;
@@ -746,7 +413,13 @@ programming modes based on basic space / tab indentation."
 ;;
 ;; -> keys-other
 ;;
-(global-set-key (kbd "M-s e") #'my/push-block)
+(global-set-key (kbd "M-s e") #'(lambda ()
+                                  (interactive)
+                                  (save-excursion
+                                    (without-gc #'org-hugo-export-wim-to-md)
+                                    (mapc 'shell-command
+                                          '("web rsync emacs" "web rsync art"
+                                            "web rsync dyerdwelling")))))
 (bind-key* (kbd "M-s c") #'cfw:open-org-calendar)
 
 ;;
@@ -754,9 +427,6 @@ programming modes based on basic space / tab indentation."
 ;;
 
 (global-set-key (kbd "C-c b") #'(lambda ()(interactive)(async-shell-command "do_backup home" "*backup*")))
-(bind-key* (kbd "C-c ,") #'embark-act)
-(define-key minibuffer-local-map (kbd "C-c c") #'embark-collect)
-(define-key minibuffer-local-map (kbd "C-c e") #'embark-export)
 
 ;;
 ;; -> defun
@@ -778,9 +448,7 @@ programming modes based on basic space / tab indentation."
 ;;
 
 (setq org-src-tab-acts-natively t
-      org-edit-src-content-indentation 0
       org-log-done t
-      org-tags-sort-function 'org-string-collate-greaterp
       org-export-with-sub-superscripts nil
       org-deadline-warning-days 365
       org-hugo-base-dir "~/DCIM"
@@ -810,7 +478,7 @@ programming modes based on basic space / tab indentation."
 ;; -> shell
 ;;
 (defun my/eshell-hook ()
-  "Set up company completions to be a little more fish like."
+  "Set up completions to be a little more fish like."
   (interactive)
   (setq-local completion-styles '(basic partial-completion))
   (capf-autosuggest-mode)
@@ -952,15 +620,6 @@ programming modes based on basic space / tab indentation."
 ;;
 ;; -> development
 ;;
-(defun my/push-block ()
-  "Export content from one file to another in various formats given VALUE."
-  (interactive)
-  (save-excursion
-    (without-gc #'org-hugo-export-wim-to-md)
-    (mapc 'shell-command
-          '("web rsync emacs" "web rsync art"
-            "web rsync dyerdwelling"))))
-
 (defun my/org-ql-tags-search-in-current-buffer ()
   "Prompt the user for a tag from the current buffer and generate a TODO list ordered by timestamp."
   (interactive)
