@@ -416,7 +416,6 @@ Enhances Emacs's calendar functionalities with additional packages and configura
                                 (setq tab-width 0)
                                 (setq indent-tabs-mode nil)))
 
-
 (defun my-org-confirm-babel-evaluate (lang body)
   (not (or (string= lang "plantuml")
            (string= lang "emacs-lisp"))))
@@ -843,7 +842,13 @@ Configures a sparse keymap for miscellaneous actions like evaluating expressions
 ;;
 ;; -> keys-other
 ;;
-(global-set-key (kbd "M-s e") #'my/push-block)
+(global-set-key (kbd "M-s e") #'(lambda ()
+                                  (interactive)
+                                  (save-excursion
+                                    (without-gc #'org-hugo-export-wim-to-md)
+                                    (mapc 'shell-command
+                                          '("web rsync emacs" "web rsync art"
+                                            "web rsync dyerdwelling")))))
 (bind-key* (kbd "M-s c") #'cfw:open-org-calendar)
 #+end_src
 
@@ -1100,15 +1105,6 @@ Sets up configurations and tool integrations for a productive programming enviro
 ;;
 ;; -> development
 ;;
-(defun my/push-block ()
-  "Export content from one file to another in various formats given VALUE."
-  (interactive)
-  (save-excursion
-    (without-gc #'org-hugo-export-wim-to-md)
-    (mapc 'shell-command
-          '("web rsync emacs" "web rsync art"
-            "web rsync dyerdwelling"))))
-
 (defun my/org-ql-tags-search-in-current-buffer ()
   "Prompt the user for a tag from the current buffer and generate a TODO list ordered by timestamp."
   (interactive)
