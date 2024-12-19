@@ -729,8 +729,6 @@ Demonstrates the use of `use-package` to neatly organize package configuration a
 (use-package htmlize)
 (use-package org-kanban)
 (use-package org-ql)
-(use-package embark)
-(use-package embark-consult)
 (use-package org-wc)
 (use-package git-timemachine)
 
@@ -876,9 +874,6 @@ Demonstrates a broad set of global keybindings for common actions like saving bu
 ;;
 
 (global-set-key (kbd "C-c b") #'(lambda ()(interactive)(async-shell-command "do_backup home" "*backup*")))
-(bind-key* (kbd "C-c ,") #'embark-act)
-(define-key minibuffer-local-map (kbd "C-c c") #'embark-collect)
-(define-key minibuffer-local-map (kbd "C-c e") #'embark-export)
 
 #+end_src
 
