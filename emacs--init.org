@@ -183,12 +183,10 @@ The Selected Window Accent Mode is an Emacs package designed to visually disting
                  ("e" "Fancy Stuff"
                   (lambda () (interactive)
                     (call-interactively 'eglot)
-                    (company-mode 1)
                     (flymake-mode 1)))
                  ("u" "Undo Fancy Stuff"
                   (lambda () (interactive)
                     (eglot-shutdown-all)
-                    (company-mode -1)
                     (flymake-mode -1)))
                  ("h" "Stop eglot"
                   (lambda () (interactive)
@@ -729,28 +727,6 @@ Simple completion
      ;; :inlayHintProvider                ; Displays inline hints (e.g., parameter names).
      ))
   (eglot-send-changes-idle-time 2.0))
-
-(use-package corfu
-  :custom
-  (corfu-auto-delay 0.1)
-  (corfu-auto-prefix 2)
-  (corfu-cycle t)
-  (corfu-auto nil)
-  (corfu-separator ?\s)
-  (corfu-quit-at-boundary nil)
-  (corfu-quit-no-match nil)
-  (corfu-preview-current nil)
-  (corfu-preselect 'first)
-  (corfu-on-exact-match nil)
-  (corfu-scroll-margin 5))
-
-(use-package company
-  :bind
-  (:map company-active-map
-        ("<tab>" . company-complete-selection))
-  :config
-  (setq company-minimum-prefix-length 1)
-  (setq company-idle-delay nil))
 #+end_src
 
 * keys-visual
@@ -871,7 +847,7 @@ Demonstrates customizations for shell integration within Emacs, optimizing setti
 ;; -> shell
 ;;
 (defun my/eshell-hook ()
-  "Set up company completions to be a little more fish like."
+  "Set up completions to be a little more fish like."
   (interactive)
   (setq-local completion-styles '(basic partial-completion))
   (capf-autosuggest-mode)
