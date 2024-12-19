@@ -913,9 +913,7 @@ Extends and customizes Org mode for document structuring, note-taking, and proje
 ;;
 
 (setq org-src-tab-acts-natively t
-      org-edit-src-content-indentation 0
       org-log-done t
-      org-tags-sort-function 'org-string-collate-greaterp
       org-export-with-sub-superscripts nil
       org-deadline-warning-days 365
       org-hugo-base-dir "~/DCIM"
