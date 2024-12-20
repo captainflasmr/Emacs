@@ -57,41 +57,6 @@
      (define-key global-map (kbd "C-c w") 'selected-window-accent-transient)))
 
 ;;
-;; -> transients
-;;
-(defun my/prog-folding ()
-  "Enable and configure outline minor mode for code folding.
-This function sets up the outline minor mode tailored for
-programming modes based on basic space / tab indentation."
-  (interactive)
-  (setq-local outline-minor-mode-use-buttons nil)
-  (setq-local outline-regexp (rx bol
-                                 (zero-or-more (any " \t"))
-                                 (not (any " \t\n"))))
-  (outline-minor-mode 1))
-
-(add-hook 'prog-mode-hook 'my/prog-folding)
-
-;;
-;; -> calendar
-;;
-
-(use-package calfw)
-(use-package calfw-org)
-(use-package calfw-cal)
-
-(setq calendar-holidays nil)
-(setq calendar-week-start-day 1)
-
-(setq cfw:org-capture-template
-      '("c" "Calendar" plain
-        (file+function
-         "~/DCIM/content/aaa--calendar.org"
-         my-capture-top-level)
-        "* TODO %?\n SCHEDULED: %(cfw:org-capture-day)\n"
-        :prepend t :jump-to-captured t))
-
-;;
 ;; -> plantuml
 ;;
 
@@ -356,7 +321,6 @@ programming modes based on basic space / tab indentation."
 ;; -> keys-navigation
 ;;
 
-(define-key my-jump-keymap (kbd "f") #'my/find-file)
 (define-key my-jump-keymap (kbd "k")
             (lambda () (interactive)
               (find-file (concat user-emacs-directory "emacs--init.org"))))
@@ -423,12 +387,6 @@ programming modes based on basic space / tab indentation."
 (bind-key* (kbd "M-s c") #'cfw:open-org-calendar)
 
 ;;
-;; -> keybinding
-;;
-
-(global-set-key (kbd "C-c b") #'(lambda ()(interactive)(async-shell-command "do_backup home" "*backup*")))
-
-;;
 ;; -> defun
 ;;
 (defun my/sync-tab-bar-to-theme ()
@@ -471,8 +429,8 @@ programming modes based on basic space / tab indentation."
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 80)
-(add-to-list 'default-frame-alist '(alpha-background . 80))
+(set-frame-parameter nil 'alpha-background 60)
+(add-to-list 'default-frame-alist '(alpha-background . 60))
 
 ;;
 ;; -> shell
@@ -487,16 +445,7 @@ programming modes based on basic space / tab indentation."
                      #'pcomplete-completions-at-point
                      #'cape-history)))
   (define-key eshell-hist-mode-map (kbd "M-r") #'consult-history))
-
-(use-package eshell
-  :config
-  (setq eshell-scroll-to-bottom-on-input t)
-  (setq-local tab-always-indent 'complete)
-  (setq eshell-history-size 10000) ;; Adjust size as needed
-  (setq eshell-save-history-on-exit t) ;; Enable history saving on exit
-  (setq eshell-hist-ignoredups t) ;; Ignore duplicates
-  :hook
-  (eshell-mode . my/eshell-hook))
+(add-hook 'eshell-mode-hook 'my/eshell-hook)
 
 ;;
 ;; -> linux specific
