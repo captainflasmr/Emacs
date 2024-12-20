@@ -85,32 +85,6 @@ The Selected Window Accent Mode is an Emacs package designed to visually disting
 
 #+end_src
 
-* calendar
-
-Enhances Emacs's calendar functionalities with additional packages and configurations, highlighting integration with Org mode and customization options for calendar views and event handling.
-
-#+begin_src elisp
-;;
-;; -> calendar
-;;
-
-(use-package calfw)
-(use-package calfw-org)
-(use-package calfw-cal)
-
-(setq calendar-holidays nil)
-(setq calendar-week-start-day 1)
-
-(setq cfw:org-capture-template
-      '("c" "Calendar" plain
-        (file+function
-         "~/DCIM/content/aaa--calendar.org"
-         my-capture-top-level)
-        "* TODO %?\n SCHEDULED: %(cfw:org-capture-day)\n"
-        :prepend t :jump-to-captured t))
-
-#+end_src
-
 * plantuml
 
 #+begin_src elisp
@@ -357,7 +331,6 @@ Customizes Org Capture templates for quickly capturing notes, tasks, and other i
                  ":END:"
                  "%?\n\n")
                "\n")))
-
 #+end_src
 
 * use-package
@@ -404,7 +377,6 @@ Demonstrates the use of `use-package` to neatly organize package configuration a
 ;; -> keys-navigation
 ;;
 
-(define-key my-jump-keymap (kbd "f") #'my/find-file)
 (define-key my-jump-keymap (kbd "k")
             (lambda () (interactive)
               (find-file (concat user-emacs-directory "emacs--init.org"))))
@@ -490,19 +462,6 @@ Configures a sparse keymap for miscellaneous actions like evaluating expressions
 (bind-key* (kbd "M-s c") #'cfw:open-org-calendar)
 #+end_src
 
-* keybinding
-
-Demonstrates a broad set of global keybindings for common actions like saving buffers, controlling text scale, and navigating large documents.
-
-#+begin_src elisp
-;;
-;; -> keybinding
-;;
-
-(global-set-key (kbd "C-c b") #'(lambda ()(interactive)(async-shell-command "do_backup home" "*backup*")))
-
-#+end_src
-
 * defun
 
 Defines a suite of custom functions to extend Emacs's functionality tailored to specific tasks or personal preferences, showcasing the extensibility of Emacs with Lisp programming.
@@ -564,8 +523,8 @@ Configures various visual aspects of Emacs, including menu bar, toolbar, and scr
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 80)
-(add-to-list 'default-frame-alist '(alpha-background . 80))
+(set-frame-parameter nil 'alpha-background 60)
+(add-to-list 'default-frame-alist '(alpha-background . 60))
 #+end_src
 
 * shell
@@ -586,17 +545,7 @@ Demonstrates customizations for shell integration within Emacs, optimizing setti
                      #'pcomplete-completions-at-point
                      #'cape-history)))
   (define-key eshell-hist-mode-map (kbd "M-r") #'consult-history))
-
-(use-package eshell
-  :config
-  (setq eshell-scroll-to-bottom-on-input t)
-  (setq-local tab-always-indent 'complete)
-  (setq eshell-history-size 10000) ;; Adjust size as needed
-  (setq eshell-save-history-on-exit t) ;; Enable history saving on exit
-  (setq eshell-hist-ignoredups t) ;; Ignore duplicates
-  :hook
-  (eshell-mode . my/eshell-hook))
-
+(add-hook 'eshell-mode-hook 'my/eshell-hook)
 #+end_src
 
 * linux specific
