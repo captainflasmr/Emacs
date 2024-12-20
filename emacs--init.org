@@ -458,7 +458,6 @@ Configures a sparse keymap for miscellaneous actions like evaluating expressions
                                     (mapc 'shell-command
                                           '("web rsync emacs" "web rsync art"
                                             "web rsync dyerdwelling")))))
-(bind-key* (kbd "M-s c") #'cfw:open-org-calendar)
 #+end_src
 
 * defun
@@ -490,28 +489,16 @@ Extends and customizes Org mode for document structuring, note-taking, and proje
 ;;
 ;; -> org
 ;;
-
-(setq org-src-tab-acts-natively t
-      org-log-done t
-      org-export-with-sub-superscripts nil
-      org-deadline-warning-days 365
-      org-hugo-base-dir "~/DCIM"
-      org-image-actual-width (list 50)
-      org-return-follows-link t
-      org-use-fast-todo-selection 'expert
-      org-reverse-note-order t
-      org-todo-keywords
-      ;; '((sequence "TODO(t)" "DOING(d)" "ORDR(o)" "SENT(s)" "|" "DONE(n)" "CANCELLED(c)"))
-      '((sequence "TODO" "DOING" "ORDR" "SENT" "|" "DONE" "CANCELLED"))
-      org-todo-keyword-faces
+(setq org-hugo-base-dir "~/DCIM")
+(setq org-todo-keywords
+      '((sequence "TODO" "DOING" "ORDR" "SENT" "|" "DONE" "CANCELLED")))
+(setq org-todo-keyword-faces
       '(("TODO" . "#ee5566")
         ("DOING" . "#5577aa")
         ("ORDR" . "#bb44ee")
         ("SENT" . "#bb44ee")
         ("DONE" . "#77aa66")
-        ("CANCELLED" . "#426b3e"))
-      org-cycle-separator-lines 0)
-
+        ("CANCELLED" . "#426b3e")))
 #+end_src
 
 * visuals

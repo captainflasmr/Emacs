@@ -292,7 +292,6 @@
 ;;
 (use-package htmlize)
 (use-package org-kanban)
-(use-package org-ql)
 (use-package org-wc)
 (use-package git-timemachine)
 
@@ -384,7 +383,6 @@
                                     (mapc 'shell-command
                                           '("web rsync emacs" "web rsync art"
                                             "web rsync dyerdwelling")))))
-(bind-key* (kbd "M-s c") #'cfw:open-org-calendar)
 
 ;;
 ;; -> defun
@@ -404,27 +402,16 @@
 ;;
 ;; -> org
 ;;
-
-(setq org-src-tab-acts-natively t
-      org-log-done t
-      org-export-with-sub-superscripts nil
-      org-deadline-warning-days 365
-      org-hugo-base-dir "~/DCIM"
-      org-image-actual-width (list 50)
-      org-return-follows-link t
-      org-use-fast-todo-selection 'expert
-      org-reverse-note-order t
-      org-todo-keywords
-      ;; '((sequence "TODO(t)" "DOING(d)" "ORDR(o)" "SENT(s)" "|" "DONE(n)" "CANCELLED(c)"))
-      '((sequence "TODO" "DOING" "ORDR" "SENT" "|" "DONE" "CANCELLED"))
-      org-todo-keyword-faces
+(setq org-hugo-base-dir "~/DCIM")
+(setq org-todo-keywords
+      '((sequence "TODO" "DOING" "ORDR" "SENT" "|" "DONE" "CANCELLED")))
+(setq org-todo-keyword-faces
       '(("TODO" . "#ee5566")
         ("DOING" . "#5577aa")
         ("ORDR" . "#bb44ee")
         ("SENT" . "#bb44ee")
         ("DONE" . "#77aa66")
-        ("CANCELLED" . "#426b3e"))
-      org-cycle-separator-lines 0)
+        ("CANCELLED" . "#426b3e")))
 
 ;;
 ;; -> visuals
@@ -565,27 +552,6 @@
     :load-path my/old-ada-mode))
 
 (use-package yaml-mode)
-
-;;
-;; -> development
-;;
-(defun my/org-ql-tags-search-in-current-buffer ()
-  "Prompt the user for a tag from the current buffer and generate a TODO list ordered by timestamp."
-  (interactive)
-  ;; Check if the buffer is in 'org-mode'
-  (if (derived-mode-p 'org-mode)
-      (let* ((tags (mapcar #'car (org-global-tags-completion-table (list (buffer-file-name)))))
-             (chosen-tag (completing-read
-                          "Choose a tag from the current buffer: "
-                          tags)))
-        (org-ql-search
-          (current-buffer)
-          `(and (tags ,chosen-tag))
-          :title (format "tag: %s" chosen-tag)
-          :sort 'todo))
-    (message "This command must be run in an Org buffer.")))
-
-(bind-key* (kbd "M-s s") #'my/org-ql-tags-search-in-current-buffer)
 
 ;;
 ;; -> modes
