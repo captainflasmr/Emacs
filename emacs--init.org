@@ -343,7 +343,6 @@ Demonstrates the use of `use-package` to neatly organize package configuration a
 ;;
 (use-package htmlize)
 (use-package org-kanban)
-(use-package org-ql)
 (use-package org-wc)
 (use-package git-timemachine)
 
@@ -683,32 +682,6 @@ Sets up configurations and tool integrations for a productive programming enviro
     :load-path my/old-ada-mode))
 
 (use-package yaml-mode)
-
-#+end_src
-
-* development
-
-#+begin_src elisp
-;;
-;; -> development
-;;
-(defun my/org-ql-tags-search-in-current-buffer ()
-  "Prompt the user for a tag from the current buffer and generate a TODO list ordered by timestamp."
-  (interactive)
-  ;; Check if the buffer is in 'org-mode'
-  (if (derived-mode-p 'org-mode)
-      (let* ((tags (mapcar #'car (org-global-tags-completion-table (list (buffer-file-name)))))
-             (chosen-tag (completing-read
-                          "Choose a tag from the current buffer: "
-                          tags)))
-        (org-ql-search
-          (current-buffer)
-          `(and (tags ,chosen-tag))
-          :title (format "tag: %s" chosen-tag)
-          :sort 'todo))
-    (message "This command must be run in an Org buffer.")))
-
-(bind-key* (kbd "M-s s") #'my/org-ql-tags-search-in-current-buffer)
 
 #+end_src
 
