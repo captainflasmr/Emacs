@@ -215,22 +215,17 @@
   "Copy the marked files in dired buffer to a new directory named TITLE."
   (let* ((target-dir (concat "~/DCIM/content/" dir))
          (copied-files '())) ;; List to accumulate copied files.
-
     (message "THUMB : %s" thumb)
-
     ;; Create target directory if it doesn't exist.
     (make-directory target-dir t)
-
     ;; Copy the thumbnail image.
     (copy-file thumb (concat "~/DCIM/content/" dir ".jpg"))
-
     ;; Process each marked file.
     (dolist (file my/org-dired-marked-files)
       (let ((target-file (expand-file-name (file-name-nondirectory file) target-dir)))
         (copy-file file target-file)
         (push target-file copied-files)
         (message "Copied: %s to %s" file target-file)))
-
     ;; After copying, run PictureCrush on all copied files in one shell command.
     (when copied-files
       (let ((command (concat "PictureCrush " (mapconcat 'identity copied-files " "))))
@@ -240,20 +235,16 @@
 (defvar my/org-dired-marked-files nil
   "Stores the current dired marked files.")
 
-(defun my/test-finalize ()
+(defun my/capture-finalize ()
   (let ((key (plist-get org-capture-plist :key))
         (desc (plist-get org-capture-plist :description))
         (template (plist-get org-capture-plist :template))
         (thumb (nth (random (length my/org-dired-marked-files)) my/org-dired-marked-files))
         (export-hugo-section nil))
-
     (when (string-match ":EXPORT_HUGO_SECTION: \\(.*\\)$" template)
       (setq export-hugo-section (match-string 1 template)))
-
     (prin1 my/org-dired-marked-files)
-
     (message "Extracted %s : %s" export-hugo-section thumb)
-
     (if org-note-abort
         (progn
           (message "Template with key %s and description “%s” aborted" key desc))
@@ -262,7 +253,7 @@
         (when (string= desc "Gallery")
           (my-copy-marked-images-to-blog export-hugo-section thumb))))))
 
-(add-hook 'org-capture-after-finalize-hook 'my/test-finalize)
+(add-hook 'org-capture-after-finalize-hook 'my/capture-finalize)
 
 (defun my/org-capture-blog-with-gallery ()
   "Capture gallery triggering gallery image storage."
@@ -327,6 +318,8 @@
 ;;
 ;; -> completion
 ;;
+
+(use-package cape)
 
 (use-package capf-autosuggest)
 
@@ -430,8 +423,7 @@
   (setq-local completion-at-point-functions
               (list (cape-capf-super
                      #'pcomplete-completions-at-point
-                     #'cape-history)))
-  (define-key eshell-hist-mode-map (kbd "M-r") #'consult-history))
+                     #'cape-history))))
 (add-hook 'eshell-mode-hook 'my/eshell-hook)
 
 ;;
