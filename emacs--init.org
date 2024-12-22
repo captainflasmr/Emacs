@@ -333,7 +333,6 @@ Demonstrates the use of `use-package` to neatly organize package configuration a
 ;; -> use-package
 ;;
 (use-package htmlize)
-(use-package org-kanban)
 (use-package org-wc)
 (use-package git-timemachine)
 
@@ -502,8 +501,8 @@ Configures various visual aspects of Emacs, including menu bar, toolbar, and scr
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 60)
-(add-to-list 'default-frame-alist '(alpha-background . 60))
+(set-frame-parameter nil 'alpha-background 90)
+(add-to-list 'default-frame-alist '(alpha-background . 90))
 #+end_src
 
 * shell

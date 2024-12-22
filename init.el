@@ -282,7 +282,6 @@
 ;; -> use-package
 ;;
 (use-package htmlize)
-(use-package org-kanban)
 (use-package org-wc)
 (use-package git-timemachine)
 
@@ -409,8 +408,8 @@
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 60)
-(add-to-list 'default-frame-alist '(alpha-background . 60))
+(set-frame-parameter nil 'alpha-background 90)
+(add-to-list 'default-frame-alist '(alpha-background . 90))
 
 ;;
 ;; -> shell
