@@ -281,7 +281,6 @@
 ;;
 ;; -> use-package
 ;;
-(use-package htmlize)
 (use-package org-wc)
 (use-package git-timemachine)
 

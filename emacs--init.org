@@ -332,7 +332,6 @@ Demonstrates the use of `use-package` to neatly organize package configuration a
 ;;
 ;; -> use-package
 ;;
-(use-package htmlize)
 (use-package org-wc)
 (use-package git-timemachine)
 
