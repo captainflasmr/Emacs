@@ -283,6 +283,7 @@
 ;;
 (use-package org-wc)
 (use-package git-timemachine)
+(use-package consult)
 
 (use-package ox-hugo
   :defer t
