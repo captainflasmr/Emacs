@@ -334,6 +334,7 @@ Demonstrates the use of `use-package` to neatly organize package configuration a
 ;;
 (use-package org-wc)
 (use-package git-timemachine)
+(use-package consult)
 
 (use-package ox-hugo
   :defer t
@@ -672,3 +673,4 @@ Turns on very specific modes
 ;;
 (server-mode 1)
 #+end_src
+
