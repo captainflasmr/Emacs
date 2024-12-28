@@ -556,51 +556,6 @@ Curates configurations specific to Linux, making adjustments for paths, fonts, a
 ;;
 ;; -> LLM
 ;;
-
-(use-package ellama
-  :bind ("C-c e" . ellama-transient-main-menu)
-  :init
-  (setopt ellama-language "English")
-  (require 'llm-ollama)
-  (setopt ellama-provider
-          (make-llm-ollama
-           :chat-model "qwen2.5-coder-7b-instruct-q5_k_m"
-           :embedding-model "qwen2.5-coder-7b-instruct-q5_k_m"
-           :default-chat-non-standard-params '(("num_ctx" . 8192))))
-  (setopt ellama-providers
-          '(("codellama-7b.Q5_K_M" .
-             (make-llm-ollama
-              :chat-model "codellama-7b.Q5_K_M"
-              :embedding-model "codellama-7b.Q5_K_M"))
-            ("qwen2.5-coder-7b-instruct-q5_k_m" .
-             (make-llm-ollama
-              :chat-model "qwen2.5-coder-7b-instruct-q5_k_m"
-              :embedding-model "qwen2.5-coder-7b-instruct-q5_k_m"))
-            ("Llama-3.2-1B-Instruct-Q8_0" .
-             (make-llm-ollama
-              :chat-model "Llama-3.2-1B-Instruct-Q8_0"
-              :embedding-model "Llama-3.2-1B-Instruct-Q8_0"))))
-  ;; (setopt ellama-naming-scheme 'ellama-generate-name-by-llm)
-  (setopt ellama-naming-scheme 'ellama-generate-name-by-words)
-  (setopt ellama-translation-provider (make-llm-ollama
-                                       :chat-model "qwen2.5-coder-7b-instruct-q5_k_m"
-                                       :embedding-model "nomic-embed-text"))
-  :config
-  (setq ellama-sessions-directory "~/.config/emacs/ellama-sessions/"
-        ellama-sessions-auto-save t))
-
-(use-package gptel
-  :config
-  (gptel-make-ollama "qwen2.5-coder-7b-instruct-q5_k_m"
-    :host "localhost:11434"
-    :stream t
-    :models '(qwen2.5-coder-7b-instruct-q5_k_m:latest))
-  (setq gptel-model 'qwen2.5-coder-7b-instruct-q5_k_m:latest
-        gptel-backend (gptel-make-ollama "qwen2.5-coder-7b-instruct-q5_k_m"
-                        :host "localhost:11434"
-                        :stream t
-                        :models '(qwen2.5-coder-7b-instruct-q5_k_m:latest))))
-
 (use-package chatgpt-shell
   :custom
   (chatgpt-shell-openai-key
@@ -642,7 +597,6 @@ Curates configurations specific to Linux, making adjustments for paths, fonts, a
       (:filter . chatgpt-shell-ollama--extract-ollama-response)
       (:payload . chatgpt-shell-ollama-make-payload)
       (:url . chatgpt-shell-ollama--make-url)))))
-
 #+end_src
 
 * programming
