@@ -500,6 +500,68 @@
 (use-package yaml-mode)
 
 ;;
+;; -> themes
+;;
+(use-package doom-themes)
+(use-package ef-themes)
+(use-package gruvbox-theme)
+
+;;
 ;; -> modes
 ;;
 (server-mode 1)
+
+;;
+;; -> modeline
+;;
+(use-package doom-modeline
+  :ensure t
+  :init
+  (setq doom-modeline-height 25)
+  (setq doom-modeline-bar-width 3)
+  :config
+  (doom-modeline-mode 1))
+
+;;
+;; -> icons
+;;
+(use-package all-the-icons-dired
+  :hook
+  (dired-mode . all-the-icons-dired-mode))
+(use-package all-the-icons-ibuffer
+  :hook
+  (ibuffer-mode . all-the-icons-ibuffer-mode))
+
+;;
+;; -> elfeed
+;;
+
+(use-package elfeed
+  :bind
+  ("C-x w" . elfeed)
+  (:map elfeed-search-mode-map
+        ("n" . (lambda () (interactive)
+                 (forward-line 1) (call-interactively 'elfeed-search-show-entry)))
+        ("p" . (lambda () (interactive)
+                 (forward-line -1) (call-interactively 'elfeed-search-show-entry)))
+        ("m" . (lambda () (interactive)
+                 (apply 'elfeed-search-toggle-all '(star)))))
+  :custom
+  (elfeed-search-remain-on-entry t)
+  (elfeed-search-title-min-width 60)
+  (elfeed-search-title-max-width 60)
+  (elfeed-search-filter "@1-months-ago")
+  (elfeed-feeds
+   '("https://www.dyerdwelling.family/index.xml"
+     "https://www.emacs.dyerdwelling.family/index.xml"
+     "https://www.emacs.dyerdwelling.family/tags/emacs/index.xml")))
+
+(defun my/show-elfeed (buffer)
+  "Show Elfeed wrapper with BUFFER."
+  (display-buffer buffer))
+
+(setq elfeed-show-mode-hook
+      (lambda ()
+        (set-face-attribute 'variable-pitch (selected-frame)
+                            :font (font-spec :family "Source Code Pro" :size 16))
+        (setq elfeed-show-entry-switch #'my/show-elfeed)))
