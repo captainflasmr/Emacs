@@ -322,6 +322,21 @@
 
 (use-package capf-autosuggest)
 
+(use-package corfu
+  :init (global-corfu-mode)
+  :custom
+  (corfu-auto-delay 0.1)
+  (corfu-auto-prefix 2)
+  (corfu-cycle t)
+  (corfu-auto nil)
+  (corfu-separator ?\s)
+  (corfu-quit-at-boundary nil)
+  (corfu-quit-no-match nil)
+  (corfu-preview-current nil)
+  (corfu-preselect 'first)
+  (corfu-on-exact-match nil)
+  (corfu-scroll-margin 5))
+
 (use-package eglot
   :hook
   (eglot-managed-mode
@@ -512,17 +527,6 @@
 (server-mode 1)
 
 ;;
-;; -> modeline
-;;
-(use-package doom-modeline
-  :ensure t
-  :init
-  (setq doom-modeline-height 25)
-  (setq doom-modeline-bar-width 3)
-  :config
-  (doom-modeline-mode 1))
-
-;;
 ;; -> icons
 ;;
 (use-package all-the-icons-dired
@@ -552,10 +556,9 @@
   (elfeed-search-title-max-width 60)
   (elfeed-search-filter "@1-months-ago")
   (elfeed-feeds
-   '("https://www.dyerdwelling.family/index.xml"
-     "https://www.emacs.dyerdwelling.family/index.xml"
-     "https://www.emacs.dyerdwelling.family/tags/emacs/index.xml")))
-
+   '(
+     "https://www.emacs.dyerdwelling.family/public_html/feed.xml"
+     )))
 (defun my/show-elfeed (buffer)
   "Show Elfeed wrapper with BUFFER."
   (display-buffer buffer))
