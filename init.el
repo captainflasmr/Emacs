@@ -313,6 +313,9 @@
 (define-key my-jump-keymap (kbd "k")
             (lambda () (interactive)
               (find-file (concat user-emacs-directory "emacs--init.org"))))
+(define-key my-jump-keymap (kbd "a")
+            (lambda () (interactive)
+              (find-file "~/DCIM/content/emacs--all.org")))
 
 ;;
 ;; -> completion
@@ -445,7 +448,7 @@
 ;;
 
 (when (eq system-type 'gnu/linux)
-  (define-key my-jump-keymap (kbd "c") (lambda () (interactive) (find-file "~/DCIM/Camera")))
+  (define-key my-jump-keymap (kbd "m") (lambda () (interactive) (find-file "~/DCIM/Camera")))
   (define-key my-jump-keymap (kbd "j") (lambda () (interactive) (find-file "~/DCIM/content/aaa--todo.org")))
   (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
   (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
