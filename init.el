@@ -16,23 +16,12 @@
                            ("elpa" . "https://elpa.gnu.org/packages/")
                            ("org" . "https://orgmode.org/elpa/"))))
 
-(when (eq system-type 'windows-nt)
-  (setq package-archives '(("melpa" . "~/emacs-pkgs/melpa")
-                           ("elpa" . "~/emacs-pkgs/elpa")
-                           ("org" . "~/emacs-pkgs/org-mode/lisp"))))
-
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 (setq use-package-verbose t)
 (setq use-package-always-ensure t)
 (require 'use-package)
 (setq load-prefer-newer t)
-
-;; (when init-file-debug
-(setq use-package-verbose t
-      use-package-expand-minimally nil
-      use-package-compute-statistics t
-      debug-on-error nil)
 
 ;;
 ;; -> selected-window-accent-mode
@@ -55,35 +44,6 @@
 (eval-after-load 'selected-window-accent-mode
   '(progn
      (define-key global-map (kbd "C-c w") 'selected-window-accent-transient)))
-
-;;
-;; -> plantuml
-;;
-
-(use-package plantuml-mode
-  :custom
-  (plantuml-default-exec-mode 'jar)
-  (plantuml-jar-path (concat user-emacs-directory "plantuml.jar"))
-  (org-plantuml-jar-path (concat user-emacs-directory "plantuml.jar")))
-
-(add-to-list
- 'org-src-lang-modes '("plantuml" . plantuml))
-
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((plantuml . t)))
-
-(add-to-list 'auto-mode-alist '("\\.plantuml\\'" . plantuml-mode))
-
-(add-hook 'plantuml-mode-hook (lambda ()
-                                (setq tab-width 0)
-                                (setq indent-tabs-mode nil)))
-
-(defun my-org-confirm-babel-evaluate (lang body)
-  (not (or (string= lang "plantuml")
-           (string= lang "emacs-lisp"))))
-
-(setq org-confirm-babel-evaluate 'my-org-confirm-babel-evaluate)
 
 ;;
 ;; -> org-agenda
@@ -284,11 +244,14 @@
 (use-package org-wc)
 (use-package git-timemachine)
 (use-package consult)
+(use-package i3wm-config-mode)
+(use-package yaml-mode)
 
 (use-package ox-hugo
   :defer t
   :config
-  (setq org-hugo-front-matter-format "yaml"))
+  (setq org-hugo-front-matter-format "yaml"
+        org-hugo-base-dir "~/DCIM"))
 
 (use-package ready-player
   :init
@@ -321,33 +284,18 @@
 ;; -> completion
 ;;
 
-(use-package cape)
+;; (use-package cape)
 
 (use-package capf-autosuggest)
 
-(use-package corfu
-  :init (global-corfu-mode)
-  :custom
-  (corfu-auto-delay 0.1)
-  (corfu-auto-prefix 2)
-  (corfu-cycle t)
-  (corfu-auto nil)
-  (corfu-separator ?\s)
-  (corfu-quit-at-boundary nil)
-  (corfu-quit-no-match nil)
-  (corfu-preview-current nil)
-  (corfu-preselect 'first)
-  (corfu-on-exact-match nil)
-  (corfu-scroll-margin 5))
-
 (use-package eglot
-  :hook
-  (eglot-managed-mode
-   . (lambda ()
-       (setq-local completion-at-point-functions
-                   (list (cape-capf-super
-                          #'cape-dabbrev
-                          #'eglot-completion-at-point)))))
+  ;; :hook
+  ;; (eglot-managed-mode
+  ;;  . (lambda ()
+  ;;      (setq-local completion-at-point-functions
+  ;;                  (list (cape-capf-super
+  ;;                         #'cape-dabbrev
+  ;;                         #'eglot-completion-at-point)))))
   :custom
   (eglot-ignored-server-capabilities
    '(
@@ -379,7 +327,6 @@
 ;;
 ;; -> keys-visual
 ;;
-(define-key my-win-keymap (kbd "a") #'selected-window-accent-mode)
 (define-key my-win-keymap (kbd "m") #'consult-theme)
 (define-key my-win-keymap (kbd "w") #'org-wc-display)
 
@@ -395,35 +342,6 @@
                                             "web rsync dyerdwelling")))))
 
 ;;
-;; -> defun
-;;
-(defun my/sync-tab-bar-to-theme ()
-  "Synchronize tab-bar faces with the current theme."
-  (interactive)
-  (let ((default-bg (face-background 'default))
-        (default-fg (face-foreground 'default))
-        (inactive-fg (face-foreground 'mode-line-inactive))) ;; Fallback to mode-line-inactive
-    (custom-set-faces
-     `(tab-bar ((t (:inherit default :font "Monospace 12" :background ,default-bg :foreground ,default-fg))))
-     `(tab-bar-tab ((t (:inherit default :background ,default-fg :foreground ,default-bg))))
-     `(tab-bar-tab-inactive ((t (:inherit default :background ,default-bg :foreground ,inactive-fg)))))))
-(my/sync-tab-bar-to-theme)
-
-;;
-;; -> org
-;;
-(setq org-hugo-base-dir "~/DCIM")
-(setq org-todo-keywords
-      '((sequence "TODO" "DOING" "ORDR" "SENT" "|" "DONE" "CANCELLED")))
-(setq org-todo-keyword-faces
-      '(("TODO" . "#ee5566")
-        ("DOING" . "#5577aa")
-        ("ORDR" . "#bb44ee")
-        ("SENT" . "#bb44ee")
-        ("DONE" . "#77aa66")
-        ("CANCELLED" . "#426b3e")))
-
-;;
 ;; -> visuals
 ;;
 (set-frame-parameter nil 'alpha-background 90)
@@ -436,11 +354,12 @@
   "Set up completions to be a little more fish like."
   (interactive)
   (setq-local completion-styles '(basic partial-completion))
-  (capf-autosuggest-mode)
-  (setq-local completion-at-point-functions
-              (list (cape-capf-super
-                     #'pcomplete-completions-at-point
-                     #'cape-history))))
+  (capf-autosuggest-mode))
+  ;; (setq-local completion-at-point-functions
+  ;;             (list (cape-capf-super
+  ;;                    #'pcomplete-completions-at-point
+  ;;                    #'cape-history)))
+  ;; )
 (add-hook 'eshell-mode-hook 'my/eshell-hook)
 
 ;;
@@ -509,13 +428,10 @@
 ;;
 ;; -> programming
 ;;
-
 (setq my/old-ada-mode (concat user-emacs-directory "old-ada-mode"))
 (when (file-exists-p my/old-ada-mode)
   (use-package ada-mode
     :load-path my/old-ada-mode))
-
-(use-package yaml-mode)
 
 ;;
 ;; -> themes
@@ -538,6 +454,17 @@
 (use-package all-the-icons-ibuffer
   :hook
   (ibuffer-mode . all-the-icons-ibuffer-mode))
+
+;;
+;; -> auto-mode-alist
+;;
+(add-to-list 'auto-mode-alist '("waybar.*/config\\'" . js-json-mode))
+(add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+(add-to-list 'auto-mode-alist '("\\.org_archive\\'" . org-mode))
+(add-to-list 'auto-mode-alist '("/sway/.*config.*/" . i3wm-config-mode))
+(add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode))
+(cl-loop for ext in '("\\.gpr$" "\\.ada$" "\\.ads$" "\\.adb$")
+         do (add-to-list 'auto-mode-alist (cons ext 'ada-mode)))
 
 ;;
 ;; -> elfeed
