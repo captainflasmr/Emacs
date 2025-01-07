@@ -86,7 +86,6 @@ Customizes the Org Agenda for a personalized task management, mainly here to def
                          "~/DCIM/content/aaa--calendar.org"
                          "~/DCIM/content/aaa--todo.org"
                          "~/DCIM/content/aab--house.org"
-                         "~/DCIM/content/aac--baby.org"
                          "~/DCIM/content/aag--emacs-todo.org"))
 #+end_src
 
