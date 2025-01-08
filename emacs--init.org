@@ -286,6 +286,7 @@ Demonstrates the use of `use-package` to neatly organize package configuration a
 ;;
 ;; -> use-package
 ;;
+(use-package async)
 (use-package org-wc)
 (use-package git-timemachine)
 (use-package consult)
@@ -624,4 +625,16 @@ Configures `elfeed` for RSS/Atom feed reading, showcasing customization of feed 
         (set-face-attribute 'variable-pitch (selected-frame)
                             :font (font-spec :family "Source Code Pro" :size 16))
         (setq elfeed-show-entry-switch #'my/show-elfeed)))
+#+end_src
+
+* dired
+
+Configures extra dired features.
+
+#+begin_src elisp
+;;
+;; -> dired
+;;
+(require 'dired-async)
+(dired-async-mode 1)
 #+end_src
