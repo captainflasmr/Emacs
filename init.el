@@ -504,44 +504,6 @@
 ;; -> dired
 ;;
 (require 'dired-async)
+(with-eval-after-load 'dired
+  (define-key dired-mode-map (kbd "C") 'dired-do-copy))
 (dired-async-mode 1)
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-enabled-themes '(wombat))
- '(package-selected-packages
-   '(james-004-theme james-003-theme james-002-theme james-001-theme yaml-mode visual-fill-column selected-window-accent-mode ready-player ox-hugo org-wc org-superstar olivetti i3wm-config-mode gruvbox-theme git-timemachine elfeed ef-themes doom-themes consult chatgpt-shell capf-autosuggest async all-the-icons-ibuffer all-the-icons-dired))
- '(warning-suppress-log-types '((frameset)))
- '(warning-suppress-types '((frameset))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(ediff-current-diff-A ((t (:extend t :background "#b5daeb" :foreground "#000000"))))
- '(ediff-even-diff-A ((t (:background "#bafbba" :foreground "#000000" :extend t))))
- '(ediff-fine-diff-A ((t (:background "#f4bd92" :foreground "#000000" :extend t))))
- '(ediff-odd-diff-A ((t (:background "#b8fbb8" :foreground "#000000" :extend t))))
- '(fixed-pitch ((t (:family "Source Code Pro" :height 110))))
- '(font-lock-warning-face ((t (:foreground "#930000" :inverse-video nil))))
- '(fringe ((t (:foreground "#242424" :background "#242424"))))
- '(hl-line ((t (:background "#1e1e1e"))))
- '(indent-guide-face ((t (:background "#282828" :foreground "#666666"))))
- '(org-level-1 ((t (:inherit default :weight regular :height 1.0))))
- '(org-level-2 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-3 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-4 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-5 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-6 ((t (:inherit default :weight light :height 1.0))))
- '(org-link ((t (:underline nil))))
- '(org-tag ((t (:height 0.9))))
- '(tab-bar ((t (:inherit default :background "#242424" :foreground "#f6f3e8"))))
- '(tab-bar-tab ((t (:inherit 'highlight :background "#355369" :foreground "#000000"))))
- '(tab-bar-tab-inactive ((t (:inherit default :background "#242424" :foreground "#aaaaaa" :box (:line-width 2 :color "#242424" :style released-button)))))
- '(variable-pitch ((t (:family "DejaVu Sans" :height 120 :weight normal))))
- '(vertical-border ((t (:foreground "#000000"))))
- '(widget-button ((t (:inherit fixed-pitch :weight regular))))
- '(window-divider ((t (:foreground "black")))))
