@@ -374,7 +374,7 @@
   ;; (setq font-general "Noto Sans Mono 11")
   (setq font-general "Source Code Pro 12")
   ;; (setq font-general "Source Code Pro Light 11")
-  ;; (setq font-general "Monospace 11")
+  (setq font-general "Monospace 11")
   ;;(setq font-general "Nimbus Mono PS 13")
   (set-frame-font font-general nil t)
   (add-to-list 'default-frame-alist `(font . ,font-general))
@@ -383,7 +383,14 @@
 ;;
 ;; -> LLM
 ;;
+(use-package shell-maker
+  :ensure t)
+;;
 (use-package chatgpt-shell
+  :ensure t
+  :after shell-maker
+  :bind
+  ("C-c g" . chatgpt-shell-menu)
   :custom
   (chatgpt-shell-openai-key
    (lambda ()
@@ -423,7 +430,34 @@
       (:handler . chatgpt-shell-ollama--handle-ollama-command)
       (:filter . chatgpt-shell-ollama--extract-ollama-response)
       (:payload . chatgpt-shell-ollama-make-payload)
-      (:url . chatgpt-shell-ollama--make-url)))))
+      (:url . chatgpt-shell-ollama--make-url))))
+  :config
+  (defun chatgpt-shell-menu ()
+    "Menu for ChatGPT Shell commands."
+    (interactive)
+    (let ((key (read-key
+                (propertize
+                 "----- ChatGPT Shell Commands [q] Quit: -----
+Model [m] Start Shell      [l] Swap Model
+Code  [g] Write Git Commit [e] Explain Code
+      [d] Describe Code    [u] Generate Unit Test
+Check [p] Proofread Region [r] Refactor Code
+Send  [s] Send Region      [a] Send & Review Region"
+                 'face 'minibuffer-prompt))))
+      (pcase key
+        (?m (call-interactively 'chatgpt-shell))
+        (?l (call-interactively 'chatgpt-shell-swap-model))
+        (?g (call-interactively 'chatgpt-shell-write-git-commit))
+        (?e (call-interactively 'chatgpt-shell-explain-code))
+        (?d (call-interactively 'chatgpt-shell-describe-code))
+        (?u (call-interactively 'chatgpt-shell-generate-unit-test))
+        (?p (call-interactively 'chatgpt-shell-proofread-region))
+        (?r (call-interactively 'chatgpt-shell-refactor-code))
+        (?s (call-interactively 'chatgpt-shell-send-region))
+        (?a (call-interactively 'chatgpt-shell-send-and-review-region))
+        (?q (message "Quit ChatGPT Shell menu."))
+        (?\C-g (message "Quit ChatGPT Shell menu."))
+        (_ (message "Invalid key: %c" key))))))
 
 ;;
 ;; -> programming
