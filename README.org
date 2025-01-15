@@ -381,6 +381,24 @@ Simple completion
      ;; :inlayHintProvider                ; Displays inline hints (e.g., parameter names).
      ))
   (eglot-send-changes-idle-time 2.0))
+;;
+(setq icomplete-in-buffer nil)
+;;
+(use-package corfu
+  :init
+  (global-corfu-mode 1)
+  :custom
+  (corfu-auto-delay 0.1)
+  (corfu-auto-prefix 2)
+  (corfu-cycle t)
+  (corfu-auto nil)
+  (corfu-separator ?\s)
+  (corfu-quit-at-boundary nil)
+  (corfu-quit-no-match nil)
+  (corfu-preview-current nil)
+  (corfu-preselect 'first)
+  (corfu-on-exact-match nil)
+  (corfu-scroll-margin 5))
 #+end_src
 
 * keys-visual
