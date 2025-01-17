@@ -8,7 +8,6 @@
 ;;
 ;; -> package-archives
 ;;
-
 (require 'package)
 
 (when (eq system-type 'gnu/linux)
@@ -275,7 +274,7 @@
 
 (define-key my-jump-keymap (kbd "k")
             (lambda () (interactive)
-              (find-file (concat user-emacs-directory "emacs--init.org"))))
+              (find-file (concat user-emacs-directory "README.org"))))
 (define-key my-jump-keymap (kbd "a")
             (lambda () (interactive)
               (find-file "~/DCIM/content/emacs--all.org")))
@@ -286,7 +285,7 @@
 
 ;; (use-package cape)
 
-(use-package capf-autosuggest)
+;; (use-package capf-autosuggest)
 
 (use-package eglot
   ;; :hook

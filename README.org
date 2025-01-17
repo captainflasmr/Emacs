@@ -326,7 +326,7 @@ Demonstrates the use of `use-package` to neatly organize package configuration a
 
 (define-key my-jump-keymap (kbd "k")
             (lambda () (interactive)
-              (find-file (concat user-emacs-directory "emacs--init.org"))))
+              (find-file (concat user-emacs-directory "README.org"))))
 (define-key my-jump-keymap (kbd "a")
             (lambda () (interactive)
               (find-file "~/DCIM/content/emacs--all.org")))
@@ -344,7 +344,7 @@ Simple completion
 
 ;; (use-package cape)
 
-(use-package capf-autosuggest)
+;; (use-package capf-autosuggest)
 
 (use-package eglot
   ;; :hook
