@@ -8,6 +8,7 @@
 ;;
 ;; -> package-archives
 ;;
+
 (require 'package)
 
 (when (eq system-type 'gnu/linux)
@@ -558,3 +559,56 @@ Send  [s] Send Region      [a] Send & Review Region"
 (with-eval-after-load 'dired
   (define-key dired-mode-map (kbd "C") 'dired-do-copy))
 (dired-async-mode 1)
+
+;;
+;; -> development
+;;
+;; (defun enable-simple-autosuggest-mode ()
+;;   "Enable `simple-autosuggest-mode' in all buffers."
+;;   (when (not (minibufferp))
+;;     (simple-autosuggest-mode 1)))
+
+;; (add-hook 'after-change-major-mode-hook #'enable-simple-autosuggest-mode)
+
+(define-globalized-minor-mode global-simple-autosuggest-mode
+  simple-autosuggest-mode       ;; The mode to be globalized
+  (lambda ()                    ;; A function to enable the mode
+    (unless (minibufferp)       ;; Avoid enabling the mode in the minibuffer
+      (simple-autosuggest-mode 1))))
+
+;; Enable the global mode
+(global-simple-autosuggest-mode 1)
+
+;;
+;; -> spelling
+;;
+(use-package powerthesaurus)
+
+(defun spelling-menu ()
+  "Menu for spelling."
+  (interactive)
+  (let ((key (read-key
+              (propertize
+               "------- Spelling [q] Quit: -------
+Run        [s] Spelling
+Reference  [t] Thesaurus
+Dictionary [l] Check [d] Lookup"
+               'face 'minibuffer-prompt))))
+    (pcase key
+      ;; Spelling
+      (?s (progn
+            (flyspell-buffer)
+            (call-interactively 'flyspell-mode)))
+      (?l (call-interactively 'ispell-word))
+      ;; Reference
+      (?t (call-interactively 'powerthesaurus-lookup-synonyms-dwim))
+      ;; Dictionary
+      (?d (call-interactively 'dictionary-lookup-definition))
+      ;; Quit
+      (?q (message "Quit Build menu."))
+      (?\C-g (message "Quit Build menu."))
+      ;; Default Invalid Key
+      (_ (message "Invalid key: %c" key)))))
+
+(global-set-key (kbd "C-c s") #'spelling-menu)
+(global-set-key (kbd "C-9") #'powerthesaurus-lookup-synonyms-dwim)
