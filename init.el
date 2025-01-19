@@ -284,18 +284,7 @@
 ;; -> completion
 ;;
 
-;; (use-package cape)
-
-;; (use-package capf-autosuggest)
-
 (use-package eglot
-  ;; :hook
-  ;; (eglot-managed-mode
-  ;;  . (lambda ()
-  ;;      (setq-local completion-at-point-functions
-  ;;                  (list (cape-capf-super
-  ;;                         #'cape-dabbrev
-  ;;                         #'eglot-completion-at-point)))))
   :custom
   (eglot-ignored-server-capabilities
    '(
@@ -371,13 +360,7 @@
 (defun my/eshell-hook ()
   "Set up completions to be a little more fish like."
   (interactive)
-  (setq-local completion-styles '(basic partial-completion))
-  (capf-autosuggest-mode))
-  ;; (setq-local completion-at-point-functions
-  ;;             (list (cape-capf-super
-  ;;                    #'pcomplete-completions-at-point
-  ;;                    #'cape-history)))
-  ;; )
+  (setq-local completion-styles '(basic partial-completion)))
 (add-hook 'eshell-mode-hook 'my/eshell-hook)
 
 ;;
@@ -392,7 +375,7 @@
   ;; (setq font-general "Noto Sans Mono 11")
   (setq font-general "Source Code Pro 12")
   ;; (setq font-general "Source Code Pro Light 11")
-  (setq font-general "Monospace 11")
+  ;; (setq font-general "Monospace 11")
   ;;(setq font-general "Nimbus Mono PS 13")
   (set-frame-font font-general nil t)
   (add-to-list 'default-frame-alist `(font . ,font-general))
@@ -503,6 +486,7 @@ Send  [s] Send Region      [a] Send & Review Region"
 (use-package all-the-icons-dired
   :hook
   (dired-mode . all-the-icons-dired-mode))
+;;
 (use-package all-the-icons-ibuffer
   :hook
   (ibuffer-mode . all-the-icons-ibuffer-mode))
@@ -591,14 +575,16 @@ Send  [s] Send Region      [a] Send & Review Region"
               (propertize
                "------- Spelling [q] Quit: -------
 Run        [s] Spelling
+Lookup     [d] Lookup
 Reference  [t] Thesaurus
-Dictionary [l] Check [d] Lookup"
+Dictionary [l] Check"
                'face 'minibuffer-prompt))))
     (pcase key
       ;; Spelling
       (?s (progn
             (flyspell-buffer)
             (call-interactively 'flyspell-mode)))
+      ;; Lookup
       (?l (call-interactively 'ispell-word))
       ;; Reference
       (?t (call-interactively 'powerthesaurus-lookup-synonyms-dwim))
@@ -612,3 +598,4 @@ Dictionary [l] Check [d] Lookup"
 
 (global-set-key (kbd "C-c s") #'spelling-menu)
 (global-set-key (kbd "C-9") #'powerthesaurus-lookup-synonyms-dwim)
+(global-set-key (kbd "M-;") #'my/quick-window-jump)

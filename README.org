@@ -342,18 +342,7 @@ Simple completion
 ;; -> completion
 ;;
 
-;; (use-package cape)
-
-;; (use-package capf-autosuggest)
-
 (use-package eglot
-  ;; :hook
-  ;; (eglot-managed-mode
-  ;;  . (lambda ()
-  ;;      (setq-local completion-at-point-functions
-  ;;                  (list (cape-capf-super
-  ;;                         #'cape-dabbrev
-  ;;                         #'eglot-completion-at-point)))))
   :custom
   (eglot-ignored-server-capabilities
    '(
@@ -453,13 +442,7 @@ Demonstrates customizations for shell integration within Emacs, optimizing setti
 (defun my/eshell-hook ()
   "Set up completions to be a little more fish like."
   (interactive)
-  (setq-local completion-styles '(basic partial-completion))
-  (capf-autosuggest-mode))
-  ;; (setq-local completion-at-point-functions
-  ;;             (list (cape-capf-super
-  ;;                    #'pcomplete-completions-at-point
-  ;;                    #'cape-history)))
-  ;; )
+  (setq-local completion-styles '(basic partial-completion)))
 (add-hook 'eshell-mode-hook 'my/eshell-hook)
 #+end_src
 
@@ -480,7 +463,7 @@ Curates configurations specific to Linux, making adjustments for paths, fonts, a
   ;; (setq font-general "Noto Sans Mono 11")
   (setq font-general "Source Code Pro 12")
   ;; (setq font-general "Source Code Pro Light 11")
-  (setq font-general "Monospace 11")
+  ;; (setq font-general "Monospace 11")
   ;;(setq font-general "Nimbus Mono PS 13")
   (set-frame-font font-general nil t)
   (add-to-list 'default-frame-alist `(font . ,font-general))
@@ -571,8 +554,6 @@ Send  [s] Send Region      [a] Send & Review Region"
         (_ (message "Invalid key: %c" key))))))
 #+end_src
 
-
-
 * programming
 
 Sets up configurations and tool integrations for a productive programming environment, from auto-completion and syntax checking to language-specific settings and server integrations.
@@ -620,6 +601,7 @@ Turns on very specific modes
 (use-package all-the-icons-dired
   :hook
   (dired-mode . all-the-icons-dired-mode))
+;;
 (use-package all-the-icons-ibuffer
   :hook
   (ibuffer-mode . all-the-icons-ibuffer-mode))
@@ -734,14 +716,16 @@ Configures extra dired features.
               (propertize
                "------- Spelling [q] Quit: -------
 Run        [s] Spelling
+Lookup     [d] Lookup
 Reference  [t] Thesaurus
-Dictionary [l] Check [d] Lookup"
+Dictionary [l] Check"
                'face 'minibuffer-prompt))))
     (pcase key
       ;; Spelling
       (?s (progn
             (flyspell-buffer)
             (call-interactively 'flyspell-mode)))
+      ;; Lookup
       (?l (call-interactively 'ispell-word))
       ;; Reference
       (?t (call-interactively 'powerthesaurus-lookup-synonyms-dwim))
@@ -755,4 +739,5 @@ Dictionary [l] Check [d] Lookup"
 
 (global-set-key (kbd "C-c s") #'spelling-menu)
 (global-set-key (kbd "C-9") #'powerthesaurus-lookup-synonyms-dwim)
+(global-set-key (kbd "M-;") #'my/quick-window-jump)
 #+end_src
