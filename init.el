@@ -52,7 +52,7 @@
                          "~/DCIM/content/aaa--calendar.org"
                          "~/DCIM/content/aaa--todo.org"
                          "~/DCIM/content/aab--house.org"
-                         "~/DCIM/content/aag--emacs-todo.org"))
+                         "~/DCIM/content/aac--emacs-todo.org"))
 
 ;;
 ;; -> org-capture
