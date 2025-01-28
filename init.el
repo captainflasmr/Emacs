@@ -441,22 +441,13 @@
                 (propertize
                  "----- ChatGPT Shell Commands [q] Quit: -----
 Model [m] Start Shell      [l] Swap Model
-Code  [g] Write Git Commit [e] Explain Code
-      [d] Describe Code    [u] Generate Unit Test
-Check [p] Proofread Region [r] Refactor Code
-Send  [s] Send Region      [a] Send & Review Region"
+Check [p] Proofread Region [r] Refactor Code"
                  'face 'minibuffer-prompt))))
       (pcase key
         (?m (call-interactively 'chatgpt-shell))
         (?l (call-interactively 'chatgpt-shell-swap-model))
-        (?g (call-interactively 'chatgpt-shell-write-git-commit))
-        (?e (call-interactively 'chatgpt-shell-explain-code))
-        (?d (call-interactively 'chatgpt-shell-describe-code))
-        (?u (call-interactively 'chatgpt-shell-generate-unit-test))
         (?p (call-interactively 'chatgpt-shell-proofread-region))
         (?r (call-interactively 'chatgpt-shell-refactor-code))
-        (?s (call-interactively 'chatgpt-shell-send-region))
-        (?a (call-interactively 'chatgpt-shell-send-and-review-region))
         (?q (message "Quit ChatGPT Shell menu."))
         (?\C-g (message "Quit ChatGPT Shell menu."))
         (_ (message "Invalid key: %c" key))))))
@@ -590,42 +581,3 @@ Dictionary [l] Check"
 (global-set-key (kbd "C-c s") #'spelling-menu)
 (global-set-key (kbd "C-9") #'powerthesaurus-lookup-synonyms-dwim)
 (global-set-key (kbd "M-;") #'my/quick-window-jump)
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-enabled-themes '(wombat))
- '(org-agenda-files
-   '("/home/jdyer/DCIM/content/aab--house.org" "/home/jdyer/DCIM/content/aaa--calendar.org" "/home/jdyer/DCIM/content/aaa--todo.org" "/home/jdyer/DCIM/content/aac--emacs-todo.org"))
- '(warning-suppress-log-types '((frameset)))
- '(warning-suppress-types '((frameset))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(ediff-current-diff-A ((t (:extend t :background "#b5daeb" :foreground "#000000"))))
- '(ediff-even-diff-A ((t (:background "#bafbba" :foreground "#000000" :extend t))))
- '(ediff-fine-diff-A ((t (:background "#f4bd92" :foreground "#000000" :extend t))))
- '(ediff-odd-diff-A ((t (:background "#b8fbb8" :foreground "#000000" :extend t))))
- '(fixed-pitch ((t (:family "Source Code Pro" :height 110))))
- '(font-lock-warning-face ((t (:foreground "#930000" :inverse-video nil))))
- '(fringe ((t (:foreground "#242424" :background "#242424"))))
- '(hl-line ((t (:background "#1e1e1e"))))
- '(indent-guide-face ((t (:background "#282828" :foreground "#666666"))))
- '(org-level-1 ((t (:inherit default :weight regular :height 1.0))))
- '(org-level-2 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-3 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-4 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-5 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-6 ((t (:inherit default :weight light :height 1.0))))
- '(org-link ((t (:underline nil))))
- '(org-tag ((t (:height 0.9))))
- '(tab-bar ((t (:inherit default :background "#242424" :foreground "#f6f3e8"))))
- '(tab-bar-tab ((t (:inherit 'highlight :background "#355369" :foreground "#000000"))))
- '(tab-bar-tab-inactive ((t (:inherit default :background "#242424" :foreground "#aaaaaa" :box (:line-width 2 :color "#242424" :style released-button)))))
- '(variable-pitch ((t (:family "DejaVu Sans" :height 120 :weight normal))))
- '(vertical-border ((t (:foreground "#000000"))))
- '(widget-button ((t (:inherit fixed-pitch :weight regular))))
- '(window-divider ((t (:foreground "black")))))
