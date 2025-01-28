@@ -82,11 +82,12 @@ Customizes the Org Agenda for a personalized task management, mainly here to def
 ;;
 ;; -> org-agenda
 ;;
-(setq org-agenda-files '("~/DCIM/content/aaa--aaa.org"
-                         "~/DCIM/content/aaa--calendar.org"
+(setq org-agenda-files '("~/DCIM/content/aaa--calendar.org"
                          "~/DCIM/content/aaa--todo.org"
                          "~/DCIM/content/aab--house.org"
                          "~/DCIM/content/aac--emacs-todo.org"))
+
+(setq org-agenda-sticky t)
 #+end_src
 
 * org-capture
@@ -479,7 +480,7 @@ Curates configurations specific to Linux, making adjustments for paths, fonts, a
 ;;
 (use-package shell-maker
   :ensure t)
-;;
+
 (use-package chatgpt-shell
   :ensure t
   :after shell-maker
@@ -601,7 +602,7 @@ Turns on very specific modes
 (use-package all-the-icons-dired
   :hook
   (dired-mode . all-the-icons-dired-mode))
-;;
+
 (use-package all-the-icons-ibuffer
   :hook
   (ibuffer-mode . all-the-icons-ibuffer-mode))
@@ -688,17 +689,7 @@ Configures extra dired features.
 ;;   "Enable `simple-autosuggest-mode' in all buffers."
 ;;   (when (not (minibufferp))
 ;;     (simple-autosuggest-mode 1)))
-
 ;; (add-hook 'after-change-major-mode-hook #'enable-simple-autosuggest-mode)
-
-(define-globalized-minor-mode global-simple-autosuggest-mode
-  simple-autosuggest-mode       ;; The mode to be globalized
-  (lambda ()                    ;; A function to enable the mode
-    (unless (minibufferp)       ;; Avoid enabling the mode in the minibuffer
-      (simple-autosuggest-mode 1))))
-
-;; Enable the global mode
-(global-simple-autosuggest-mode 1)
 #+end_src
 
 * spelling
