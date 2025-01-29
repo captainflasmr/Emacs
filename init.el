@@ -387,18 +387,16 @@
 ;;
 (use-package shell-maker
   :ensure t)
-
 (use-package chatgpt-shell
   :ensure t
   :after shell-maker
-  :bind
-  ("C-c g" . chatgpt-shell-menu)
   :custom
   (chatgpt-shell-openai-key
    (lambda ()
      (auth-source-pass-get 'secret "openai-key")))
   (chatgpt-shell-models
-   '(((:version . "chatgpt-4o-latest")
+   '(
+     ((:version . "chatgpt-4o-latest")
       (:short-version)
       (:label . "ChatGPT")
       (:provider . "OpenAI")
@@ -415,42 +413,48 @@
       (:validate-command . chatgpt-shell-openai--validate-command))
      ((:provider . "Ollama")
       (:label . "Ollama-qwen")
-      (:version . "qwen2.5-coder-7b-instruct-q5_k_m")
+      (:version . "qwen2.5-coder")
       (:short-version)
       (:token-width . 4)
       (:context-window . 8192)
       (:handler . chatgpt-shell-ollama--handle-ollama-command)
       (:filter . chatgpt-shell-ollama--extract-ollama-response)
       (:payload . chatgpt-shell-ollama-make-payload)
-      (:url . chatgpt-shell-ollama--make-url))
-     ((:provider . "Ollama")
-      (:label . "Ollama-llama")
-      (:version . "Llama-3.2-1B-Instruct-Q8_0")
-      (:short-version)
-      (:token-width . 4)
-      (:context-window . 8192)
-      (:handler . chatgpt-shell-ollama--handle-ollama-command)
-      (:filter . chatgpt-shell-ollama--extract-ollama-response)
-      (:payload . chatgpt-shell-ollama-make-payload)
-      (:url . chatgpt-shell-ollama--make-url))))
+      (:url . chatgpt-shell-ollama--make-url)))))
+
+(use-package gptel
   :config
-  (defun chatgpt-shell-menu ()
-    "Menu for ChatGPT Shell commands."
-    (interactive)
-    (let ((key (read-key
-                (propertize
-                 "----- ChatGPT Shell Commands [q] Quit: -----
-Model [m] Start Shell      [l] Swap Model
-Check [p] Proofread Region [r] Refactor Code"
-                 'face 'minibuffer-prompt))))
-      (pcase key
-        (?m (call-interactively 'chatgpt-shell))
-        (?l (call-interactively 'chatgpt-shell-swap-model))
-        (?p (call-interactively 'chatgpt-shell-proofread-region))
-        (?r (call-interactively 'chatgpt-shell-refactor-code))
-        (?q (message "Quit ChatGPT Shell menu."))
-        (?\C-g (message "Quit ChatGPT Shell menu."))
-        (_ (message "Invalid key: %c" key))))))
+  (gptel-make-ollama "qwen2.5-coder"
+    :host "localhost:11434"
+    :stream t
+    :models '(qwen2.5-coder:latest))
+  (setq gptel-model 'qwen2.5-coder:latest
+        gptel-backend (gptel-make-ollama "qwen2.5-coder"
+                        :host "localhost:11434"
+                        :stream t
+                        :models '(qwen2.5-coder:latest))))
+
+(defun llm-shell-menu ()
+  "Menu for ChatGPT Shell commands."
+  (interactive)
+  (let ((key (read-key
+              (propertize
+               "----- ChatGPT Shell Commands [q] Quit: -----
+Model  [j] Start Shell      [m] Swap Model
+Check  [p] Proofread Region [r] Refactor Code
+Ollama [l] Start Ollama"
+               'face 'minibuffer-prompt))))
+    (pcase key
+      (?j (call-interactively 'chatgpt-shell))
+      (?m (call-interactively 'chatgpt-shell-swap-model))
+      (?p (call-interactively 'chatgpt-shell-proofread-region))
+      (?r (call-interactively 'chatgpt-shell-refactor-code))
+      (?l (call-interactively 'gptel))
+      (?q (message "Quit ChatGPT Shell menu."))
+      (?\C-g (message "Quit ChatGPT Shell menu."))
+      (_ (message "Invalid key: %c" key)))))
+
+(global-set-key (kbd "C-c g") #'llm-shell-menu)
 
 ;;
 ;; -> programming
