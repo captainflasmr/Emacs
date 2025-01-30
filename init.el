@@ -442,7 +442,7 @@
                "----- ChatGPT Shell Commands [q] Quit: -----
 Model  [j] Start Shell      [m] Swap Model
 Check  [p] Proofread Region [r] Refactor Code
-Ollama [l] Start Ollama"
+Ollama [l] Start Ollama     [k] Kill Request"
                'face 'minibuffer-prompt))))
     (pcase key
       (?j (call-interactively 'chatgpt-shell))
@@ -450,6 +450,7 @@ Ollama [l] Start Ollama"
       (?p (call-interactively 'chatgpt-shell-proofread-region))
       (?r (call-interactively 'chatgpt-shell-refactor-code))
       (?l (call-interactively 'gptel))
+      (?k (call-interactively 'gptel-abort))
       (?q (message "Quit ChatGPT Shell menu."))
       (?\C-g (message "Quit ChatGPT Shell menu."))
       (_ (message "Invalid key: %c" key)))))
