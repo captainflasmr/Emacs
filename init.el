@@ -24,28 +24,6 @@
 (setq load-prefer-newer t)
 
 ;;
-;; -> selected-window-accent-mode
-;;
-
-(use-package selected-window-accent-mode
-  :config (selected-window-accent-mode 1)
-  :custom
-  (selected-window-accent-fringe-thickness 10)
-  (selected-window-accent-percentage-darken 0)
-  (selected-window-accent-percentage-desaturate 0)
-  (selected-window-accent-smart-borders t)
-  (selected-window-accent-use-blend-background nil)
-  (selected-window-accent-use-blend-alpha 0)
-  (selected-window-accent-tab-accent t)
-  (selected-window-accent-use-pywal t)
-  (selected-window-accent-custom-color "cyan4")
-  (selected-window-accent-mode-style 'default))
-
-(eval-after-load 'selected-window-accent-mode
-  '(progn
-     (define-key global-map (kbd "C-c w") 'selected-window-accent-transient)))
-
-;;
 ;; -> org-agenda
 ;;
 (setq org-agenda-files '("~/DCIM/content/aaa--calendar.org"
@@ -422,17 +400,49 @@
       (:payload . chatgpt-shell-ollama-make-payload)
       (:url . chatgpt-shell-ollama--make-url)))))
 
+;; (use-package gptel
+;;   :config
+;;   (gptel-make-ollama "qwen2.5-coder"
+;;     :host "localhost:11434"
+;;     :stream t
+;;     :models '(qwen2.5-coder:latest))
+;;   (setq gptel-model 'qwen2.5-coder:latest
+;;         gptel-backend (gptel-make-ollama "qwen2.5-coder"
+;;                         :host "localhost:11434"
+;;                         :stream t
+;;                         :models '(qwen2.5-coder:latest))))
+
+;; Define customizable variables
+(defvar my-gptel-default-model "qwen2.5-coder"
+  "Default GPT model to use with gptel.")
+
+(defvar my-gptel-host "localhost:11434"
+  "Host for the GPT backend.")
+
+(defvar my-gptel-token-size "7b"
+  "Token size for the GPT model (will replace `latest`).")
+
+;; ============
+;; trial values
+;; ============
+(setq my-gptel-default-model "deepseek-r1"
+      my-gptel-token-size "7b")
+
+;; Use-package configuration for gptel
 (use-package gptel
   :config
-  (gptel-make-ollama "qwen2.5-coder"
-    :host "localhost:11434"
+  ;; Create the Ollama backend for the default model
+  (gptel-make-ollama my-gptel-default-model
+    :host my-gptel-host
     :stream t
-    :models '(qwen2.5-coder:latest))
-  (setq gptel-model 'qwen2.5-coder:latest
-        gptel-backend (gptel-make-ollama "qwen2.5-coder"
-                        :host "localhost:11434"
-                        :stream t
-                        :models '(qwen2.5-coder:latest))))
+    :models `(,(intern (format "%s:%s" my-gptel-default-model my-gptel-token-size))))
+
+  ;; Set the default `gptel-model` and `gptel-backend`
+  (setq gptel-model (intern (format "%s:%s" my-gptel-default-model my-gptel-token-size))
+        gptel-backend (gptel-make-ollama my-gptel-default-model
+                         :host my-gptel-host
+                         :stream t
+                         :models `(,(intern (format "%s:%s" my-gptel-default-model my-gptel-token-size))))))
 
 (defun llm-shell-menu ()
   "Menu for ChatGPT Shell commands."
@@ -586,3 +596,42 @@ Dictionary [l] Check"
 (global-set-key (kbd "C-c s") #'spelling-menu)
 (global-set-key (kbd "C-9") #'powerthesaurus-lookup-synonyms-dwim)
 (global-set-key (kbd "M-;") #'my/quick-window-jump)
+
+;;
+;; -> custom-settings-core
+;;
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(mode-line ((t (:height 140 :underline nil :overline nil :box nil))))
+ '(mode-line-inactive ((t (:height 140 :underline nil :overline nil :box nil))))
+ '(org-level-1 ((t (:inherit default :weight regular :height 1.0))))
+ '(org-level-2 ((t (:inherit default :weight light :height 1.0))))
+ '(org-level-3 ((t (:inherit default :weight light :height 1.0))))
+ '(org-level-4 ((t (:inherit default :weight light :height 1.0))))
+ '(org-level-5 ((t (:inherit default :weight light :height 1.0))))
+ '(org-level-6 ((t (:inherit default :weight light :height 1.0))))
+ '(ediff-current-diff-A ((t (:extend t :background "#b5daeb" :foreground "#000000"))))
+ '(ediff-even-diff-A ((t (:background "#bafbba" :foreground "#000000" :extend t))))
+ '(ediff-fine-diff-A ((t (:background "#f4bd92" :foreground "#000000" :extend t))))
+ '(ediff-odd-diff-A ((t (:background "#b8fbb8" :foreground "#000000" :extend t))))
+ '(font-lock-warning-face ((t (:foreground "#930000" :inverse-video nil))))
+ '(org-link ((t (:underline nil))))
+ '(indent-guide-face ((t (:background "#282828" :foreground "#666666"))))
+ '(widget-button ((t (:inherit fixed-pitch :weight regular))))
+ '(window-divider ((t (:foreground "black"))))
+ '(org-tag ((t (:height 0.9))))
+ '(vertical-border ((t (:foreground "#000000")))))
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-enabled-themes '(misterioso))
+ '(warning-suppress-log-types '((frameset)))
+ '(warning-suppress-types '((frameset))))
+
+(set-cursor-color "white")
