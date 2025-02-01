@@ -400,18 +400,6 @@
       (:payload . chatgpt-shell-ollama-make-payload)
       (:url . chatgpt-shell-ollama--make-url)))))
 
-;; (use-package gptel
-;;   :config
-;;   (gptel-make-ollama "qwen2.5-coder"
-;;     :host "localhost:11434"
-;;     :stream t
-;;     :models '(qwen2.5-coder:latest))
-;;   (setq gptel-model 'qwen2.5-coder:latest
-;;         gptel-backend (gptel-make-ollama "qwen2.5-coder"
-;;                         :host "localhost:11434"
-;;                         :stream t
-;;                         :models '(qwen2.5-coder:latest))))
-
 ;; Define customizable variables
 (defvar my-gptel-default-model "qwen2.5-coder"
   "Default GPT model to use with gptel.")
@@ -425,8 +413,8 @@
 ;; ============
 ;; trial values
 ;; ============
-(setq my-gptel-default-model "deepseek-r1"
-      my-gptel-token-size "7b")
+(setq my-gptel-default-model "qwen2.5-coder"
+      my-gptel-token-size "3b")
 
 ;; Use-package configuration for gptel
 (use-package gptel
