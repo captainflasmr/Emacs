@@ -428,8 +428,8 @@ Configures various visual aspects of Emacs, including menu bar, toolbar, and scr
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 90)
-(add-to-list 'default-frame-alist '(alpha-background . 90))
+(set-frame-parameter nil 'alpha-background 100)
+(add-to-list 'default-frame-alist '(alpha-background . 100))
 #+end_src
 
 * shell
@@ -557,7 +557,7 @@ Curates configurations specific to Linux, making adjustments for paths, fonts, a
                                            :stream t
                                            :models `(,(intern default-full-model))))))
 
-(defun llm-shell-menu ()
+(defun my/llm-shell-menu ()
   "Menu for ChatGPT Shell commands."
   (interactive)
   (let ((key (read-key
@@ -580,7 +580,7 @@ Ollama [l] Start Ollama     [n] Menu
       (?\C-g (message "Quit ChatGPT Shell menu."))
       (_ (message "Invalid key: %c" key)))))
 
-(global-set-key (kbd "C-c g") #'llm-shell-menu)
+(global-set-key (kbd "C-c g") #'my/llm-shell-menu)
 
 #+end_src
 
@@ -708,19 +708,6 @@ Configures extra dired features.
 (dired-async-mode 1)
 #+end_src
 
-* development
-
-#+begin_src elisp
-;;
-;; -> development
-;;
-;; (defun enable-simple-autosuggest-mode ()
-;;   "Enable `simple-autosuggest-mode' in all buffers."
-;;   (when (not (minibufferp))
-;;     (simple-autosuggest-mode 1)))
-;; (add-hook 'after-change-major-mode-hook #'enable-simple-autosuggest-mode)
-#+end_src
-
 * spelling
 
 #+begin_src elisp
@@ -805,5 +792,14 @@ Places for `custom-set-variables` and `custom-set-faces` used by Emacs's customi
  '(warning-suppress-types '((frameset))))
 
 (set-cursor-color "white")
+#+end_src
+
+* development
+
+#+begin_src elisp
+;;
+;; -> development
+;;
+
 #+end_src
 

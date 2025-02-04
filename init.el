@@ -330,8 +330,8 @@
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 90)
-(add-to-list 'default-frame-alist '(alpha-background . 90))
+(set-frame-parameter nil 'alpha-background 100)
+(add-to-list 'default-frame-alist '(alpha-background . 100))
 
 ;;
 ;; -> shell
@@ -442,7 +442,7 @@
                                            :stream t
                                            :models `(,(intern default-full-model))))))
 
-(defun llm-shell-menu ()
+(defun my/llm-shell-menu ()
   "Menu for ChatGPT Shell commands."
   (interactive)
   (let ((key (read-key
@@ -465,7 +465,7 @@ Ollama [l] Start Ollama     [n] Menu
       (?\C-g (message "Quit ChatGPT Shell menu."))
       (_ (message "Invalid key: %c" key)))))
 
-(global-set-key (kbd "C-c g") #'llm-shell-menu)
+(global-set-key (kbd "C-c g") #'my/llm-shell-menu)
 
 ;;
 ;; -> programming
@@ -552,15 +552,6 @@ Ollama [l] Start Ollama     [n] Menu
 (dired-async-mode 1)
 
 ;;
-;; -> development
-;;
-;; (defun enable-simple-autosuggest-mode ()
-;;   "Enable `simple-autosuggest-mode' in all buffers."
-;;   (when (not (minibufferp))
-;;     (simple-autosuggest-mode 1)))
-;; (add-hook 'after-change-major-mode-hook #'enable-simple-autosuggest-mode)
-
-;;
 ;; -> spelling
 ;;
 (use-package powerthesaurus)
@@ -635,3 +626,7 @@ Dictionary [l] Check"
  '(warning-suppress-types '((frameset))))
 
 (set-cursor-color "white")
+
+;;
+;; -> development
+;;
