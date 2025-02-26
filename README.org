@@ -829,7 +829,7 @@ Places for `custom-set-variables` and `custom-set-faces` used by Emacs's customi
 ;;
 (setq ollama-buddy-command-definitions
       '(
-        ;; Geneal Commands
+        ;; General Commands
         (open-chat
          :key ?o
          :description "Open chat buffer"

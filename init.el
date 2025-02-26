@@ -660,7 +660,7 @@ Dictionary [l] Check"
 ;;
 (setq ollama-buddy-command-definitions
       '(
-        ;; Geneal Commands
+        ;; General Commands
         (open-chat
          :key ?o
          :description "Open chat buffer"
