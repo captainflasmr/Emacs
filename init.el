@@ -27,8 +27,10 @@
 ;; -> org-agenda
 ;;
 (setq org-agenda-files '("~/DCIM/content/aaa--calendar.org"
+                         "~/DCIM/content/aaa--calendar-repeat.org"
                          "~/DCIM/content/aaa--todo.org"
                          "~/DCIM/content/aab--house.org"
+                         "~/DCIM/content/aab--move.org"
                          "~/DCIM/content/aac--emacs-todo.org"))
 
 (setq org-agenda-sticky t)
@@ -575,36 +577,10 @@ Dictionary [l] Check"
 
 (global-set-key (kbd "C-c s") #'spelling-menu)
 (global-set-key (kbd "C-9") #'powerthesaurus-lookup-synonyms-dwim)
-(global-set-key (kbd "M-;") #'my/quick-window-jump)
 
 ;;
-;; -> custom-settings-core
+;; -> custom-settings
 ;;
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(mode-line ((t (:height 140 :underline nil :overline nil :box nil))))
- '(mode-line-inactive ((t (:height 140 :underline nil :overline nil :box nil))))
- '(org-level-1 ((t (:inherit default :weight regular :height 1.0))))
- '(org-level-2 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-3 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-4 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-5 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-6 ((t (:inherit default :weight light :height 1.0))))
- '(ediff-current-diff-A ((t (:extend t :background "#b5daeb" :foreground "#000000"))))
- '(ediff-even-diff-A ((t (:background "#bafbba" :foreground "#000000" :extend t))))
- '(ediff-fine-diff-A ((t (:background "#f4bd92" :foreground "#000000" :extend t))))
- '(ediff-odd-diff-A ((t (:background "#b8fbb8" :foreground "#000000" :extend t))))
- '(font-lock-warning-face ((t (:foreground "#930000" :inverse-video nil))))
- '(org-link ((t (:underline nil))))
- '(indent-guide-face ((t (:background "#282828" :foreground "#666666"))))
- '(widget-button ((t (:inherit fixed-pitch :weight regular))))
- '(window-divider ((t (:foreground "black"))))
- '(org-tag ((t (:height 0.9))))
- '(vertical-border ((t (:foreground "#000000")))))
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -787,3 +763,8 @@ Dictionary [l] Check"
   :load-path "~/source/repos/ollama-buddy"
   :bind ("C-c o" . ollama-buddy-menu)
   :custom ollama-buddy-default-model "llama3.2:1b")
+
+;;
+;; -> emacs-30.1
+;;
+(setq tab-bar-auto-width-max '((120) 20))
