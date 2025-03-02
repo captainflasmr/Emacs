@@ -409,7 +409,7 @@
                  (:payload . chatgpt-shell-ollama-make-payload)
                  (:url . chatgpt-shell-ollama--make-url))))
            my-llm-models)))
-  (append default-models ollama-models))))
+     (append default-models ollama-models))))
 
 (use-package gptel
   :config
@@ -418,9 +418,9 @@
            (token-size (cdr model-token-pair))
            (full-model-name (format "%s:%s" model-name token-size))
            (ollama-backend (gptel-make-ollama model-name
-                                              :host my-ollama-host
-                                              :stream t
-                                              :models `(,(intern full-model-name)))))
+                             :host my-ollama-host
+                             :stream t
+                             :models `(,(intern full-model-name)))))
       (set (intern (format "gptel-backend-%s-%s" model-name token-size)) ollama-backend)
       (message "Configured Ollama backend for model: %s" full-model-name)))
   (let* ((default-model (car my-llm-models))
@@ -429,9 +429,9 @@
          (default-full-model (format "%s:%s" default-model-name default-token-size)))
     (setq gptel-model (intern default-full-model)
           gptel-backend (gptel-make-ollama default-model-name
-                                           :host my-ollama-host
-                                           :stream t
-                                           :models `(,(intern default-full-model))))))
+                          :host my-ollama-host
+                          :stream t
+                          :models `(,(intern default-full-model))))))
 
 (defun my/llm-shell-menu ()
   "Menu for ChatGPT Shell commands."
@@ -602,7 +602,7 @@ Dictionary [l] Check"
 [h] Export to Hugo (with rsync)
 [w] Export to HTML (with table highlighting)
 [d] Export to DOCX (via ODT)"
-                'face 'minibuffer-prompt))))
+               'face 'minibuffer-prompt))))
     (pcase key
       (?h (save-excursion
             (without-gc #'org-hugo-export-wim-to-md)
@@ -665,6 +665,25 @@ Dictionary [l] Check"
          :key ?l
          :description "Send region"
          :action (lambda () (ollama-buddy--send-with-command 'send-region)))
+
+        (switch-role
+         :key ?R
+         :description "Switch roles"
+         :model nil
+         :action ollama-buddy-roles-switch-role)
+        
+        (create-role
+         :key ?N
+         :description
+         "Create new role"
+         :model nil
+         :action ollama-buddy-role-creator-create-new-role)
+        
+        (open-roles-directory
+         :key ?D
+         :description "Open roles directory"
+         :model nil
+         :action ollama-buddy-roles-open-directory)
         
         ;; Specialized commands
         (refactor-code
@@ -752,6 +771,17 @@ Dictionary [l] Check"
          :description "Kill request"
          :action (lambda ()
                    (delete-process ollama-buddy--active-process)))
+
+        (toggle-colors
+         :key ?C
+         :description "Toggle Colors"
+         :action ollama-buddy-toggle-model-colors)
+
+        (token-stats
+         :key ?t
+         :description "Token Usage Stats"
+         :action ollama-buddy-display-token-stats)
+
         (quit
          :key ?q
          :description "Quit"
