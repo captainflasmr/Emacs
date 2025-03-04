@@ -24,6 +24,24 @@
 (setq load-prefer-newer t)
 
 ;;
+;; -> selected-window-accent-mode
+;;
+
+(use-package selected-window-accent-mode
+  :load-path "~/source/repos/selected-window-accent-mode"
+  :config (selected-window-accent-mode 1)
+  :custom
+  (selected-window-accent-fringe-thickness 10)
+  (selected-window-accent-custom-color nil)
+  (selected-window-accent-mode-style 'default)
+  (selected-window-accent-percentage-darken 20)
+  (selected-window-accent-percentage-desaturate 20)
+  (selected-window-accent-tab-accent t)
+  (selected-window-accent-smart-borders t))
+
+(global-set-key (kbd "C-c w") selected-window-accent-map)
+
+;;
 ;; -> org-agenda
 ;;
 (setq org-agenda-files '("~/DCIM/content/aaa--calendar.org"
@@ -790,7 +808,8 @@ Dictionary [l] Check"
       )
 
 (use-package ollama-buddy
-  :load-path "~/source/repos/ollama-buddy"
+  :load-path "~/source/repos/ollama-buddy/ollama-buddy-mini"
+  ;; :load-path "~/source/repos/ollama-buddy"
   :bind ("C-c o" . ollama-buddy-menu)
   :custom ollama-buddy-default-model "llama3.2:1b")
 
@@ -798,3 +817,39 @@ Dictionary [l] Check"
 ;; -> emacs-30.1
 ;;
 (setq tab-bar-auto-width-max '((120) 20))
+
+;;
+;; -> magit
+;;
+
+(when (executable-find "git")
+  (use-package magit
+    :defer 5
+    :config
+    (magit-add-section-hook
+     'magit-status-sections-hook 'magit-insert-tracked-files nil 'append)
+    :custom
+    (magit-section-initial-visibility-alist (quote ((untracked . hide))))
+    (magit-repolist-column-flag-alist
+     '((magit-untracked-files . "N")
+       (magit-unstaged-files . "U")
+       (magit-staged-files . "S")))
+    (magit-repolist-columns
+     '(("Name" 25 magit-repolist-column-ident nil)
+       ("" 3 magit-repolist-column-flag)
+       ("Version" 25 magit-repolist-column-version
+        ((:sort magit-repolist-version<)))
+       ("B<U" 3 magit-repolist-column-unpulled-from-upstream
+        ((:right-align t)
+         (:sort <)))
+       ("B>U" 3 magit-repolist-column-unpushed-to-upstream
+        ((:right-align t)
+         (:sort <)))
+       ("Path" 99 magit-repolist-column-path nil)))
+    (magit-repository-directories
+     '(("~/.config" . 0)
+       ("~/source/repos" . 2)
+       ("~/bin" . 1)
+       ("~/.emacs.d" . 1)
+       ("~/DCIM/Art/Content" . 2)
+       ("~/DCIM/themes" . 2)))))
