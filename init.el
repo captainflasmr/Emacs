@@ -28,7 +28,7 @@
 ;;
 
 (use-package selected-window-accent-mode
-  :load-path "~/source/repos/selected-window-accent-mode"
+  ;; :load-path "~/source/repos/selected-window-accent-mode"
   :config (selected-window-accent-mode 1)
   :custom
   (selected-window-accent-fringe-thickness 10)
@@ -37,7 +37,7 @@
   (selected-window-accent-percentage-darken 20)
   (selected-window-accent-percentage-desaturate 20)
   (selected-window-accent-tab-accent t)
-  (selected-window-accent-smart-borders t))
+  (selected-window-accent-smart-borders nil))
 
 (global-set-key (kbd "C-c w") selected-window-accent-map)
 
@@ -605,6 +605,15 @@ Dictionary [l] Check"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(gruvbox))
+ '(package-selected-packages
+   '(all-the-icons-dired all-the-icons-ibuffer async chatgpt-shell
+                         consult corfu doom-themes ef-themes elfeed
+                         git-timemachine gptel gruvbox-theme
+                         i3wm-config-mode magit olivetti ollama-buddy
+                         org-superstar org-wc ox-hugo package-lint
+                         powerthesaurus ready-player
+                         selected-window-accent-mode
+                         visual-fill-column yaml-mode))
  '(warning-suppress-log-types '((frameset)))
  '(warning-suppress-types '((frameset))))
 
@@ -652,166 +661,20 @@ Dictionary [l] Check"
 ;;
 ;; -> ollama-buddy
 ;;
-(setq ollama-buddy-command-definitions
-      '(
-        ;; General Commands
-        (open-chat
-         :key ?o
-         :description "Open chat buffer"
-         :action ollama-buddy--open-chat)
-        
-        (show-models
-         :key ?v
-         :description "View model status"
-         :action ollama-buddy-show-model-status)
-        
-        (swap-model
-         :key ?m
-         :description "Swap model"
-         :action ollama-buddy--swap-model)
-        
-        (help
-         :key ?h
-         :description "Help assistant"
-         :action (lambda ()
-                   (pop-to-buffer (get-buffer-create ollama-buddy--chat-buffer))
-                   (goto-char (point-max))
-                   (insert (ollama-buddy--create-intro-message))
-                   (ollama-buddy--show-prompt)))
-        
-        (send-region
-         :key ?l
-         :description "Send region"
-         :action (lambda () (ollama-buddy--send-with-command 'send-region)))
-
-        (switch-role
-         :key ?R
-         :description "Switch roles"
-         :model nil
-         :action ollama-buddy-roles-switch-role)
-        
-        (create-role
-         :key ?N
-         :description
-         "Create new role"
-         :model nil
-         :action ollama-buddy-role-creator-create-new-role)
-        
-        (open-roles-directory
-         :key ?D
-         :description "Open roles directory"
-         :model nil
-         :action ollama-buddy-roles-open-directory)
-        
-        ;; Specialized commands
-        (refactor-code
-         :key ?r
-         :description "Refactor code"
-         :model "qwen2.5-coder:7b"
-         :prompt "refactor the following code:"
-         :action (lambda () (ollama-buddy--send-with-command 'refactor-code)))
-        
-        (git-commit
-         :key ?g
-         :description "Git commit message"
-         :model "qwen2.5-coder:3b"
-         :prompt "write a concise git commit message for the following:"
-         :action (lambda () (ollama-buddy--send-with-command 'git-commit)))
-        
-        (describe-code
-         :key ?c
-         :description "Describe code"
-         :model "qwen2.5-coder:3b"
-         :prompt "describe the following code:"
-         :action (lambda () (ollama-buddy--send-with-command 'describe-code)))
-        
-        (dictionary-lookup
-         :key ?d
-         :description "Dictionary Lookup"
-         :model "llama3.2:1b"
-         :prompt "For the following word provide a typical dictionary definition:"
-         :action (lambda () (ollama-buddy--send-with-command 'dictionary-lookup)))
-        
-        (synonym
-         :key ?n
-         :description "Word synonym"
-         :model "llama3.2:1b"
-         :prompt "list synonyms for word:"
-         :action (lambda () (ollama-buddy--send-with-command 'synonym)))
-        
-        (proofread
-         :key ?p
-         :description "Proofread text"
-         :model "deepseek-r1:7b"
-         :prompt "proofread the following:"
-         :action (lambda () (ollama-buddy--send-with-command 'proofread)))
-        
-        (make-concise
-         :key ?z
-         :description "Make concise"
-         :prompt "reduce wordiness while preserving meaning:"
-         :action (lambda () (ollama-buddy--send-with-command 'make-concise)))
-        
-        ;; System Commands
-        (custom-prompt
-         :key ?e
-         :description "Custom prompt"
-         :model "deepseek-r1:7b"
-         :action (lambda ()
-                   (when-let ((prefix (read-string "Enter prompt prefix: " nil nil nil t)))
-                     (unless (use-region-p)
-                       (user-error "No region selected. Select text to use with prompt"))
-                     (unless (not (string-empty-p prefix))
-                       (user-error "Input string is empty"))
-                     (ollama-buddy--send
-                      (concat prefix "\n\n"
-                              (buffer-substring-no-properties 
-                               (region-beginning) (region-end)))))))
-        (minibuffer-prompt
-         :key ?i
-         :description "Minibuffer Prompt"
-         :action (lambda ()
-                   (when-let ((prefix (read-string "Enter prompt: " nil nil nil t)))
-                     (unless (not (string-empty-p prefix))
-                       (user-error "Input string is empty"))
-                     (ollama-buddy--send prefix))))
-        (save-chat
-         :key ?s
-         :description "Save chat"
-         :action (lambda ()
-                   (with-current-buffer ollama-buddy--chat-buffer
-                     (write-region (point-min) (point-max)
-                                   (read-file-name "Save conversation to: ")
-                                   'append-to-file
-                                   nil))))
-        (kill-request
-         :key ?x
-         :description "Kill request"
-         :action (lambda ()
-                   (delete-process ollama-buddy--active-process)))
-
-        (toggle-colors
-         :key ?C
-         :description "Toggle Colors"
-         :action ollama-buddy-toggle-model-colors)
-
-        (token-stats
-         :key ?t
-         :description "Token Usage Stats"
-         :action ollama-buddy-display-token-stats)
-
-        (quit
-         :key ?q
-         :description "Quit"
-         :action (lambda () (message "Quit Ollama Shell menu.")))
-        )
-      )
+(with-eval-after-load 'ollama-buddy
+  (ollama-buddy-add-model-to-menu-entry 'refactor-code "qwen2.5-coder:7b")
+  (ollama-buddy-add-model-to-menu-entry 'git-commit "qwen2.5-coder:3b")
+  (ollama-buddy-add-model-to-menu-entry 'describe-code "qwen2.5-coder:3b")
+  (ollama-buddy-add-model-to-menu-entry 'dictionary-lookup "llama3.2:3b")
+  (ollama-buddy-add-model-to-menu-entry 'synonym "llama3.2:3b")
+  (ollama-buddy-add-model-to-menu-entry 'proofread "llama3.2:3b")
+  (ollama-buddy-add-model-to-menu-entry 'custom-prompt "deepseek-r1:7b"))
 
 (use-package ollama-buddy
-  :load-path "~/source/repos/ollama-buddy/ollama-buddy-mini"
-  ;; :load-path "~/source/repos/ollama-buddy"
+  ;; :load-path "~/source/repos/ollama-buddy/ollama-buddy-mini"
+  :load-path "~/source/repos/ollama-buddy"
   :bind ("C-c o" . ollama-buddy-menu)
-  :custom ollama-buddy-default-model "llama3.2:1b")
+  :custom ollama-buddy-default-model "llama3.2:3b")
 
 ;;
 ;; -> emacs-30.1
@@ -853,3 +716,35 @@ Dictionary [l] Check"
        ("~/.emacs.d" . 1)
        ("~/DCIM/Art/Content" . 2)
        ("~/DCIM/themes" . 2)))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(cursor ((t (:background "coral"))))
+ '(ediff-current-diff-A ((t (:extend t :background "#b5daeb" :foreground "#000000"))))
+ '(ediff-even-diff-A ((t (:background "#bafbba" :foreground "#000000" :extend t))))
+ '(ediff-fine-diff-A ((t (:background "#f4bd92" :foreground "#000000" :extend t))))
+ '(ediff-odd-diff-A ((t (:background "#b8fbb8" :foreground "#000000" :extend t))))
+ '(fixed-pitch ((t (:family "Source Code Pro" :height 110))))
+ '(font-lock-warning-face ((t (:foreground "#930000" :inverse-video nil))))
+ '(fringe ((t (:foreground "#2d3743" :background "#2d3743"))))
+ '(hl-line ((t (:background "#3d4753"))))
+ '(indent-guide-face ((t (:background "#282828" :foreground "#666666"))))
+ '(mode-line ((t (:height 140 :underline nil :overline nil :box nil))))
+ '(mode-line-inactive ((t (:height 140 :underline nil :overline nil :box nil))))
+ '(org-level-1 ((t (:inherit default :weight regular :height 1.0))))
+ '(org-level-2 ((t (:inherit default :weight light :height 1.0))))
+ '(org-level-3 ((t (:inherit default :weight light :height 1.0))))
+ '(org-level-4 ((t (:inherit default :weight light :height 1.0))))
+ '(org-level-5 ((t (:inherit default :weight light :height 1.0))))
+ '(org-level-6 ((t (:inherit default :weight light :height 1.0))))
+ '(org-link ((t (:underline nil))))
+ '(org-tag ((t (:height 0.9))))
+ '(tab-bar ((t (:inherit default :background "#2d3743" :foreground "#e1e1e0"))))
+ '(tab-bar-tab ((t (:inherit 'highlight :background "coral" :foreground "#000000"))))
+ '(tab-bar-tab-inactive ((t (:inherit default :background "#2d3743" :foreground "#eeeeec" :box (:line-width 2 :color "#2d3743" :style pressed-button)))))
+ '(variable-pitch ((t (:family "DejaVu Sans" :height 120 :weight normal))))
+ '(vertical-border ((t (:foreground "#000000"))))
+ '(widget-button ((t (:inherit fixed-pitch :weight regular))))
+ '(window-divider ((t (:foreground "black")))))
