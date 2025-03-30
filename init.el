@@ -37,7 +37,7 @@
   (selected-window-accent-percentage-darken 20)
   (selected-window-accent-percentage-desaturate 20)
   (selected-window-accent-tab-accent t)
-  (selected-window-accent-smart-borders nil))
+  (selected-window-accent-smart-borders t))
 
 (global-set-key (kbd "C-c w") selected-window-accent-map)
 
@@ -45,10 +45,10 @@
 ;; -> org-agenda
 ;;
 (setq org-agenda-files '("~/DCIM/content/aaa--calendar.org"
-                         "~/DCIM/content/aaa--calendar-repeat.org"
+                         "~/DCIM/content/aab--calendar-repeat.org"
                          "~/DCIM/content/aaa--todo.org"
-                         "~/DCIM/content/aab--house.org"
                          "~/DCIM/content/aab--move.org"
+                         "~/DCIM/content/aab--sell.org"
                          "~/DCIM/content/aac--emacs-todo.org"))
 
 (setq org-agenda-sticky t)
@@ -339,17 +339,8 @@
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 90)
-(add-to-list 'default-frame-alist '(alpha-background . 90))
-
-;;
-;; -> shell
-;;
-(defun my/eshell-hook ()
-  "Set up completions to be a little more fish like."
-  (interactive)
-  (setq-local completion-styles '(basic partial-completion)))
-(add-hook 'eshell-mode-hook 'my/eshell-hook)
+(set-frame-parameter nil 'alpha-background 80)
+(add-to-list 'default-frame-alist '(alpha-background . 80))
 
 ;;
 ;; -> linux specific
@@ -604,18 +595,46 @@ Dictionary [l] Check"
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-enabled-themes '(gruvbox))
- '(package-selected-packages
-   '(all-the-icons-dired all-the-icons-ibuffer async chatgpt-shell
-                         consult corfu doom-themes ef-themes elfeed
-                         git-timemachine gptel gruvbox-theme
-                         i3wm-config-mode magit olivetti ollama-buddy
-                         org-superstar org-wc ox-hugo package-lint
-                         powerthesaurus ready-player
-                         selected-window-accent-mode
-                         visual-fill-column yaml-mode))
+ '(custom-enabled-themes '(doom-monokai-classic))
  '(warning-suppress-log-types '((frameset)))
  '(warning-suppress-types '((frameset))))
+
+;;
+;; -> ollama-buddy
+;;
+(use-package password-store)
+
+(use-package ollama-buddy
+  ;; :load-path "~/source/repos/ollama-buddy/ollama-buddy-mini"
+  :load-path "~/source/repos/ollama-buddy"
+  :bind
+  ("C-c o" . ollama-buddy-menu)
+  ("C-c O" . ollama-buddy-transient-menu-wrapper)
+  :custom
+  (ollama-buddy-openai-api-key
+   (password-store-get "ollama-buddy/openai-api-key"))
+  (ollama-buddy-default-model "GPT gpt-4o")
+  (ollama-buddy-claude-api-key
+   (password-store-get "ollama-buddy/claude-api-key"))
+  (ollama-buddy-claude-default-model "claude-3-sonnet-20240229")
+  :config
+  (require 'ollama-buddy-openai nil t)
+  (require 'ollama-buddy-claude nil t)
+  (ollama-buddy-update-menu-entry
+   'git-commit :model "GPT gpt-4o")
+  (ollama-buddy-update-menu-entry
+   'describe-code :model "qwen2.5-coder:3b")
+  (ollama-buddy-update-menu-entry
+   'dictionary-lookup :model "llama3.2:3b")
+  (ollama-buddy-update-menu-entry
+   'synonym :model "llama3.2:3b")
+  (ollama-buddy-update-menu-entry
+   'proofread :model "GPT gpt-4o"))
+
+;;
+;; -> emacs-30.1
+;;
+(setq tab-bar-auto-width-max '((120) 20))
 
 ;;
 ;; -> development
@@ -658,93 +677,187 @@ Dictionary [l] Check"
 
 (my/sync-ui-accent-color "coral")
 
-;;
-;; -> ollama-buddy
-;;
-(with-eval-after-load 'ollama-buddy
-  (ollama-buddy-add-model-to-menu-entry 'refactor-code "qwen2.5-coder:7b")
-  (ollama-buddy-add-model-to-menu-entry 'git-commit "qwen2.5-coder:3b")
-  (ollama-buddy-add-model-to-menu-entry 'describe-code "qwen2.5-coder:3b")
-  (ollama-buddy-add-model-to-menu-entry 'dictionary-lookup "llama3.2:3b")
-  (ollama-buddy-add-model-to-menu-entry 'synonym "llama3.2:3b")
-  (ollama-buddy-add-model-to-menu-entry 'proofread "llama3.2:3b")
-  (ollama-buddy-add-model-to-menu-entry 'custom-prompt "deepseek-r1:7b"))
-
-(use-package ollama-buddy
-  ;; :load-path "~/source/repos/ollama-buddy/ollama-buddy-mini"
-  :load-path "~/source/repos/ollama-buddy"
-  :bind ("C-c o" . ollama-buddy-menu)
-  :custom ollama-buddy-default-model "llama3.2:3b")
+(use-package csv-mode)
 
 ;;
-;; -> emacs-30.1
-;;
-(setq tab-bar-auto-width-max '((120) 20))
-
-;;
-;; -> magit
+;; -> finance
 ;;
 
-(when (executable-find "git")
-  (use-package magit
-    :defer 5
-    :config
-    (magit-add-section-hook
-     'magit-status-sections-hook 'magit-insert-tracked-files nil 'append)
-    :custom
-    (magit-section-initial-visibility-alist (quote ((untracked . hide))))
-    (magit-repolist-column-flag-alist
-     '((magit-untracked-files . "N")
-       (magit-unstaged-files . "U")
-       (magit-staged-files . "S")))
-    (magit-repolist-columns
-     '(("Name" 25 magit-repolist-column-ident nil)
-       ("" 3 magit-repolist-column-flag)
-       ("Version" 25 magit-repolist-column-version
-        ((:sort magit-repolist-version<)))
-       ("B<U" 3 magit-repolist-column-unpulled-from-upstream
-        ((:right-align t)
-         (:sort <)))
-       ("B>U" 3 magit-repolist-column-unpushed-to-upstream
-        ((:right-align t)
-         (:sort <)))
-       ("Path" 99 magit-repolist-column-path nil)))
-    (magit-repository-directories
-     '(("~/.config" . 0)
-       ("~/source/repos" . 2)
-       ("~/bin" . 1)
-       ("~/.emacs.d" . 1)
-       ("~/DCIM/Art/Content" . 2)
-       ("~/DCIM/themes" . 2)))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(cursor ((t (:background "coral"))))
- '(ediff-current-diff-A ((t (:extend t :background "#b5daeb" :foreground "#000000"))))
- '(ediff-even-diff-A ((t (:background "#bafbba" :foreground "#000000" :extend t))))
- '(ediff-fine-diff-A ((t (:background "#f4bd92" :foreground "#000000" :extend t))))
- '(ediff-odd-diff-A ((t (:background "#b8fbb8" :foreground "#000000" :extend t))))
- '(fixed-pitch ((t (:family "Source Code Pro" :height 110))))
- '(font-lock-warning-face ((t (:foreground "#930000" :inverse-video nil))))
- '(fringe ((t (:foreground "#2d3743" :background "#2d3743"))))
- '(hl-line ((t (:background "#3d4753"))))
- '(indent-guide-face ((t (:background "#282828" :foreground "#666666"))))
- '(mode-line ((t (:height 140 :underline nil :overline nil :box nil))))
- '(mode-line-inactive ((t (:height 140 :underline nil :overline nil :box nil))))
- '(org-level-1 ((t (:inherit default :weight regular :height 1.0))))
- '(org-level-2 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-3 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-4 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-5 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-6 ((t (:inherit default :weight light :height 1.0))))
- '(org-link ((t (:underline nil))))
- '(org-tag ((t (:height 0.9))))
- '(tab-bar ((t (:inherit default :background "#2d3743" :foreground "#e1e1e0"))))
- '(tab-bar-tab ((t (:inherit 'highlight :background "coral" :foreground "#000000"))))
- '(tab-bar-tab-inactive ((t (:inherit default :background "#2d3743" :foreground "#eeeeec" :box (:line-width 2 :color "#2d3743" :style pressed-button)))))
- '(variable-pitch ((t (:family "DejaVu Sans" :height 120 :weight normal))))
- '(vertical-border ((t (:foreground "#000000"))))
- '(widget-button ((t (:inherit fixed-pitch :weight regular))))
- '(window-divider ((t (:foreground "black")))))
+(use-package csv)
+(require 'csv)
+
+(defvar payments '())
+(defvar cat-tot (make-hash-table :test 'equal))
+
+(setq cat-list-defines
+      '(("katherine\\|lucinda\\|kate" "kat")
+        ("railw\\|railway\\|selfserve\\|train" "trn")
+        ("paypal" "pay") ("virgin-media\\|uinsure\\|insurance\\|royal-mail\\|postoffice\\|endsleigh\\|waste\\|lloyds\\|electric\\|sse\\|newsstand\\|privilege\\|pcc\\|licence\\|ovo\\|energy\\|bt\\|water" "utl")
+        ("sky-betting\\|b365\\|races\\|bet365\\|racing" "bet")
+        ("stakeholde\\|widows" "pen")
+        ("nsibill\\|vines\\|ns&i\\|saver" "sav")
+        ("uber\\|aqua" "txi")
+        ("magazine\\|specs\\|zinio\\|specsavers\\|publishing\\|anthem\\|kindle\\|news" "rdg") ("claude\\|escape\\|deviant\\|cleverbridge\\|reddit\\|pixel\\|boox\\|ionos\\|microsoft\\|mobile\\|backmarket\\|cartridge\\|whsmith\\|dazn\\|my-picture\\|openai\\|c-date\\|ptitis\\|keypmt\\|billnt\\|fee2nor\\|assistance\\|boxise\\|billkt\\|paintstor\\|iet-main\\|ffnhelp\\|shadesgrey\\|venntro\\|vtsup\\|sunpts\\|apyse\\|palchrge\\|maypmt\\|filemodedesk\\|istebrak\\|connective\\|avangate\\|stardock\\|avg\\|123\\|web\\|a2" "web")
+        ("notemachine\\|anchrg\\|hilsea\\|withdrawal" "atm")
+        ("finance" "fin")
+        ("youtube\\|entertai\\|twitch\\|disney\\|box-office\\|discovery\\|tvplayer\\|vue\\|sky\\|netflix\\|audible\\|nowtv\\|channel\\|prime" "str")
+        ("platinum\\|card" "crd")
+        ("top-up\\|three\\|h3g" "phn")
+        ("amaz\\|amz" "amz")        
+        ("pets\\|pet" "pet")
+        ("mydentist\\|dentist" "dnt")
+        ("natwest-bank-reference\\|residential\\|rent\\|yeong" "hse")
+        ("mardin\\|starbuck\\|gillett-copnor\\|asda\\|morrison\\|sainsburys\\|waitrose\\|tesco\\|domino\\|deliveroo\\|just.*eat" "fod") ("retail-ltd\\|vinted\\|lockart\\|moment-house\\|yuyu\\|bushra\\|newhome\\|white-barn\\|skinnydip\\|mgs\\|river-island\\|spencer\\|lilian\\|jung\\|ikea\\|wayfair\\|neom\\|teespring\\|lick-home\\|matalan\\|devon-wick\\|united-arts\\|lush-retail\\|lisa-angel\\|sharkninja\\|fastspring\\|bonas\\|asos\\|emma\\|sofology\\|ebay\\|dunelm\\|coconut\\|semantical\\|truffle\\|nextltd\\|highland\\|little-crafts\\|papier\\|the-hut\\|new-look\\|samsung\\|astrid\\|pandora\\|waterstone\\|cultbeauty\\|24pymt\\|champo\\|costa\\|gollo\\|pumpkin\\|argos\\|the-range\\|biffa\\|moonpig\\|apple\\|itunes\\|gold\\|interflora\\|thortful" "shp")
+        ("js-law" "law")
+        ("anyvan" "hmv")
+        (".*" "o")))
+
+(length cat-list-defines)
+
+(defun categorize-payment (name debit month)
+  "Categorize payment based on name, month, and accumulate totals."
+  (let* ((category-found)
+         (split-key))
+    (cl-block nil
+      (dolist (category cat-list-defines)
+        (when (string-match-p
+               (nth 0 category) name)
+          (setq category-found (nth 1 category))
+          (cl-return))))
+    (setq split-key (concat month "-" category-found))
+    (insert (format "%s %s %s %.0f\n" category-found month name debit))
+    (puthash split-key (+ (gethash split-key cat-tot 0) debit) cat-tot)))
+
+(defun parse-csv-file (file)
+  "Parse CSV file and store payments."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (setq payments (csv-parse-buffer t))))
+
+(defun write-header-plot (year)
+  "Generate a plot header for YEAR."
+  (insert "-*- mode: org; eval: (visual-line-mode -1); -*-\n")
+  (insert (format "#+PLOT: title:\"%s\" ind:1 deps:(%s) type:2d with:lines set:\"yrange [0:1000]\"\n"
+                  year (concat (mapconcat 'number-to-string (number-sequence 3 (+ (length cat-list-defines) 2)) " ")))))
+
+(defun write-footer-tblfm ()
+  "Generate a plot footer."
+  (insert "||\n")
+  (insert (concat "#+TBLFM: @>=vmean(@I..@II);%.0f::$>=vsum($3..$" (format "%d" (+ (length cat-list-defines) 2)) ");\%.0f") ))
+
+(defun write-header ()
+  "Write table header."
+  (insert "|date ")
+  (dolist (category cat-list-defines)
+    (insert (format "%s " (nth 1 category))))
+  (insert " |\n"))
+
+(defun write-body (index year month)
+  "Write table body."
+  (insert (format "%d %s " index (concat year "-" month)))
+  (dolist (category cat-list-defines)
+    (let* ((split-key (concat year "-" month "-" (nth 1 category))))
+      (insert (format "%.0f " (gethash split-key cat-tot 0)))))
+  (insert " |\n"))
+
+(defun export-payments-to-org ()
+  "Export categorized payments and totals to an Org table."
+  (clrhash cat-tot)
+  ;; calculate all payments and output all categories to payments-all.org
+  (with-temp-buffer
+    (dolist (payment payments)
+      (let* ((date (cdr (nth 0 payment)))
+             (month (format-time-string "%Y-%m" (date-to-time date)))
+             (name (string-replace " " "-" (cdr (nth 4 payment))))
+             (debit (string-to-number (cdr (nth 5 payment)))))
+        (categorize-payment name debit month)))
+    (write-file "payments-all.org"))
+
+  ;; output entire payments table to payments.org
+  (with-temp-buffer
+    (write-header-plot 2025)
+    (write-header)
+    (let ((index 0))
+      (dolist (year (seq-map '(lambda (value)
+                                (format "%02d" value))
+                             (nreverse (number-sequence 2016 2025 1))))
+        (dolist (month (seq-map '(lambda (value)
+                                   (format "%02d" value))
+                                (nreverse (number-sequence 1 12 1))))
+          (write-body index year month)
+          (setq index (1+ index)))))
+    (write-footer-tblfm)
+    (write-file "payments.org"))
+
+  ;; output payments to payments-<year>.org
+  (dolist (year (seq-map '(lambda (value)
+                            (format "%02d" value))
+                         (nreverse (number-sequence 2016 2025 1))))
+    (with-temp-buffer
+      (write-header-plot year)
+      (write-header)
+      (let ((index 0))
+        (dolist (month (seq-map '(lambda (value)
+                                   (format "%02d" value))
+                                (nreverse (number-sequence 1 12 1))))
+          (write-body index year month)
+          (setq index (1+ index))))
+      (write-footer-tblfm)
+      (write-file (concat "payments-" year ".org"))))
+
+  ;; output payments to payments-<category>.org
+  (dolist (category cat-list-defines)
+    (with-temp-buffer
+      (insert (format "#+PLOT: title:\"%s\" ind:1 deps:(3) type:2d with:lines set:\"yrange [0:1000]\"\n" (nth 1 category)))
+      (insert "|date ")
+      (insert (format "%s\n" (nth 1 category)))
+      (let ((index 0))
+        (dolist (year (seq-map '(lambda (value)
+                                  (format "%02d" value))
+                               (nreverse (number-sequence 2016 2025 1))))
+          (dolist (month (seq-map '(lambda (value)
+                                     (format "%02d" value))
+                                  (nreverse (number-sequence 1 12 1))))
+            (let* ((split-key (concat year "-" month "-" (nth 1 category))))
+              (insert (format "%d %s " index (concat year "-" month)))
+              (insert (format "%.0f\n" (gethash split-key cat-tot 0))))
+            (setq index (1+ index)))))
+      (write-file (concat "payments-" (nth 1 category) ".org")))))
+
+;; Example usage
+;; (parse-csv-file "payments.csv")
+;; (export-payments-to-org)
+
+(defun my/remove-negative-sign (input-line)
+  "Remove the negative sign from the final column of a CSV line."
+  (if (string-match "\\(.*\\),-\\([0-9.]+\\)$" input-line)
+      (replace-match "\\1,\\2" nil nil input-line)
+    input-line))
+
+(defun my/remove-negative-sign-from-buffer ()
+  "Remove the negative sign from the final column of all CSV lines in the current buffer."
+  (interactive)
+  (save-excursion  ; Preserve buffer and point position
+    (goto-char (point-min))  ; Start at the beginning of the buffer
+    (while (not (eobp))  ; While not at the end of the buffer
+      (let ((line (thing-at-point 'line t)))
+        (let ((processed-line (my/remove-negative-sign line)))
+          (progn
+            (beginning-of-line)
+            (kill-line)
+            (insert processed-line)))))))
+
+(defun my/convert-date-format ()
+  "Convert date formats from DD/MM/YYYY to YYYY-MM-DD in the current buffer."
+  (interactive)
+  (goto-char (point-min)) ; Start from the beginning of the buffer
+  (while (re-search-forward "\\([0-3][0-9]\\)/\\([0-1][0-9]\\)/\\([0-9]\\{4\\}\\)" nil t)
+    (let ((day (match-string 1))
+          (month (match-string 2))
+          (year (match-string 3)))
+      (replace-match (concat year "-" month "-" day)))))
+
+(use-package gnuplot)
+
+(add-to-list 'display-buffer-alist
+             '("\\*Ollama Buddy Chat" display-buffer-same-window))
