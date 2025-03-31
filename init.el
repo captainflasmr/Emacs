@@ -602,8 +602,6 @@ Dictionary [l] Check"
 ;;
 ;; -> ollama-buddy
 ;;
-(use-package password-store)
-
 (use-package ollama-buddy
   ;; :load-path "~/source/repos/ollama-buddy/ollama-buddy-mini"
   :load-path "~/source/repos/ollama-buddy"
@@ -612,10 +610,10 @@ Dictionary [l] Check"
   ("C-c O" . ollama-buddy-transient-menu-wrapper)
   :custom
   (ollama-buddy-openai-api-key
-   (password-store-get "ollama-buddy/openai-api-key"))
+   (auth-source-pick-first-password :host "ollama-buddy-openai" :user "apikey"))
   (ollama-buddy-default-model "GPT gpt-4o")
   (ollama-buddy-claude-api-key
-   (password-store-get "ollama-buddy/claude-api-key"))
+   (auth-source-pick-first-password :host "ollama-buddy-claude" :user "apikey"))
   (ollama-buddy-claude-default-model "claude-3-sonnet-20240229")
   :config
   (require 'ollama-buddy-openai nil t)
