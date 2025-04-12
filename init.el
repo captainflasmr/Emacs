@@ -3,7 +3,7 @@
 ;;
 ;; -> core-configuration
 ;;
-(load-file "~/.emacs.d/Emacs-core/init.el")
+(load-file "~/.emacs.d/Emacs-vanilla/init.el")
 
 ;;
 ;; -> package-archives
@@ -39,7 +39,8 @@
   (selected-window-accent-tab-accent t)
   (selected-window-accent-smart-borders t))
 
-(global-set-key (kbd "C-c w") selected-window-accent-map)
+(global-set-key (kbd "C-x w") selected-window-accent-map)
+(define-key selected-window-accent-map (kbd "m") 'consult-theme)
 
 ;;
 ;; -> org-agenda
@@ -339,8 +340,8 @@
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 80)
-(add-to-list 'default-frame-alist '(alpha-background . 80))
+(set-frame-parameter nil 'alpha-background 75)
+(add-to-list 'default-frame-alist '(alpha-background . 75))
 
 ;;
 ;; -> linux specific
@@ -515,7 +516,6 @@ Ollama [l] Start Ollama     [n] Menu
 
 (use-package elfeed
   :bind
-  ("C-x w" . elfeed)
   (:map elfeed-search-mode-map
         ("n" . (lambda () (interactive)
                  (forward-line 1) (call-interactively 'elfeed-search-show-entry)))
@@ -565,7 +565,7 @@ Ollama [l] Start Ollama     [n] Menu
 Run        [s] Spelling
 Lookup     [d] Lookup
 Reference  [t] Thesaurus
-Dictionary [l] Check"
+Dictionary [l] Summary"
                'face 'minibuffer-prompt))))
     (pcase key
       ;; Spelling
@@ -573,7 +573,7 @@ Dictionary [l] Check"
             (flyspell-buffer)
             (call-interactively 'flyspell-mode)))
       ;; Lookup
-      (?l (call-interactively 'ispell-word))
+      (?l (call-interactively 'my/collect-flyspell-errors))
       ;; Reference
       (?t (call-interactively 'powerthesaurus-lookup-synonyms-dwim))
       ;; Dictionary
@@ -595,7 +595,7 @@ Dictionary [l] Check"
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-enabled-themes '(doom-monokai-classic))
+ '(custom-enabled-themes '(doom-oceanic-next))
  '(warning-suppress-log-types '((frameset)))
  '(warning-suppress-types '((frameset))))
 
@@ -643,9 +643,9 @@ Dictionary [l] Check"
   (let ((key (read-key
               (propertize
                "--- Export Commands [q] Quit: ---
-[h] Export to Hugo (with rsync)
-[w] Export to HTML (with table highlighting)
-[d] Export to DOCX (via ODT)"
+    [h] Export to Hugo (with rsync)
+    [w] Export to HTML (with table highlighting)
+    [d] Export to DOCX (via ODT)"
                'face 'minibuffer-prompt))))
     (pcase key
       (?h (save-excursion
@@ -676,186 +676,46 @@ Dictionary [l] Check"
 (my/sync-ui-accent-color "coral")
 
 (use-package csv-mode)
+(use-package package-lint)
 
-;;
-;; -> finance
-;;
+;; (use-package vcgit
+;;   :load-path "~/source/vcgit"
+;;   :hook (vc-dir-mode . vcgit-global-minor-mode))
 
-(use-package csv)
-(require 'csv)
+(require 'ob-gnuplot)
 
-(defvar payments '())
-(defvar cat-tot (make-hash-table :test 'equal))
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((gnuplot . t)))
 
-(setq cat-list-defines
-      '(("katherine\\|lucinda\\|kate" "kat")
-        ("railw\\|railway\\|selfserve\\|train" "trn")
-        ("paypal" "pay") ("virgin-media\\|uinsure\\|insurance\\|royal-mail\\|postoffice\\|endsleigh\\|waste\\|lloyds\\|electric\\|sse\\|newsstand\\|privilege\\|pcc\\|licence\\|ovo\\|energy\\|bt\\|water" "utl")
-        ("sky-betting\\|b365\\|races\\|bet365\\|racing" "bet")
-        ("stakeholde\\|widows" "pen")
-        ("nsibill\\|vines\\|ns&i\\|saver" "sav")
-        ("uber\\|aqua" "txi")
-        ("magazine\\|specs\\|zinio\\|specsavers\\|publishing\\|anthem\\|kindle\\|news" "rdg") ("claude\\|escape\\|deviant\\|cleverbridge\\|reddit\\|pixel\\|boox\\|ionos\\|microsoft\\|mobile\\|backmarket\\|cartridge\\|whsmith\\|dazn\\|my-picture\\|openai\\|c-date\\|ptitis\\|keypmt\\|billnt\\|fee2nor\\|assistance\\|boxise\\|billkt\\|paintstor\\|iet-main\\|ffnhelp\\|shadesgrey\\|venntro\\|vtsup\\|sunpts\\|apyse\\|palchrge\\|maypmt\\|filemodedesk\\|istebrak\\|connective\\|avangate\\|stardock\\|avg\\|123\\|web\\|a2" "web")
-        ("notemachine\\|anchrg\\|hilsea\\|withdrawal" "atm")
-        ("finance" "fin")
-        ("youtube\\|entertai\\|twitch\\|disney\\|box-office\\|discovery\\|tvplayer\\|vue\\|sky\\|netflix\\|audible\\|nowtv\\|channel\\|prime" "str")
-        ("platinum\\|card" "crd")
-        ("top-up\\|three\\|h3g" "phn")
-        ("amaz\\|amz" "amz")        
-        ("pets\\|pet" "pet")
-        ("mydentist\\|dentist" "dnt")
-        ("natwest-bank-reference\\|residential\\|rent\\|yeong" "hse")
-        ("mardin\\|starbuck\\|gillett-copnor\\|asda\\|morrison\\|sainsburys\\|waitrose\\|tesco\\|domino\\|deliveroo\\|just.*eat" "fod") ("retail-ltd\\|vinted\\|lockart\\|moment-house\\|yuyu\\|bushra\\|newhome\\|white-barn\\|skinnydip\\|mgs\\|river-island\\|spencer\\|lilian\\|jung\\|ikea\\|wayfair\\|neom\\|teespring\\|lick-home\\|matalan\\|devon-wick\\|united-arts\\|lush-retail\\|lisa-angel\\|sharkninja\\|fastspring\\|bonas\\|asos\\|emma\\|sofology\\|ebay\\|dunelm\\|coconut\\|semantical\\|truffle\\|nextltd\\|highland\\|little-crafts\\|papier\\|the-hut\\|new-look\\|samsung\\|astrid\\|pandora\\|waterstone\\|cultbeauty\\|24pymt\\|champo\\|costa\\|gollo\\|pumpkin\\|argos\\|the-range\\|biffa\\|moonpig\\|apple\\|itunes\\|gold\\|interflora\\|thortful" "shp")
-        ("js-law" "law")
-        ("anyvan" "hmv")
-        (".*" "o")))
+(use-package bank-buddy
+  :load-path "~/source/repos/bank-buddy"
+  :custom
+  (bank-buddy-top-spending-categories 20)
+  (bank-buddy-top-merchants 20)
+  (bank-buddy-large-txn-threshold 1200)
+  (bank-buddy-monthly-spending-bar-width 160)
+  (bank-buddy-monthly-spending-max-bar-categories 20)
+  (bank-buddy-cat-list-defines
+   '(("katherine\\|james\\|kate" "prs") ("railw\\|railway\\|train" "trn") ("paypal" "pay") ("electric\\|energy\\|water" "utl") ("racing" "bet") ("pension" "pen") ("savings\\|saver" "sav") ("uber" "txi") ("magazine\\|news" "rdg") ("claude\\|reddit\\|mobile\\|backmarket\\|openai\\|web" "web") ("notemachine\\|withdrawal" "atm") ("finance" "fin") ("youtube\\|netflix" "str") ("card" "crd") ("top-up\\|phone" "phn") ("amaz\\|amz" "amz") ("pets\\|pet" "pet") ("dentist" "dnt") ("residential\\|rent\\|mortgage" "hse") ("deliveroo\\|just.*eat" "fod") ("ebay\\|apple\\|itunes" "shp") ("law" "law") ("anyvan" "hmv") ("CHANNEL-4" "str") ("GOOGLE-\\*Google-Play" "web") ("NOW-" "str") ("SALISBURY-CAFE-LOCAL" "fod") ("SAVE-THE-PENNIES" "sav") ("SOUTHAMPTON-GENERAL" "fod") ("TO-Evie" "sav") ("WH-Smith-Princess-Anne" "fod") ("SP-WAXMELTSBYNIC" "shp") ("WWW\\.SSE" "utl") ("THORTFUL" "shp") ("SCOTTISH-WIDOWS" "pen") ("WM-MORRISONS" "fod") ("H3G-REFERENCE" "phn") ("DOMINO" "fod") ("Prime-Video" "str") ("PRIVILEGE" "utl") ("PCC-COLLECTION" "utl") ("MORRISON" "fod") ("BT-GROUP" "web") ("ANTHROPIC" "web") ("INSURE" "utl") ("GOOGLE-Google-Play" "web") ("GILLETT-COPNOR-RD" "fod") ("TV-LICENCE" "utl") ("SAINSBURYS" "fod") ("TESCO" "shp") ("Vinted" "shp") ("PUMPKIN-CAFE" "fod") ("SP-CHAMPO" "shp") ("THE-RANGE" "shp") ("UNIVERSITY-HOSPITA" "fod") ("VIRGIN-MEDIA" "utl") ("GOLDBOUTIQUE" "shp") ("Surveyors" "law") ("Surveyors" "hse") ("INTERFLORA" "shp") ("INSURANCE" "utl") ("LUCINDA-ELLERY" "shp") ("MARKS&SPENCER" "fod") ("SW-PLC-STAKEHOLDE" "pen") ("JUST-MOVE" "hse") ("B&M" "shp") ("PASSPORT-OFFICE" "hse") ("PHARMACY" "shp") ("ONLINE-REDIRECTIONS" "hse") ("SERENATA-FLOWERS" "shp") ("SNAPPER-DESIGN" "shp") ("LOVEFORSLEEP" "shp") ("TJ-WASTE" "hse") ("M-&-S" "fod") ("MARDIN" "fod") ("MOVEWITHUS" "hse") ("STARBUCKS" "fod") ("CD-2515" "shp") ("DEBIT-INTEREST-ARRANGED" "atm") ("ME-GROUP-INTERNATIONAL" "shp") ("COSTA" "fod") ("NYX" "shp") ("NATWEST-BANK-REFERENCE" "hse") ("Streamline" "shp") ("BETHANIE-YEONG" "hse") (".*" "o"))))
 
-(length cat-list-defines)
+(defun my-org-babel-execute-on-open ()
+  (when (eq major-mode 'org-mode)
+    (org-babel-map-executables nil
+      (when (org-babel-get-src-block-info)
+        (let ((execute-on-open (cdr (assq :execute_on_open (nth 2 (org-babel-get-src-block-info))))))
+          (when execute-on-open
+            (org-babel-execute-src-block)))))))
 
-(defun categorize-payment (name debit month)
-  "Categorize payment based on name, month, and accumulate totals."
-  (let* ((category-found)
-         (split-key))
-    (cl-block nil
-      (dolist (category cat-list-defines)
-        (when (string-match-p
-               (nth 0 category) name)
-          (setq category-found (nth 1 category))
-          (cl-return))))
-    (setq split-key (concat month "-" category-found))
-    (insert (format "%s %s %s %.0f\n" category-found month name debit))
-    (puthash split-key (+ (gethash split-key cat-tot 0) debit) cat-tot)))
+(add-hook 'org-mode-hook 'my-org-babel-execute-on-open)
 
-(defun parse-csv-file (file)
-  "Parse CSV file and store payments."
-  (with-temp-buffer
-    (insert-file-contents file)
-    (setq payments (csv-parse-buffer t))))
+(setq pixel-scroll-precision-mode 1)
 
-(defun write-header-plot (year)
-  "Generate a plot header for YEAR."
-  (insert "-*- mode: org; eval: (visual-line-mode -1); -*-\n")
-  (insert (format "#+PLOT: title:\"%s\" ind:1 deps:(%s) type:2d with:lines set:\"yrange [0:1000]\"\n"
-                  year (concat (mapconcat 'number-to-string (number-sequence 3 (+ (length cat-list-defines) 2)) " ")))))
+(defadvice dired-sort-toggle-or-edit (after dired-sort-move-to-first-file activate)
+  "Move point to the first file in the directory listing after sorting."
+  (goto-char (point-min))
+  (dired-next-line 1))
 
-(defun write-footer-tblfm ()
-  "Generate a plot footer."
-  (insert "||\n")
-  (insert (concat "#+TBLFM: @>=vmean(@I..@II);%.0f::$>=vsum($3..$" (format "%d" (+ (length cat-list-defines) 2)) ");\%.0f") ))
-
-(defun write-header ()
-  "Write table header."
-  (insert "|date ")
-  (dolist (category cat-list-defines)
-    (insert (format "%s " (nth 1 category))))
-  (insert " |\n"))
-
-(defun write-body (index year month)
-  "Write table body."
-  (insert (format "%d %s " index (concat year "-" month)))
-  (dolist (category cat-list-defines)
-    (let* ((split-key (concat year "-" month "-" (nth 1 category))))
-      (insert (format "%.0f " (gethash split-key cat-tot 0)))))
-  (insert " |\n"))
-
-(defun export-payments-to-org ()
-  "Export categorized payments and totals to an Org table."
-  (clrhash cat-tot)
-  ;; calculate all payments and output all categories to payments-all.org
-  (with-temp-buffer
-    (dolist (payment payments)
-      (let* ((date (cdr (nth 0 payment)))
-             (month (format-time-string "%Y-%m" (date-to-time date)))
-             (name (string-replace " " "-" (cdr (nth 4 payment))))
-             (debit (string-to-number (cdr (nth 5 payment)))))
-        (categorize-payment name debit month)))
-    (write-file "payments-all.org"))
-
-  ;; output entire payments table to payments.org
-  (with-temp-buffer
-    (write-header-plot 2025)
-    (write-header)
-    (let ((index 0))
-      (dolist (year (seq-map '(lambda (value)
-                                (format "%02d" value))
-                             (nreverse (number-sequence 2016 2025 1))))
-        (dolist (month (seq-map '(lambda (value)
-                                   (format "%02d" value))
-                                (nreverse (number-sequence 1 12 1))))
-          (write-body index year month)
-          (setq index (1+ index)))))
-    (write-footer-tblfm)
-    (write-file "payments.org"))
-
-  ;; output payments to payments-<year>.org
-  (dolist (year (seq-map '(lambda (value)
-                            (format "%02d" value))
-                         (nreverse (number-sequence 2016 2025 1))))
-    (with-temp-buffer
-      (write-header-plot year)
-      (write-header)
-      (let ((index 0))
-        (dolist (month (seq-map '(lambda (value)
-                                   (format "%02d" value))
-                                (nreverse (number-sequence 1 12 1))))
-          (write-body index year month)
-          (setq index (1+ index))))
-      (write-footer-tblfm)
-      (write-file (concat "payments-" year ".org"))))
-
-  ;; output payments to payments-<category>.org
-  (dolist (category cat-list-defines)
-    (with-temp-buffer
-      (insert (format "#+PLOT: title:\"%s\" ind:1 deps:(3) type:2d with:lines set:\"yrange [0:1000]\"\n" (nth 1 category)))
-      (insert "|date ")
-      (insert (format "%s\n" (nth 1 category)))
-      (let ((index 0))
-        (dolist (year (seq-map '(lambda (value)
-                                  (format "%02d" value))
-                               (nreverse (number-sequence 2016 2025 1))))
-          (dolist (month (seq-map '(lambda (value)
-                                     (format "%02d" value))
-                                  (nreverse (number-sequence 1 12 1))))
-            (let* ((split-key (concat year "-" month "-" (nth 1 category))))
-              (insert (format "%d %s " index (concat year "-" month)))
-              (insert (format "%.0f\n" (gethash split-key cat-tot 0))))
-            (setq index (1+ index)))))
-      (write-file (concat "payments-" (nth 1 category) ".org")))))
-
-;; Example usage
-;; (parse-csv-file "payments.csv")
-;; (export-payments-to-org)
-
-(defun my/remove-negative-sign (input-line)
-  "Remove the negative sign from the final column of a CSV line."
-  (if (string-match "\\(.*\\),-\\([0-9.]+\\)$" input-line)
-      (replace-match "\\1,\\2" nil nil input-line)
-    input-line))
-
-(defun my/remove-negative-sign-from-buffer ()
-  "Remove the negative sign from the final column of all CSV lines in the current buffer."
-  (interactive)
-  (save-excursion  ; Preserve buffer and point position
-    (goto-char (point-min))  ; Start at the beginning of the buffer
-    (while (not (eobp))  ; While not at the end of the buffer
-      (let ((line (thing-at-point 'line t)))
-        (let ((processed-line (my/remove-negative-sign line)))
-          (progn
-            (beginning-of-line)
-            (kill-line)
-            (insert processed-line)))))))
-
-(defun my/convert-date-format ()
-  "Convert date formats from DD/MM/YYYY to YYYY-MM-DD in the current buffer."
-  (interactive)
-  (goto-char (point-min)) ; Start from the beginning of the buffer
-  (while (re-search-forward "\\([0-3][0-9]\\)/\\([0-1][0-9]\\)/\\([0-9]\\{4\\}\\)" nil t)
-    (let ((day (match-string 1))
-          (month (match-string 2))
-          (year (match-string 3)))
-      (replace-match (concat year "-" month "-" day)))))
-
+(use-package flycheck)
+;; (use-package csv)
 (use-package gnuplot)
-
-(add-to-list 'display-buffer-alist
-             '("\\*Ollama Buddy Chat" display-buffer-same-window))
