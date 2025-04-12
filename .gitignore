@@ -4,6 +4,7 @@
 .org-id-locations
 abbrev_defs
 auto-save-list/
+awesome-chatgpt-prompts
 bookmarks
 chatgpt
 ede-projects.el
@@ -11,9 +12,12 @@ eln-cache
 elpa/
 emms/
 eww-bookmarks
+fabric
 history
 image-dired
 multisession
+ollama-buddy-presets
+ollama-buddy-sessions
 persist
 projects
 projects
