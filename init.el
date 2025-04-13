@@ -511,39 +511,6 @@ Ollama [l] Start Ollama     [n] Menu
          do (add-to-list 'auto-mode-alist (cons ext 'ada-mode)))
 
 ;;
-;; -> elfeed
-;;
-
-(use-package elfeed
-  :bind
-  (:map elfeed-search-mode-map
-        ("n" . (lambda () (interactive)
-                 (forward-line 1) (call-interactively 'elfeed-search-show-entry)))
-        ("p" . (lambda () (interactive)
-                 (forward-line -1) (call-interactively 'elfeed-search-show-entry)))
-        ("m" . (lambda () (interactive)
-                 (apply 'elfeed-search-toggle-all '(star)))))
-  :custom
-  (elfeed-search-remain-on-entry t)
-  (elfeed-search-title-min-width 60)
-  (elfeed-search-title-max-width 60)
-  (elfeed-search-filter "@1-months-ago")
-  (elfeed-feeds
-   '(
-     "https://www.emacs.dyerdwelling.family/index.xml"
-     "https://www.emacs.dyerdwelling.family/public_html/feed.xml"
-     )))
-(defun my/show-elfeed (buffer)
-  "Show Elfeed wrapper with BUFFER."
-  (display-buffer buffer))
-
-(setq elfeed-show-mode-hook
-      (lambda ()
-        (set-face-attribute 'variable-pitch (selected-frame)
-                            :font (font-spec :family "Source Code Pro" :size 16))
-        (setq elfeed-show-entry-switch #'my/show-elfeed)))
-
-;;
 ;; -> dired
 ;;
 (require 'dired-async)
@@ -768,25 +735,3 @@ VAR-NAMES is a list of variable names to transform."
    "bank-buddy-subscription-patterns"))
 
 (define-key my-jump-keymap (kbd "l") #'consult-theme)
-
-(use-package newsticker
-  :bind
-  (:map newsticker-treeview-mode-map
-        ("n" . newsticker-treeview-next-item)
-        ("p" . newsticker-treeview-prev-item)
-        ("m" . newsticker-treeview-mark-item))
-  :custom
-  (newsticker-retrieval-interval 3600)  ; Update every hour
-  (newsticker-treeview-treeview-face-fn 'ignore)
-  (newsticker-treeview-date-format "%Y-%m-%d %H:%M")
-  (newsticker-url-list
-   '(("Emacs Dyer Dwelling"
-      "https://www.emacs.dyerdwelling.family/index.xml" nil nil nil)))
-  :config
-  (newsticker-start)
-  (defun my-newsticker-treeview-custom-filter ()
-    "Custom filter to show items from the last month."
-    (let ((one-month-ago (time-subtract (current-time) (days-to-time 30))))
-      (lambda (item)
-        (time-less-p one-month-ago (newsticker--age item)))))
-  (setq newsticker-treeview-filter-functions (list #'my-newsticker-treeview-custom-filter)))
