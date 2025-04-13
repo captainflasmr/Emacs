@@ -410,8 +410,8 @@ Configures various visual aspects of Emacs, including menu bar, toolbar, and scr
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 75)
-(add-to-list 'default-frame-alist '(alpha-background . 75))
+(set-frame-parameter nil 'alpha-background 85)
+(add-to-list 'default-frame-alist '(alpha-background . 85))
 #+end_src
 
 * linux specific
@@ -752,6 +752,13 @@ Places for `custom-set-variables` and `custom-set-faces` used by Emacs's customi
    (auth-source-pick-first-password :host "ollama-buddy-claude" :user "apikey"))
   (ollama-buddy-claude-default-model "claude-3-sonnet-20240229")
   :config
+  (add-to-list 'ollama-buddy-command-definitions
+               '(OpenHere
+                 :key ?O
+                 :description "Open Here"
+                 :action (lambda () (switch-to-buffer "*Ollama Buddy Chat*")
+                           (ollama-buddy--initialize-chat-buffer)
+                           (goto-char (point-max)))))
   (require 'ollama-buddy-openai nil t)
   (require 'ollama-buddy-claude nil t)
   (ollama-buddy-update-menu-entry
@@ -835,12 +842,12 @@ Places for `custom-set-variables` and `custom-set-faces` used by Emacs's customi
 (use-package bank-buddy
   :load-path "~/source/repos/bank-buddy"
   :custom
-  (bank-buddy-top-spending-categories 20)
-  (bank-buddy-top-merchants 20)
-  (bank-buddy-large-txn-threshold 1200)
-  (bank-buddy-monthly-spending-bar-width 160)
-  (bank-buddy-monthly-spending-max-bar-categories 20)
-  (bank-buddy-cat-list-defines
+  (bank-buddy-core-top-spending-categories 20)
+  (bank-buddy-core-top-merchants 20)
+  (bank-buddy-core-large-txn-threshold 1200)
+  (bank-buddy-core-monthly-spending-bar-width 160)
+  (bank-buddy-core-monthly-spending-max-bar-categories 20)
+  (bank-buddy-core-cat-list-defines
    '(("katherine\\|james\\|kate" "prs") ("railw\\|railway\\|train" "trn") ("paypal" "pay") ("electric\\|energy\\|water" "utl") ("racing" "bet") ("pension" "pen") ("savings\\|saver" "sav") ("uber" "txi") ("magazine\\|news" "rdg") ("claude\\|reddit\\|mobile\\|backmarket\\|openai\\|web" "web") ("notemachine\\|withdrawal" "atm") ("finance" "fin") ("youtube\\|netflix" "str") ("card" "crd") ("top-up\\|phone" "phn") ("amaz\\|amz" "amz") ("pets\\|pet" "pet") ("dentist" "dnt") ("residential\\|rent\\|mortgage" "hse") ("deliveroo\\|just.*eat" "fod") ("ebay\\|apple\\|itunes" "shp") ("law" "law") ("anyvan" "hmv") ("CHANNEL-4" "str") ("GOOGLE-\\*Google-Play" "web") ("NOW-" "str") ("SALISBURY-CAFE-LOCAL" "fod") ("SAVE-THE-PENNIES" "sav") ("SOUTHAMPTON-GENERAL" "fod") ("TO-Evie" "sav") ("WH-Smith-Princess-Anne" "fod") ("SP-WAXMELTSBYNIC" "shp") ("WWW\\.SSE" "utl") ("THORTFUL" "shp") ("SCOTTISH-WIDOWS" "pen") ("WM-MORRISONS" "fod") ("H3G-REFERENCE" "phn") ("DOMINO" "fod") ("Prime-Video" "str") ("PRIVILEGE" "utl") ("PCC-COLLECTION" "utl") ("MORRISON" "fod") ("BT-GROUP" "web") ("ANTHROPIC" "web") ("INSURE" "utl") ("GOOGLE-Google-Play" "web") ("GILLETT-COPNOR-RD" "fod") ("TV-LICENCE" "utl") ("SAINSBURYS" "fod") ("TESCO" "shp") ("Vinted" "shp") ("PUMPKIN-CAFE" "fod") ("SP-CHAMPO" "shp") ("THE-RANGE" "shp") ("UNIVERSITY-HOSPITA" "fod") ("VIRGIN-MEDIA" "utl") ("GOLDBOUTIQUE" "shp") ("Surveyors" "law") ("Surveyors" "hse") ("INTERFLORA" "shp") ("INSURANCE" "utl") ("LUCINDA-ELLERY" "shp") ("MARKS&SPENCER" "fod") ("SW-PLC-STAKEHOLDE" "pen") ("JUST-MOVE" "hse") ("B&M" "shp") ("PASSPORT-OFFICE" "hse") ("PHARMACY" "shp") ("ONLINE-REDIRECTIONS" "hse") ("SERENATA-FLOWERS" "shp") ("SNAPPER-DESIGN" "shp") ("LOVEFORSLEEP" "shp") ("TJ-WASTE" "hse") ("M-&-S" "fod") ("MARDIN" "fod") ("MOVEWITHUS" "hse") ("STARBUCKS" "fod") ("CD-2515" "shp") ("DEBIT-INTEREST-ARRANGED" "atm") ("ME-GROUP-INTERNATIONAL" "shp") ("COSTA" "fod") ("NYX" "shp") ("NATWEST-BANK-REFERENCE" "hse") ("Streamline" "shp") ("BETHANIE-YEONG" "hse") (".*" "o"))))
 
 (defun my-org-babel-execute-on-open ()
@@ -864,5 +871,68 @@ Places for `custom-set-variables` and `custom-set-faces` used by Emacs's customi
 ;; (use-package csv)
 (use-package gnuplot)
 
+(defun transform-bank-buddy-vars (old-prefix new-prefix &rest var-names)
+  "Transform bank-buddy variables to use a new prefix.
+OLD-PREFIX is the current prefix (e.g., 'bank-buddy-').
+NEW-PREFIX is the new prefix to use (e.g., 'bank-buddy-core-').
+VAR-NAMES is a list of variable names to transform."
+  (interactive "sEnter old prefix: \nsEnter new prefix: \nXEnter variable names (space-separated): ")
+  (let ((count 0))
+    (dolist (var var-names)
+      (when (string-prefix-p old-prefix var)
+        (let* ((from (regexp-quote var))
+               (to (concat new-prefix (substring var (length old-prefix))))
+               (msg (format "Replacing %s with %s" from to)))
+          (message msg)
+          (project-do-replace-regexp from to)
+          (setq count (1+ count)))))
+    (message "Completed %d replacements" count)))
+
+(defun project-do-replace-regexp (from to)
+  "Non-interactive version of `project-query-replace-regexp'."
+  (let* ((proj (project-current t))
+         (dirs (list (project-root proj)))
+         (files (project-files proj dirs)))
+    (dolist (file files)
+      (when (file-readable-p file)
+        (with-current-buffer (find-file-noselect file)
+          (save-excursion
+            (goto-char (point-min))
+            (while (re-search-forward from nil t)
+              (replace-match to))))))))
+
+(defun jr ()
+  "Run the transform-bank-buddy-vars function with predefined arguments."
+  (interactive)
+  (transform-bank-buddy-vars 
+   "bank-buddy-"
+   "bank-buddy-core-"
+   "bank-buddy-cat-list-defines"
+   "bank-buddy-category-names"
+   "bank-buddy-subscription-patterns"))
+
+(define-key my-jump-keymap (kbd "l") #'consult-theme)
+
+(use-package newsticker
+  :bind
+  (:map newsticker-treeview-mode-map
+        ("n" . newsticker-treeview-next-item)
+        ("p" . newsticker-treeview-prev-item)
+        ("m" . newsticker-treeview-mark-item))
+  :custom
+  (newsticker-retrieval-interval 3600)  ; Update every hour
+  (newsticker-treeview-treeview-face-fn 'ignore)
+  (newsticker-treeview-date-format "%Y-%m-%d %H:%M")
+  (newsticker-url-list
+   '(("Emacs Dyer Dwelling"
+      "https://www.emacs.dyerdwelling.family/index.xml" nil nil nil)))
+  :config
+  (newsticker-start)
+  (defun my-newsticker-treeview-custom-filter ()
+    "Custom filter to show items from the last month."
+    (let ((one-month-ago (time-subtract (current-time) (days-to-time 30))))
+      (lambda (item)
+        (time-less-p one-month-ago (newsticker--age item)))))
+  (setq newsticker-treeview-filter-functions (list #'my-newsticker-treeview-custom-filter)))
 #+end_src
 
