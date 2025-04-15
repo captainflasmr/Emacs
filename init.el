@@ -740,3 +740,49 @@ VAR-NAMES is a list of variable names to transform."
    "bank-buddy-subscription-patterns"))
 
 (define-key my-jump-keymap (kbd "l") #'consult-theme)
+
+(defvar flex-isearch-group-size 2
+  "Number of initial characters to group together for more accurate flex searching.")
+
+(defun flex-isearch-regexp-compile (string)
+  "Convert a search string to a more intelligent flex-matching regexp.
+The first `flex-isearch-group-size` characters are grouped together for more accurate matching."
+  (let* ((parts (split-string string " " t))
+         (compile-part
+          (lambda (part)
+            (let ((grouped (substring part 0 (min flex-isearch-group-size (length part))))
+                  (rest (substring part (min flex-isearch-group-size (length part)))))
+              (concat
+               (regexp-quote grouped)
+               (mapconcat
+                (lambda (char)
+                  (let ((c (char-to-string char)))
+                    (cond
+                     ((and (>= char ?A) (<= char ?Z))
+                      (concat "[^" c "\n]*" c))
+                     ((and (>= char ?a) (<= char ?z))
+                      (concat "[^" c (upcase c) "\n]*[" c (upcase c) "]"))
+                     (t
+                      (concat "[^" (regexp-quote c) "\n]*" (regexp-quote c))))))
+                rest
+                "")
+               "[^-_[:alnum:]\n]*")))))
+    (concat
+     "\\b"
+     (mapconcat compile-part parts "[^-_[:alnum:]\n]+"))))
+
+(defun flex-isearch-search-fun ()
+  "Return the appropriate search function for flex searching."
+  (if isearch-forward 'flex-isearch-forward 'flex-isearch-backward))
+
+(defun flex-isearch-forward (string &optional bound noerror count)
+  "Flex search forward for STRING."
+  (let ((regexp (flex-isearch-regexp-compile string)))
+    (re-search-forward regexp bound t)))
+
+(defun flex-isearch-backward (string &optional bound noerror count)
+  "Flex search backward for STRING."
+  (let ((regexp (flex-isearch-regexp-compile string)))
+    (re-search-backward regexp bound t)))
+
+(setq isearch-search-fun-function 'flex-isearch-search-fun)
