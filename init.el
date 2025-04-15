@@ -37,7 +37,7 @@
   (selected-window-accent-percentage-darken 20)
   (selected-window-accent-percentage-desaturate 20)
   (selected-window-accent-tab-accent t)
-  (selected-window-accent-smart-borders t))
+  (selected-window-accent-smart-borders nil))
 
 (global-set-key (kbd "C-x w") selected-window-accent-map)
 (define-key selected-window-accent-map (kbd "m") 'consult-theme)
@@ -334,7 +334,6 @@
 ;;
 ;; -> keys-visual
 ;;
-(define-key my-win-keymap (kbd "m") #'consult-theme)
 (define-key my-win-keymap (kbd "w") #'org-wc-display)
 
 ;;
@@ -673,6 +672,9 @@ Dictionary [l] Summary"
   (bank-buddy-core-cat-list-defines
    '(("katherine\\|james\\|kate" "prs") ("railw\\|railway\\|train" "trn") ("paypal" "pay") ("electric\\|energy\\|water" "utl") ("racing" "bet") ("pension" "pen") ("savings\\|saver" "sav") ("uber" "txi") ("magazine\\|news" "rdg") ("claude\\|reddit\\|mobile\\|backmarket\\|openai\\|web" "web") ("notemachine\\|withdrawal" "atm") ("finance" "fin") ("youtube\\|netflix" "str") ("card" "crd") ("top-up\\|phone" "phn") ("amaz\\|amz" "amz") ("pets\\|pet" "pet") ("dentist" "dnt") ("residential\\|rent\\|mortgage" "hse") ("deliveroo\\|just.*eat" "fod") ("ebay\\|apple\\|itunes" "shp") ("law" "law") ("anyvan" "hmv") ("CHANNEL-4" "str") ("GOOGLE-\\*Google-Play" "web") ("NOW-" "str") ("SALISBURY-CAFE-LOCAL" "fod") ("SAVE-THE-PENNIES" "sav") ("SOUTHAMPTON-GENERAL" "fod") ("TO-Evie" "sav") ("WH-Smith-Princess-Anne" "fod") ("SP-WAXMELTSBYNIC" "shp") ("WWW\\.SSE" "utl") ("THORTFUL" "shp") ("SCOTTISH-WIDOWS" "pen") ("WM-MORRISONS" "fod") ("H3G-REFERENCE" "phn") ("DOMINO" "fod") ("Prime-Video" "str") ("PRIVILEGE" "utl") ("PCC-COLLECTION" "utl") ("MORRISON" "fod") ("BT-GROUP" "web") ("ANTHROPIC" "web") ("INSURE" "utl") ("GOOGLE-Google-Play" "web") ("GILLETT-COPNOR-RD" "fod") ("TV-LICENCE" "utl") ("SAINSBURYS" "fod") ("TESCO" "shp") ("Vinted" "shp") ("PUMPKIN-CAFE" "fod") ("SP-CHAMPO" "shp") ("THE-RANGE" "shp") ("UNIVERSITY-HOSPITA" "fod") ("VIRGIN-MEDIA" "utl") ("GOLDBOUTIQUE" "shp") ("Surveyors" "law") ("Surveyors" "hse") ("INTERFLORA" "shp") ("INSURANCE" "utl") ("LUCINDA-ELLERY" "shp") ("MARKS&SPENCER" "fod") ("SW-PLC-STAKEHOLDE" "pen") ("JUST-MOVE" "hse") ("B&M" "shp") ("PASSPORT-OFFICE" "hse") ("PHARMACY" "shp") ("ONLINE-REDIRECTIONS" "hse") ("SERENATA-FLOWERS" "shp") ("SNAPPER-DESIGN" "shp") ("LOVEFORSLEEP" "shp") ("TJ-WASTE" "hse") ("M-&-S" "fod") ("MARDIN" "fod") ("MOVEWITHUS" "hse") ("STARBUCKS" "fod") ("CD-2515" "shp") ("DEBIT-INTEREST-ARRANGED" "atm") ("ME-GROUP-INTERNATIONAL" "shp") ("COSTA" "fod") ("NYX" "shp") ("NATWEST-BANK-REFERENCE" "hse") ("Streamline" "shp") ("BETHANIE-YEONG" "hse") (".*" "o"))))
 
+(with-eval-after-load 'bank-buddy
+  (add-hook 'org-mode-hook 'bank-buddy-cat-maybe-enable))
+
 (defun my-org-babel-execute-on-open ()
   (when (eq major-mode 'org-mode)
     (org-babel-map-executables nil
@@ -686,9 +688,12 @@ Dictionary [l] Summary"
 (setq pixel-scroll-precision-mode 1)
 
 (defadvice dired-sort-toggle-or-edit (after dired-sort-move-to-first-file activate)
-  "Move point to the first file in the directory listing after sorting."
+  "Move point to the first file or directory after sorting, skipping . and .."
   (goto-char (point-min))
-  (dired-next-line 1))
+  (dired-next-line 2)  ;; Skip past header and move to first entry
+  (while (and (not (eobp))
+              (looking-at-p ".*\\.\\.?$"))  ;; Check if line is . or ..
+    (dired-next-line 1)))
 
 (use-package flycheck)
 ;; (use-package csv)
