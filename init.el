@@ -746,7 +746,7 @@ VAR-NAMES is a list of variable names to transform."
 (defvar flex-isearch-group-size 3
   "Number of initial characters to group together for more accurate flex searching.")
 
-(defun flex-isearch-regexp-compile (string)
+(defun flex-isearch-regexp-compile (string &optional _lax)
   "Convert a search STRING to a flexible regexp.
 The first `flex-isearch-group-size` chars of each word are matched literally,
 and the following chars are matched flexibly.
@@ -761,7 +761,8 @@ Only add a word boundary if the string starts with a word character."
               (concat
                (regexp-quote grouped)
                (mapconcat (lambda (char)
-                            (format "[^%s\n]*%s" (regexp-quote (char-to-string char))
+                            (format "[^%s\n]*%s"
+                                    (regexp-quote (char-to-string char))
                                     (regexp-quote (char-to-string char))))
                           rest
                           "")
@@ -779,11 +780,15 @@ Only add a word boundary if the string starts with a word character."
 (defun flex-isearch-forward (string &optional bound noerror count)
   "Flex search forward for STRING."
   (let ((regexp (flex-isearch-regexp-compile string)))
-    (re-search-forward regexp bound t)))
+    (re-search-forward regexp bound noerror count)))
 
 (defun flex-isearch-backward (string &optional bound noerror count)
   "Flex search backward for STRING."
   (let ((regexp (flex-isearch-regexp-compile string)))
-    (re-search-backward regexp bound t)))
+    (re-search-backward regexp bound noerror count)))
 
-(setq isearch-search-fun-function 'flex-isearch-search-fun)
+;; Set the search functions for isearch
+(setq isearch-search-fun-function #'flex-isearch-search-fun)
+
+;; Important: Set this function so isearch-occur and related commands will work
+(setq search-default-mode #'flex-isearch-regexp-compile)
