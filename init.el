@@ -575,12 +575,13 @@ Dictionary [l] Summary"
   ("C-c o" . ollama-buddy-menu)
   ("C-c O" . ollama-buddy-transient-menu-wrapper)
   :custom
+  (ollama-buddy-default-model "a:gpt-4.1")
   (ollama-buddy-openai-api-key
    (auth-source-pick-first-password :host "ollama-buddy-openai" :user "apikey"))
-  (ollama-buddy-default-model "GPT gpt-4o")
   (ollama-buddy-claude-api-key
    (auth-source-pick-first-password :host "ollama-buddy-claude" :user "apikey"))
-  (ollama-buddy-claude-default-model "claude-3-sonnet-20240229")
+  (ollama-buddy-gemini-api-key
+   (auth-source-pick-first-password :host "ollama-buddy-gemini" :user "apikey"))
   :config
   (add-to-list 'ollama-buddy-command-definitions
                '(OpenHere
@@ -591,16 +592,17 @@ Dictionary [l] Summary"
                            (goto-char (point-max)))))
   (require 'ollama-buddy-openai nil t)
   (require 'ollama-buddy-claude nil t)
+  (require 'ollama-buddy-gemini nil t)
   (ollama-buddy-update-menu-entry
-   'git-commit :model "GPT gpt-4o")
+   'git-commit :model "a:gpt-4o")
   (ollama-buddy-update-menu-entry
-   'describe-code :model "qwen2.5-coder:3b")
+   'describe-code :model "o:qwen2.5-coder:3b")
   (ollama-buddy-update-menu-entry
-   'dictionary-lookup :model "llama3.2:3b")
+   'dictionary-lookup :model "o:llama3.2:3b")
   (ollama-buddy-update-menu-entry
-   'synonym :model "llama3.2:3b")
+   'synonym :model "o:llama3.2:3b")
   (ollama-buddy-update-menu-entry
-   'proofread :model "GPT gpt-4o"))
+   'proofread :model "a:gpt-4.1"))
 
 ;;
 ;; -> emacs-30.1
@@ -670,7 +672,7 @@ Dictionary [l] Summary"
   (bank-buddy-core-monthly-spending-bar-width 160)
   (bank-buddy-core-monthly-spending-max-bar-categories 20)
   (bank-buddy-core-cat-list-defines
-   '(("katherine\\|james\\|kate" "prs") ("railw\\|railway\\|train" "trn") ("paypal" "pay") ("electric\\|energy\\|water" "utl") ("racing" "bet") ("pension" "pen") ("savings\\|saver" "sav") ("uber" "txi") ("magazine\\|news" "rdg") ("claude\\|reddit\\|mobile\\|backmarket\\|openai\\|web" "web") ("notemachine\\|withdrawal" "atm") ("finance" "fin") ("youtube\\|netflix" "str") ("card" "crd") ("top-up\\|phone" "phn") ("amaz\\|amz" "amz") ("pets\\|pet" "pet") ("dentist" "dnt") ("residential\\|rent\\|mortgage" "hse") ("deliveroo\\|just.*eat" "fod") ("ebay\\|apple\\|itunes" "shp") ("law" "law") ("anyvan" "hmv") ("CHANNEL-4" "str") ("GOOGLE-\\*Google-Play" "web") ("NOW-" "str") ("SALISBURY-CAFE-LOCAL" "fod") ("SAVE-THE-PENNIES" "sav") ("SOUTHAMPTON-GENERAL" "fod") ("TO-Evie" "sav") ("WH-Smith-Princess-Anne" "fod") ("SP-WAXMELTSBYNIC" "shp") ("WWW\\.SSE" "utl") ("THORTFUL" "shp") ("SCOTTISH-WIDOWS" "pen") ("WM-MORRISONS" "fod") ("H3G-REFERENCE" "phn") ("DOMINO" "fod") ("Prime-Video" "str") ("PRIVILEGE" "utl") ("PCC-COLLECTION" "utl") ("MORRISON" "fod") ("BT-GROUP" "web") ("ANTHROPIC" "web") ("INSURE" "utl") ("GOOGLE-Google-Play" "web") ("GILLETT-COPNOR-RD" "fod") ("TV-LICENCE" "utl") ("SAINSBURYS" "fod") ("TESCO" "shp") ("Vinted" "shp") ("PUMPKIN-CAFE" "fod") ("SP-CHAMPO" "shp") ("THE-RANGE" "shp") ("UNIVERSITY-HOSPITA" "fod") ("VIRGIN-MEDIA" "utl") ("GOLDBOUTIQUE" "shp") ("Surveyors" "law") ("Surveyors" "hse") ("INTERFLORA" "shp") ("INSURANCE" "utl") ("LUCINDA-ELLERY" "shp") ("MARKS&SPENCER" "fod") ("SW-PLC-STAKEHOLDE" "pen") ("JUST-MOVE" "hse") ("B&M" "shp") ("PASSPORT-OFFICE" "hse") ("PHARMACY" "shp") ("ONLINE-REDIRECTIONS" "hse") ("SERENATA-FLOWERS" "shp") ("SNAPPER-DESIGN" "shp") ("LOVEFORSLEEP" "shp") ("TJ-WASTE" "hse") ("M-&-S" "fod") ("MARDIN" "fod") ("MOVEWITHUS" "hse") ("STARBUCKS" "fod") ("CD-2515" "shp") ("DEBIT-INTEREST-ARRANGED" "atm") ("ME-GROUP-INTERNATIONAL" "shp") ("COSTA" "fod") ("NYX" "shp") ("NATWEST-BANK-REFERENCE" "hse") ("Streamline" "shp") ("BETHANIE-YEONG" "hse") (".*" "o"))))
+   '(("katherine\\|james\\|kate" "prs") ("railw\\|railway\\|train" "trn") ("paypal" "pay") ("electric\\|energy\\|water" "utl") ("racing" "bet") ("pension" "pen") ("savings\\|saver" "sav") ("uber" "txi") ("magazine\\|news" "rdg") ("claude\\|reddit\\|mobile\\|backmarket\\|openai\\|web" "web") ("notemachine\\|withdrawal" "atm") ("finance" "fin") ("youtube\\|netflix" "str") ("card" "crd") ("top-up\\|phone" "phn") ("amaz\\|amz" "amz") ("pets\\|pet" "pet") ("dentist" "dnt") ("residential\\|rent\\|mortgage" "hse") ("deliveroo\\|just.*eat" "fod") ("ebay\\|apple\\|itunes" "shp") ("law" "law") ("anyvan" "hmv") ("CHANNEL-4" "str") ("GOOGLE-\\*Google-Play" "web") ("NOW-" "str") ("SALISBURY-CAFE-LOCAL" "fod") ("SAVE-THE-PENNIES" "sav") ("SOUTHAMPTON-GENERAL" "fod") ("TO-Evie" "sav") ("WH-Smith-Princess-Anne" "fod") ("SP-WAXMELTSBYNIC" "shp") ("WWW\\.SSE" "utl") ("THORTFUL" "shp") ("SCOTTISH-WIDOWS" "pen") ("WM-MORRISONS" "fod") ("H3G-REFERENCE" "phn") ("DOMINO" "fod") ("Prime-Video" "str") ("PRIVILEGE" "utl") ("PCC-COLLECTION" "utl") ("MORRISON" "fod") ("BT-GROUP" "web") ("ANTHROPIC" "web") ("INSURE" "utl") ("GOOGLE-Google-Play" "web") ("GILLETT-COPNOR-RD" "fod") ("TV-LICENCE" "utl") ("SAINSBURYS" "fod") ("TESCO" "shp") ("Vinted" "shp") ("PUMPKIN-CAFE" "fod") ("SP-CHAMPO" "shp") ("THE-RANGE" "shp") ("UNIVERSITY-HOSPITA" "fod") ("VIRGIN-MEDIA" "utl") ("GOLDBOUTIQUE" "shp") ("Surveyors" "law") ("Surveyors" "hse") ("INTERFLORA" "shp") ("INSURANCE" "utl") ("LUCINDA-ELLERY" "shp") ("MARKS&SPENCER" "fod") ("SW-PLC-STAKEHOLDE" "pen") ("JUST-MOVE" "hse") ("B&M" "shp") ("PASSPORT-OFFICE" "hse") ("PHARMACY" "shp") ("ONLINE-REDIRECTIONS" "hse") ("SERENATA-FLOWERS" "shp") ("SNAPPER-DESIGN" "shp") ("LOVEFORSLEEP" "shp") ("TJ-WASTE" "hse") ("M-&-S" "fod") ("MARDIN" "fod") ("MOVEWITHUS" "hse") ("STARBUCKS" "fod") ("CD-2515" "shp") ("DEBIT-INTEREST-ARRANGED" "atm") ("ME-GROUP-INTERNATIONAL" "shp") ("COSTA" "fod") ("NYX" "shp") ("NATWEST-BANK-REFERENCE" "hse") ("Streamline" "shp") ("BETHANIE-YEONG" "hse") ("Roofoods" "fod") ("Wayfair" "shp") ("WHSmith" "shp") ("The-Hut" "shp") ("Sky-Betting" "bet") ("NextLtd" "shp") ("NEW-LOOK-RETAILERS" "shp") ("Marks-and-Spencer" "fod") ("DisneyPlus" "str") ("DAZN-LIMITED" "str") ("Astrid-&-Miyu" "shp") ("ASOS\\.COM-Ltd" "shp") ("Cartridge-Tech-Ltd" "shp") ("Dplay-Entertainment-Ltd" "str") ("DeviantArt" "web") ("Dunelm" "shp") ("Asda-Stores" "shp") ("Argos" "shp") ("IKEA-Limited" "shp") ("Lisa-Angel-Limited" "shp") ("Matalan-Retail-Ltd" "shp") ("Royal-Mail-Group-Limited" "utl") ("SCHOTT-PACKAGING" "hse") ("Samsung-Electronics" "shp") ("Boohoo\\.com" "shp") ("Bizzy-Balloons-LLP" "shp") ("BRANDS-IN-BLOOM-LTD" "shp") ("Highland-and-Honey" "shp") ("Homebaked-Limited" "shp") ("Little-Crafts-London-LTD" "shp") ("Lush-Retail-Ltd" "shp") ("Mamas-&-Papas" "shp") ("Mi-Baby" "shp") ("NEOM-Ltd" "shp") ("Oliver-Bonas-Limited" "shp") ("Pandora-Jewellery-UK-Ltd" "shp") ("Papier" "shp") ("Peggy's-Difference" "shp") ("PlanetArt-Ltd" "shp") ("Pretty-Pastels" "shp") ("Royal-Mail-Group-Ltd" "hse") ("SAINSBURY" "fod") ("Sofology" "shp") ("Sostrene-Grenes" "shp") ("Their-Nibs" "shp") ("melodymaison" "shp") ("AO-Retail-Ltd" "shp") ("Abbott-Lyon" "shp") ("Bellaboo" "shp") ("Devon-wick-Candle-Co\\.-Ltd" "shp") ("Hugo-&-Me-Ltd" "shp") ("Lick-Home-Ltd" "shp") ("Mabel-&-Fox" "shp") ("THE-KID-COLLECTIVE-LTD" "shp") ("TruffleShuffle-Retail-Ltd" "shp") ("UM-Fashion" "shp") ("littledaisydream" "shp") ("Coconut-Lane" "shp") ("Eleanor-Bowmer" "shp") ("Emma-Matratzen" "shp") ("SharkNinja" "shp") ("lookfantastic" "shp") ("cleverbridge" "web") ("Select-Specs" "shp") ("Green-Sheep-Group-Limited" "shp") ("FastSpring-Limited" "shp") ("Hair-Solutions" "har") ("URBN-UK-LIMITED" "shp") ("Semantical-Ltd" "shp") ("United-Arts" "shp") (".*" "o"))))
 
 (with-eval-after-load 'bank-buddy
   (add-hook 'org-mode-hook 'bank-buddy-cat-maybe-enable))
@@ -741,35 +743,34 @@ VAR-NAMES is a list of variable names to transform."
 
 (define-key my-jump-keymap (kbd "l") #'consult-theme)
 
-(defvar flex-isearch-group-size 2
+(defvar flex-isearch-group-size 3
   "Number of initial characters to group together for more accurate flex searching.")
 
 (defun flex-isearch-regexp-compile (string)
-  "Convert a search string to a more intelligent flex-matching regexp.
-The first `flex-isearch-group-size` characters are grouped together for more accurate matching."
+  "Convert a search STRING to a flexible regexp.
+The first `flex-isearch-group-size` chars of each word are matched literally,
+and the following chars are matched flexibly.
+Only add a word boundary if the string starts with a word character."
   (let* ((parts (split-string string " " t))
          (compile-part
           (lambda (part)
-            (let ((grouped (substring part 0 (min flex-isearch-group-size (length part))))
-                  (rest (substring part (min flex-isearch-group-size (length part)))))
+            (let* ((len (length part))
+                   (group-size (min flex-isearch-group-size len))
+                   (grouped (substring part 0 group-size))
+                   (rest (substring part group-size)))
               (concat
                (regexp-quote grouped)
-               (mapconcat
-                (lambda (char)
-                  (let ((c (char-to-string char)))
-                    (cond
-                     ((and (>= char ?A) (<= char ?Z))
-                      (concat "[^" c "\n]*" c))
-                     ((and (>= char ?a) (<= char ?z))
-                      (concat "[^" c (upcase c) "\n]*[" c (upcase c) "]"))
-                     (t
-                      (concat "[^" (regexp-quote c) "\n]*" (regexp-quote c))))))
-                rest
-                "")
-               "[^-_[:alnum:]\n]*")))))
-    (concat
-     "\\b"
-     (mapconcat compile-part parts "[^-_[:alnum:]\n]+"))))
+               (mapconcat (lambda (char)
+                            (format "[^%s\n]*%s" (regexp-quote (char-to-string char))
+                                    (regexp-quote (char-to-string char))))
+                          rest
+                          "")
+               "[^-_[:alnum:]\n]*"))))
+         (regexp-body (mapconcat compile-part parts "[^-_[:alnum:]\n]+")))
+    ;; Only add word boundary if the first char is a word character
+    (if (string-match-p "\\`[[:alnum:]_]" string)
+        (concat "\\b" regexp-body)
+      regexp-body)))
 
 (defun flex-isearch-search-fun ()
   "Return the appropriate search function for flex searching."
