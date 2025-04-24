@@ -28,7 +28,7 @@
 ;;
 
 (use-package selected-window-accent-mode
-  ;; :load-path "~/source/repos/selected-window-accent-mode"
+  :load-path "~/source/repos/selected-window-accent-mode"
   :config (selected-window-accent-mode 1)
   :custom
   (selected-window-accent-fringe-thickness 10)
@@ -37,6 +37,7 @@
   (selected-window-accent-percentage-darken 20)
   (selected-window-accent-percentage-desaturate 20)
   (selected-window-accent-tab-accent t)
+  (selected-window-accent-use-pywal t)
   (selected-window-accent-smart-borders nil))
 
 (global-set-key (kbd "C-x w") selected-window-accent-map)
@@ -339,8 +340,8 @@
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 85)
-(add-to-list 'default-frame-alist '(alpha-background . 85))
+(set-frame-parameter nil 'alpha-background 75)
+(add-to-list 'default-frame-alist '(alpha-background . 75))
 
 ;;
 ;; -> linux specific
@@ -582,6 +583,8 @@ Dictionary [l] Summary"
    (auth-source-pick-first-password :host "ollama-buddy-claude" :user "apikey"))
   (ollama-buddy-gemini-api-key
    (auth-source-pick-first-password :host "ollama-buddy-gemini" :user "apikey"))
+  (ollama-buddy-grok-api-key
+   (auth-source-pick-first-password :host "ollama-buddy-grok" :user "apikey"))
   :config
   (add-to-list 'ollama-buddy-command-definitions
                '(OpenHere
@@ -593,6 +596,7 @@ Dictionary [l] Summary"
   (require 'ollama-buddy-openai nil t)
   (require 'ollama-buddy-claude nil t)
   (require 'ollama-buddy-gemini nil t)
+  (require 'ollama-buddy-grok nil t)
   (ollama-buddy-update-menu-entry
    'git-commit :model "a:gpt-4o")
   (ollama-buddy-update-menu-entry
@@ -792,3 +796,5 @@ Only add a word boundary if the string starts with a word character."
 
 ;; Important: Set this function so isearch-occur and related commands will work
 (setq search-default-mode #'flex-isearch-regexp-compile)
+
+(use-package xkb-mode)
