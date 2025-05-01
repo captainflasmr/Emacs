@@ -340,8 +340,8 @@
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 75)
-(add-to-list 'default-frame-alist '(alpha-background . 75))
+(set-frame-parameter nil 'alpha-background 85)
+(add-to-list 'default-frame-alist '(alpha-background . 85))
 
 ;;
 ;; -> linux specific
@@ -576,7 +576,7 @@ Dictionary [l] Summary"
   ("C-c o" . ollama-buddy-menu)
   ("C-c O" . ollama-buddy-transient-menu-wrapper)
   :custom
-  (ollama-buddy-default-model "a:gpt-4.1")
+  (ollama-buddy-default-model "a:gpt-4.5-preview")
   (ollama-buddy-openai-api-key
    (auth-source-pick-first-password :host "ollama-buddy-openai" :user "apikey"))
   (ollama-buddy-claude-api-key
@@ -635,7 +635,8 @@ Dictionary [l] Summary"
       (?w (progn
             (org-html-export-to-html)
             (my/html-promote-headers)
-            (my/html-org-table-highlight)))
+            (my/html-org-table-highlight)
+            (my/html-flush-divs)))
       (?d (progn
             (org-odt-export-to-odt)
             (async-shell-command
@@ -747,7 +748,7 @@ VAR-NAMES is a list of variable names to transform."
 
 (define-key my-jump-keymap (kbd "l") #'consult-theme)
 
-(defvar flex-isearch-group-size 3
+(defvar flex-isearch-group-size 2
   "Number of initial characters to group together for more accurate flex searching.")
 
 (defun flex-isearch-regexp-compile (string &optional _lax)
