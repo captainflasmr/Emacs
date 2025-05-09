@@ -241,8 +241,9 @@
 ;;
 ;; -> use-package
 ;;
+(use-package flycheck)
+(use-package gnuplot)
 (use-package async)
-(use-package org-wc)
 (use-package git-timemachine)
 (use-package consult)
 (use-package i3wm-config-mode)
@@ -282,62 +283,6 @@
               (find-file "~/DCIM/content/emacs--all.org")))
 
 ;;
-;; -> completion
-;;
-
-(use-package eglot
-  :custom
-  (eglot-ignored-server-capabilities
-   '(
-     ;; :hoverProvider                    ; Provides information when you hover over code elements.
-     ;; :completionProvider               ; Provides code completion suggestions.
-     ;; :signatureHelpProvider            ; Offers signature information for functions/methods.
-     ;; :definitionProvider               ; Finds the definition of variables/functions.
-     ;; :typeDefinitionProvider           ; Finds the type definition of variables/functions.
-     ;; :implementationProvider           ; Finds the implementation of types/functions.
-     ;; :declarationProvider              ; Finds the declaration of variables/types.
-     ;; :referencesProvider               ; Finds all references to the symbol at the caret.
-     ;; :documentHighlightProvider        ; Highlights references to the symbol at the caret.
-     ;; :documentSymbolProvider           ; Lists all symbols in a document.
-     ;; :workspaceSymbolProvider          ; Lists symbols across workspace/project.
-     ;; :codeActionProvider               ; Suggests code actions (like quick fixes).
-     ;; :codeLensProvider                 ; Displays inline code actions or information.
-     ;; :documentFormattingProvider       ; Formats an entire document.
-     ;; :documentRangeFormattingProvider  ; Formats a specified range in a document.
-     ;; :documentOnTypeFormattingProvider ; Formats code as you type.
-     ;; :renameProvider                   ; Refactors/renames symbols.
-     ;; :documentLinkProvider             ; Handles clickable links in documents.
-     ;; :colorProvider                    ; Provides color information for document.
-     ;; :foldingRangeProvider             ; Supports code folding.
-     ;; :executeCommandProvider           ; Allows execution of commands.
-     ;; :inlayHintProvider                ; Displays inline hints (e.g., parameter names).
-     ))
-  (eglot-send-changes-idle-time 2.0))
-;;
-(setq icomplete-in-buffer nil)
-;;
-(use-package corfu
-  :init
-  (global-corfu-mode 1)
-  :custom
-  (corfu-auto-delay 0.1)
-  (corfu-auto-prefix 2)
-  (corfu-cycle t)
-  (corfu-auto nil)
-  (corfu-separator ?\s)
-  (corfu-quit-at-boundary nil)
-  (corfu-quit-no-match nil)
-  (corfu-preview-current nil)
-  (corfu-preselect 'first)
-  (corfu-on-exact-match nil)
-  (corfu-scroll-margin 5))
-
-;;
-;; -> keys-visual
-;;
-(define-key my-win-keymap (kbd "w") #'org-wc-display)
-
-;;
 ;; -> visuals
 ;;
 (set-frame-parameter nil 'alpha-background 85)
@@ -360,14 +305,6 @@
   (set-frame-font font-general nil t)
   (add-to-list 'default-frame-alist `(font . ,font-general))
   (setq diary-file "~/DCIM/content/diary.org"))
-
-;;
-;; -> programming
-;;
-(setq my/old-ada-mode (concat user-emacs-directory "old-ada-mode"))
-(when (file-exists-p my/old-ada-mode)
-  (use-package ada-mode
-    :load-path my/old-ada-mode))
 
 ;;
 ;; -> themes
@@ -399,42 +336,6 @@
 (with-eval-after-load 'dired
   (define-key dired-mode-map (kbd "C") 'dired-do-copy))
 (dired-async-mode 1)
-
-;;
-;; -> spelling
-;;
-(use-package powerthesaurus)
-
-(defun spelling-menu ()
-  "Menu for spelling."
-  (interactive)
-  (let ((key (read-key
-              (propertize
-               "------- Spelling [q] Quit: -------
-Run        [s] Spelling
-Lookup     [d] Lookup
-Reference  [t] Thesaurus
-Dictionary [l] Summary"
-               'face 'minibuffer-prompt))))
-    (pcase key
-      ;; Spelling
-      (?s (progn
-            (flyspell-buffer)
-            (call-interactively 'flyspell-mode)))
-      ;; Lookup
-      (?l (call-interactively 'my/collect-flyspell-errors))
-      ;; Reference
-      (?t (call-interactively 'powerthesaurus-lookup-synonyms-dwim))
-      ;; Dictionary
-      (?d (call-interactively 'dictionary-lookup-definition))
-      ;; Quit
-      (?q (message "Quit Build menu."))
-      (?\C-g (message "Quit Build menu."))
-      ;; Default Invalid Key
-      (_ (message "Invalid key: %c" key)))))
-
-(global-set-key (kbd "C-c s") #'spelling-menu)
-(global-set-key (kbd "C-9") #'powerthesaurus-lookup-synonyms-dwim)
 
 ;;
 ;; -> custom-settings
@@ -498,10 +399,6 @@ Dictionary [l] Summary"
 (use-package csv-mode)
 (use-package package-lint)
 
-;; (use-package vcgit
-;;   :load-path "~/source/vcgit"
-;;   :hook (vc-dir-mode . vcgit-global-minor-mode))
-
 (require 'ob-gnuplot)
 
 (org-babel-do-load-languages
@@ -522,16 +419,6 @@ Dictionary [l] Summary"
 (with-eval-after-load 'bank-buddy
   (add-hook 'org-mode-hook 'bank-buddy-cat-maybe-enable))
 
-(defun my-org-babel-execute-on-open ()
-  (when (eq major-mode 'org-mode)
-    (org-babel-map-executables nil
-      (when (org-babel-get-src-block-info)
-        (let ((execute-on-open (cdr (assq :execute_on_open (nth 2 (org-babel-get-src-block-info))))))
-          (when execute-on-open
-            (org-babel-execute-src-block)))))))
-
-(add-hook 'org-mode-hook 'my-org-babel-execute-on-open)
-
 (setq pixel-scroll-precision-mode 1)
 
 (defadvice dired-sort-toggle-or-edit (after dired-sort-move-to-first-file activate)
@@ -541,10 +428,6 @@ Dictionary [l] Summary"
   (while (and (not (eobp))
               (looking-at-p ".*\\.\\.?$"))  ;; Check if line is . or ..
     (dired-next-line 1)))
-
-(use-package flycheck)
-;; (use-package csv)
-(use-package gnuplot)
 
 (defun transform-bank-buddy-vars (old-prefix new-prefix &rest var-names)
   "Transform bank-buddy variables to use a new prefix.
@@ -587,56 +470,6 @@ VAR-NAMES is a list of variable names to transform."
    "bank-buddy-subscription-patterns"))
 
 (define-key my-jump-keymap (kbd "l") #'consult-theme)
-
-(defvar flex-isearch-group-size 2
-  "Number of initial characters to group together for more accurate flex searching.")
-
-(defun flex-isearch-regexp-compile (string &optional _lax)
-  "Convert a search STRING to a flexible regexp.
-The first `flex-isearch-group-size` chars of each word are matched literally,
-and the following chars are matched flexibly.
-Only add a word boundary if the string starts with a word character."
-  (let* ((parts (split-string string " " t))
-         (compile-part
-          (lambda (part)
-            (let* ((len (length part))
-                   (group-size (min flex-isearch-group-size len))
-                   (grouped (substring part 0 group-size))
-                   (rest (substring part group-size)))
-              (concat
-               (regexp-quote grouped)
-               (mapconcat (lambda (char)
-                            (format "[^%s\n]*%s"
-                                    (regexp-quote (char-to-string char))
-                                    (regexp-quote (char-to-string char))))
-                          rest
-                          "")
-               "[^-_[:alnum:]\n]*"))))
-         (regexp-body (mapconcat compile-part parts "[^-_[:alnum:]\n]+")))
-    ;; Only add word boundary if the first char is a word character
-    (if (string-match-p "\\`[[:alnum:]_]" string)
-        (concat "\\b" regexp-body)
-      regexp-body)))
-
-(defun flex-isearch-search-fun ()
-  "Return the appropriate search function for flex searching."
-  (if isearch-forward 'flex-isearch-forward 'flex-isearch-backward))
-
-(defun flex-isearch-forward (string &optional bound noerror count)
-  "Flex search forward for STRING."
-  (let ((regexp (flex-isearch-regexp-compile string)))
-    (re-search-forward regexp bound noerror count)))
-
-(defun flex-isearch-backward (string &optional bound noerror count)
-  "Flex search backward for STRING."
-  (let ((regexp (flex-isearch-regexp-compile string)))
-    (re-search-backward regexp bound noerror count)))
-
-;; Set the search functions for isearch
-(setq isearch-search-fun-function #'flex-isearch-search-fun)
-
-;; Important: Set this function so isearch-occur and related commands will work
-(setq search-default-mode #'flex-isearch-regexp-compile)
 
 (use-package xkb-mode)
 
@@ -847,12 +680,6 @@ ARGS are passed to use-package based on the current mode."
        (use-package ,name
          :ensure t
          ,@args))))
-
-;; Add keybinding to toggle between package sources
-(global-set-key (kbd "C-c p t") 'package-source-toggle)
-
-;; Register and set up all your packages
-;; The third argument is the MELPA package name if different from directory name
 
 (setup-my-package "gptel-master" "gptel")
 (use-package-local-or-melpa gptel
