@@ -734,8 +734,8 @@ Compile all .el files and generate autoloads."
           (expand-file-name (format "%s-autoloads.el" 
                                     (file-name-nondirectory
                                      (directory-file-name package-dir)))
-                            package-dir))
-         (generated-autoload-file autoload-file))
+                            package-dir)))
+    (setq generated-autoload-file autoload-file)
     (update-directory-autoloads package-dir)
     
     ;; Load the generated autoloads file
