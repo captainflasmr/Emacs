@@ -718,7 +718,6 @@ ARGS are passed to use-package based on the current mode."
 
 (setup-my-package "ellama-main" "ellama")
 (use-package-local-or-melpa ellama
-  :bind ("C-c e" . ellama-transient-main-menu)
   :init
   (setopt ellama-language "English")
   (require 'llm-ollama)
@@ -823,3 +822,49 @@ ARGS are passed to use-package based on the current mode."
 
 ;; Bind the main transient menu to a global key
 (global-set-key (kbd "C-c g") 'llm-menu)
+
+;; (use-package orderless)
+
+;; (defun my/minibuffer-orderless ()
+;;   "Use orderless completion style only in the minibuffer."
+;;   (setq-local completion-styles '(orderless basic)))
+
+;; (add-hook 'minibuffer-setup-hook #'my/minibuffer-orderless)
+
+;; Alternative: More sophisticated version that handles partial word matching
+(defun simple-orderless-completion (string table pred point)
+  "Enhanced orderless completion with better partial matching."
+  (let* ((words (split-string string "[-, ]+"))
+         (patterns (mapcar (lambda (word)
+                             (concat "\\b.*" (regexp-quote word) ".*"))
+                           words))
+         (full-regexp (mapconcat 'identity patterns "")))
+    (if (string-empty-p string)
+        (all-completions "" table pred)
+      (cl-remove-if-not
+       (lambda (candidate)
+         (let ((case-fold-search completion-ignore-case))
+           (and (cl-every (lambda (word)
+                            (string-match-p
+                             (concat "\\b.*" (regexp-quote word))
+                             candidate))
+                          words)
+                t)))
+       (all-completions "" table pred)))))
+ 
+;; Register the completion style
+(add-to-list 'completion-styles-alist
+             '(simple-orderless simple-orderless-completion
+               simple-orderless-completion))
+ 
+;; Set different completion styles for minibuffer vs other contexts
+(defun setup-minibuffer-completion-styles ()
+  "Use orderless completion in minibuffer, regular completion elsewhere."
+  ;; For minibuffer: use orderless first, then fallback to flex and basic
+  (setq-local completion-styles '(simple-orderless flex basic substring)))
+ 
+;; Hook into minibuffer setup
+(add-hook 'minibuffer-setup-hook #'setup-minibuffer-completion-styles)
+ 
+;; Keep your original completion styles for non-minibuffer contexts
+(setq completion-styles '(flex basic substring))
