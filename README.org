@@ -601,6 +601,11 @@ Firstly this is just the ollama only version
    'synonym :model "gemma3:4b")
   (ollama-buddy-update-menu-entry
    'proofread :model "llama3.2:3b"))
+
+(eval-after-load 'dired
+  '(progn
+     (define-key dired-mode-map (kbd "C-c C-a") #'ollama-buddy-dired-attach-marked-files)))
+
 #+end_src
 
 Now for all the remote LLMs!
@@ -647,6 +652,11 @@ Now for all the remote LLMs!
    'synonym :model "o:llama3.2:3b")
   (ollama-buddy-update-menu-entry
    'proofread :model "a:gpt-4.1"))
+
+(eval-after-load 'dired
+  '(progn
+     (define-key dired-mode-map (kbd "C-c C-a") #'ollama-buddy-dired-attach-marked-files)))
+
 #+end_src
 
 * LLM
@@ -960,51 +970,191 @@ ARGS are passed to use-package based on the current mode."
 ;; Bind the main transient menu to a global key
 (global-set-key (kbd "C-c g") 'llm-menu)
 
-;; (use-package orderless)
-
-;; (defun my/minibuffer-orderless ()
-;;   "Use orderless completion style only in the minibuffer."
-;;   (setq-local completion-styles '(orderless basic)))
-
-;; (add-hook 'minibuffer-setup-hook #'my/minibuffer-orderless)
-
-;; Alternative: More sophisticated version that handles partial word matching
-(defun simple-orderless-completion (string table pred point)
-  "Enhanced orderless completion with better partial matching."
-  (let* ((words (split-string string "[-, ]+"))
-         (patterns (mapcar (lambda (word)
-                             (concat "\\b.*" (regexp-quote word) ".*"))
-                           words))
-         (full-regexp (mapconcat 'identity patterns "")))
-    (if (string-empty-p string)
-        (all-completions "" table pred)
-      (cl-remove-if-not
-       (lambda (candidate)
-         (let ((case-fold-search completion-ignore-case))
-           (and (cl-every (lambda (word)
-                            (string-match-p
-                             (concat "\\b.*" (regexp-quote word))
-                             candidate))
-                          words)
-                t)))
-       (all-completions "" table pred)))))
- 
-;; Register the completion style
-(add-to-list 'completion-styles-alist
-             '(simple-orderless simple-orderless-completion
-               simple-orderless-completion))
- 
-;; Set different completion styles for minibuffer vs other contexts
-(defun setup-minibuffer-completion-styles ()
-  "Use orderless completion in minibuffer, regular completion elsewhere."
-  ;; For minibuffer: use orderless first, then fallback to flex and basic
-  (setq-local completion-styles '(simple-orderless flex basic substring)))
- 
-;; Hook into minibuffer setup
-(add-hook 'minibuffer-setup-hook #'setup-minibuffer-completion-styles)
- 
 ;; Keep your original completion styles for non-minibuffer contexts
-(setq completion-styles '(flex basic substring))
+;; (setq completion-styles '(flex basic substring))
 
 #+end_src
 
+* image-dired
+
+#+begin_src elisp
+;;
+;; -> image-dired
+;;
+(when (file-exists-p "/home/jdyer/bin/category-list-uniq.txt")
+  (progn
+    (defvar my/dwim-convert-commands
+      '("ConvertNoSpace" "AudioConvert" "AudioInfo" "AudioNormalise"
+        "AudioTrimSilence" "PictureAutoColour" "PictureConvert"
+        "PictureCrush" "PictureFrompdf" "PictureInfo" "PictureMontage"
+        "PictureOrganise" "PictureCrop" "PictureRotateFlip" "PictureEmail"
+        "PictureUpdateFromCreateDate"
+        "PictureRotateLeft" "PictureRotateRight" "PictureScale"
+        "PictureUpscale" "PictureGetText" "PictureOrientation"
+        "PictureUpdateToCreateDate" "VideoConcat" "VideoConvert" "VideoConvertToGif"
+        "VideoCut" "VideoDouble" "VideoExtractAudio" "VideoExtractFrames"
+        "VideoFilter" "VideoFromFrames" "VideoInfo" "VideoRemoveAudio"
+        "VideoReplaceVideoAudio" "VideoRescale" "VideoReverse"
+        "VideoRotate" "VideoRotateLeft" "VideoRotateRight" "VideoShrink"
+        "VideoSlowDown" "VideoSpeedUp" "VideoZoom" "WhatsAppConvert"
+        "PictureCorrect" "Picture2pdf" "PictureTag" "PictureTagRename"
+        "OtherTagDate" "VideoRemoveFlips")
+      "List of commands for dwim-convert.")
+
+    (defvar my/org-dired-marked-files nil
+      "Stores the current dired marked files.")
+
+    (defun my/read-lines (file-path)
+      "Return a list of lines of a file at FILE-PATH."
+      (with-temp-buffer
+        (insert-file-contents file-path)
+        (split-string (buffer-string) "\n" t)))
+
+    (defun my/dwim-convert-generic-menu (command)
+      "Execute a dwim-shell-command-on-marked-files with the given COMMAND."
+      (let* ((unique-text-file "/home/jdyer/bin/category-list-uniq.txt")
+             (user-selection nil)
+             (files my/org-dired-marked-files)
+             (command-and-files (concat command " " (mapconcat 'identity files " "))))
+        (prin1 files)
+        (when (string= command "PictureTag")
+          (setq user-selection (completing-read "Choose an option: "
+                                                (my/read-lines unique-text-file)
+                                                nil t)))
+        (async-shell-command (if user-selection
+                                 (concat command " " user-selection " " (mapconcat 'identity files " "))
+                               (concat command " " (mapconcat 'identity files " ")))
+                             "*convert*")))
+    ;; (save-buffers-kill-terminal))
+
+    (defun my/dwim-convert-with-selection-files-command (files-string chosen-command)
+      "Prompt user to choose command and execute dwim-shell-command-on-marked-files."
+      (interactive)
+      (setq my/org-dired-marked-files (split-string files-string ";" t))
+      (my/dwim-convert-generic-menu chosen-command))
+
+    (defun my/dwim-convert-with-selection-files (files-string)
+      "Prompt user to choose command and execute dwim-shell-command-on-marked-files."
+      (interactive)
+      (setq my/org-dired-marked-files (split-string files-string ";" t))
+      (let ((chosen-command (completing-read "Choose command: "
+                                             my/dwim-convert-commands)))
+        (my/dwim-convert-generic-menu chosen-command)))
+    )
+  )
+
+(defun my/get-files-from-context ()
+  "Get files based on current context (dired, image-dired, etc.)"
+  (cond
+   ;; In image-dired thumbnail mode
+   ((eq major-mode 'image-dired-thumbnail-mode)
+    (my/image-dired-get-original-files))
+   
+   ;; In dired mode
+   ((eq major-mode 'dired-mode)
+    (dired-get-marked-files))
+   
+   ;; In image-dired display mode
+   ((eq major-mode 'image-dired-display-image-mode)
+    (list (image-dired-original-file-name)))
+   
+   ;; Default: try to get current file
+   (t
+    (when buffer-file-name
+      (list buffer-file-name)))))
+
+(defun my/image-dired-get-original-files ()
+  "Get original file paths from image-dired marked thumbnails or current thumbnail."
+  (let ((files '())
+        (continue t))
+    (save-excursion
+      (goto-char (point-min))
+      ;; Move to first image if not already on one
+      (condition-case nil
+          (unless (image-dired-image-at-point-p)
+            (image-dired-forward-image))
+        (error nil))
+      
+      ;; Collect all marked files
+      (while (and continue
+                  (condition-case nil
+                      (image-dired-image-at-point-p)
+                    (error nil)))
+        (when (condition-case nil
+                  (image-dired-thumb-file-marked-p)
+                (error nil))
+          (let ((orig-file (condition-case nil
+                               (image-dired-original-file-name)
+                             (error nil))))
+            (when orig-file
+              (push orig-file files))))
+        ;; Move to next image, stop if we can't move forward
+        (let ((current-pos (point)))
+          (condition-case nil
+              (image-dired-forward-image)
+            (error nil))
+          ;; If we didn't move, we're at the end
+          (when (= current-pos (point))
+            (setq continue nil)))))
+    
+    ;; If no marked files found, get current file
+    (when (and (null files) 
+               (condition-case nil
+                   (image-dired-image-at-point-p)
+                 (error nil)))
+      (let ((orig-file (condition-case nil
+                           (image-dired-original-file-name)
+                         (error nil))))
+        (when orig-file
+          (push orig-file files))))
+    
+    (nreverse files)))
+
+(defun my/universal-picture-tag ()
+  "Tag pictures from any context (dired or image-dired)."
+  (interactive)
+  (let ((files (my/get-files-from-context)))
+    (if files
+        (let ((files-string (mapconcat 'identity files ";")))
+          (my/dwim-convert-with-selection-files-command files-string "PictureTag"))
+      (message "No files found to tag"))))
+
+(defun my/universal-picture-tag-rename ()
+  "Tag and rename pictures from any context (dired or image-dired)."
+  (interactive)
+  (let ((files (my/get-files-from-context)))
+    (if files
+        (let ((files-string (mapconcat 'identity files ";")))
+          (my/dwim-convert-with-selection-files-command files-string "PictureTag")
+          (my/dwim-convert-with-selection-files-command files-string "PictureTagRename"))
+      (message "No files found to tag and rename"))))
+
+;; Set up keybindings for both dired and image-dired
+(defun my/setup-picture-keybindings ()
+  "Set up consistent keybindings for picture operations."
+  (local-set-key (kbd "C-c t") 'my/universal-picture-tag)
+  (local-set-key (kbd "C-c r") 'my/universal-picture-tag-rename))
+
+;; Apply to both modes
+(add-hook 'dired-mode-hook 'my/setup-picture-keybindings)
+(add-hook 'image-dired-thumbnail-mode-hook 'my/setup-picture-keybindings)
+
+;; Optional: Add menu items
+(defun my/add-picture-menu-items ()
+  "Add picture tagging items to the menu."
+  (when (featurep 'easymenu)
+    (easy-menu-add-item
+     nil '("Tools")
+     ["Tag Pictures" my/universal-picture-tag
+      :help "Tag selected pictures"]
+     "Games")
+    (easy-menu-add-item
+     nil '("Tools")
+     ["Tag and Rename Pictures" my/universal-picture-tag-rename
+      :help "Tag and rename selected pictures"]
+     "Games")))
+
+(add-hook 'dired-mode-hook 'my/add-picture-menu-items)
+(add-hook 'image-dired-thumbnail-mode-hook 'my/add-picture-menu-items)
+
+#+end_src
