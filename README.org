@@ -988,4 +988,11 @@ ARGS are passed to use-package based on the current mode."
          (pounds (string-to-number (cadr parts))))
     (+ (* stone 14) pounds)))
 
+(use-package help
+  :bind
+  (:map help-map
+        ("=" . describe-char)
+        ("j" . describe-face)
+        ("-" . describe-keymap)))
+
 #+end_src
