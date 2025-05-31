@@ -80,12 +80,15 @@ Customizes the Org Agenda for a personalized task management, mainly here to def
 ;;
 ;; -> org-agenda
 ;;
-(setq org-agenda-files '("~/DCIM/content/aaa--calendar.org"
+(setq org-agenda-files '(
+                         "~/DCIM/content/aaa--calendar.org"
                          "~/DCIM/content/aab--calendar-repeat.org"
                          "~/DCIM/content/aaa--todo.org"
                          "~/DCIM/content/aab--move.org"
                          "~/DCIM/content/aab--sell.org"
-                         "~/DCIM/content/aac--emacs-todo.org"))
+                         "~/DCIM/content/aac--emacs-todo.org"
+                         "~/DCIM/content/aaa--calendar.org"
+                         ))
 
 (setq org-agenda-sticky t)
 #+end_src
@@ -987,4 +990,53 @@ ARGS are passed to use-package based on the current mode."
          (stone (string-to-number (car parts)))
          (pounds (string-to-number (cadr parts))))
     (+ (* stone 14) pounds)))
+
+(defun my-capture-top-level ()
+  "Function to capture a new entry at the top level of the given file."
+  (goto-char (point-min))
+  (or (outline-next-heading)
+      (goto-char (point-max)))
+  (unless (bolp) (insert "\n")))
+
+(defun my/org-hugo-new-subtree-post-capture-template ()
+  (let* ((date (format-time-string (org-time-stamp-format  :inactive) (org-current-time)))
+         (title (read-from-minibuffer "Post Title: "))
+         (fname (org-hugo-slug title)))
+    (mapconcat #'identity
+               `(
+                 ,(concat "* DONE Photos " title " " (format-time-string "%Y-%m-%d") " :" (format-time-string "%Y") ":")
+                 ":PROPERTIES:"
+                 ":EXPORT_FILE_NAME: index"
+                 ,(concat ":EXPORT_HUGO_SECTION: blog/%<%Y%m%d%H%M%S>-blog--" fname)
+                 ,(concat ":EXPORT_HUGO_LASTMOD: " date)
+                 ":EXPORT_HUGO_TYPE: gallery"
+                 ,(concat ":EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /blog/%<%Y%m%d%H%M%S>-blog--" fname ".jpg")
+                 ":END:"
+                 "%?\n")
+               "\n")))
+
+(setq org-capture-templates
+      '(
+        ("g" "Gallery" plain
+         (file+function
+          "~/DCIM/content/blog--all.org"
+          my-capture-top-level)
+         (function my/org-hugo-new-subtree-post-capture-template)
+         :prepend t :jump-to-captured t)))
+
+(defun my/external-org-capture-blog-with-gallery (files-string)
+  "Capture gallery triggering gallery image storage."
+  (interactive)
+  (setq my/org-dired-marked-files (split-string files-string ";" t))
+  (org-capture nil "g"))
+
+(defun my/create-gallery ()
+  "Tag pictures from any context (dired or image-dired)."
+  (interactive)
+  (let ((files (my/get-files-from-context)))
+    (if files
+        (let ((files-string (mapconcat 'identity files ";")))
+          (my/external-org-capture-blog-with-gallery files-string))
+      (message "No files found to tag"))))
+
 #+end_src
