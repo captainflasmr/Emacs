@@ -301,7 +301,7 @@
   (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
   (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
   ;; (setq font-general "Noto Sans Mono 11")
-  (setq font-general "Source Code Pro 12")
+  (setq font-general "Source Code Pro 11")
   ;; (setq font-general "Source Code Pro Light 11")
   ;; (setq font-general "Monospace 11")
   ;;(setq font-general "Nimbus Mono PS 13")
@@ -867,14 +867,13 @@ ARGS are passed to use-package based on the current mode."
                  "%?\n")
                "\n")))
 
-(setq org-capture-templates
-      '(
-        ("g" "Gallery" plain
-         (file+function
-          "~/DCIM/content/blog--all.org"
-          my-capture-top-level)
-         (function my/org-hugo-new-subtree-post-capture-template)
-         :prepend t :jump-to-captured t)))
+(add-to-list 'org-capture-templates
+             '("g" "Gallery" plain
+               (file+function
+                "~/DCIM/content/blog--all.org"
+                my-capture-top-level)
+               (function my/org-hugo-new-subtree-post-capture-template)
+               :prepend t :jump-to-captured t))
 
 (defun my/external-org-capture-blog-with-gallery (files-string)
   "Capture gallery triggering gallery image storage."
@@ -890,3 +889,12 @@ ARGS are passed to use-package based on the current mode."
         (let ((files-string (mapconcat 'identity files ";")))
           (my/external-org-capture-blog-with-gallery files-string))
       (message "No files found to tag"))))
+
+(use-package cursor-heatmap
+  :load-path "~/source/repos/cursor-heatmap"
+  :config
+  (cursor-heatmap-mode 1)
+  :custom
+  (cursor-heatmap-grid-width 20)
+  (cursor-heatmap-grid-height 20)
+  (cursor-heatmap-use-colors t))
