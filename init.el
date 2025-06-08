@@ -18,6 +18,7 @@
 
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
+
 (setq use-package-verbose t)
 (setq use-package-always-ensure t)
 (require 'use-package)
@@ -41,6 +42,7 @@
   (selected-window-accent-smart-borders nil))
 
 (global-set-key (kbd "C-c w") selected-window-accent-map)
+
 (define-key selected-window-accent-map (kbd "m") 'consult-theme)
 
 ;;
@@ -301,7 +303,7 @@
   (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
   (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
   ;; (setq font-general "Noto Sans Mono 11")
-  (setq font-general "Source Code Pro 11")
+  (setq font-general "Source Code Pro 10")
   ;; (setq font-general "Source Code Pro Light 11")
   ;; (setq font-general "Monospace 11")
   ;;(setq font-general "Nimbus Mono PS 13")
@@ -486,7 +488,9 @@ VAR-NAMES is a list of variable names to transform."
   ("C-c o" . ollama-buddy-menu)
   ("C-c O" . ollama-buddy-transient-menu-wrapper)
   :custom
-  (ollama-buddy-default-model "a:gpt-4.1")
+  (ollama-buddy-default-model "c:claude-sonnet-4-20250514")
+  (ollama-buddy-autocomplete-model "o:qwen2.5-coder:0.5b")
+  ;; (ollama-buddy-autocomplete-model "a:gpt-4.1")
   (ollama-buddy-openai-api-key
    (auth-source-pick-first-password :host "ollama-buddy-openai" :user "apikey"))
   (ollama-buddy-claude-api-key
