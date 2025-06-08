@@ -82,7 +82,7 @@ Customizes the Org Agenda for a personalized task management, mainly here to def
 ;;
 (setq org-agenda-files '(
                          "~/DCIM/content/aaa--calendar.org"
-                         "~/DCIM/content/aab--calendar-repeat.org"
+                         "~/DCIM/content/aab--repeat.org"
                          "~/DCIM/content/aaa--todo.org"
                          "~/DCIM/content/aab--move.org"
                          "~/DCIM/content/aab--sell.org"

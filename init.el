@@ -18,7 +18,6 @@
 
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
-
 (setq use-package-verbose t)
 (setq use-package-always-ensure t)
 (require 'use-package)
@@ -42,7 +41,6 @@
   (selected-window-accent-smart-borders nil))
 
 (global-set-key (kbd "C-c w") selected-window-accent-map)
-
 (define-key selected-window-accent-map (kbd "m") 'consult-theme)
 
 ;;
@@ -50,7 +48,7 @@
 ;;
 (setq org-agenda-files '(
                          "~/DCIM/content/aaa--calendar.org"
-                         "~/DCIM/content/aab--calendar-repeat.org"
+                         "~/DCIM/content/aab--repeat.org"
                          "~/DCIM/content/aaa--todo.org"
                          "~/DCIM/content/aab--move.org"
                          "~/DCIM/content/aab--sell.org"
@@ -489,8 +487,7 @@ VAR-NAMES is a list of variable names to transform."
   ("C-c O" . ollama-buddy-transient-menu-wrapper)
   :custom
   (ollama-buddy-default-model "c:claude-sonnet-4-20250514")
-  (ollama-buddy-autocomplete-model "o:qwen2.5-coder:0.5b")
-  ;; (ollama-buddy-autocomplete-model "a:gpt-4.1")
+  (ollama-buddy-autocomplete-model "o:tinyllama:latest")
   (ollama-buddy-openai-api-key
    (auth-source-pick-first-password :host "ollama-buddy-openai" :user "apikey"))
   (ollama-buddy-claude-api-key
