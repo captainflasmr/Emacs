@@ -434,35 +434,6 @@
 (define-key my-jump-keymap (kbd "l") #'consult-theme)
 
 ;;
-;; -> other
-;;
-(defun convert-weight (weight)
-  "Convert WEIGHT from string to pounds."
-  (let* ((parts (split-string weight ":"))
-         (stone (string-to-number (car parts)))
-         (pounds (string-to-number (cadr parts))))
-    (+ (* stone 14) pounds)))
-
-(use-package cursor-heatmap
-  :load-path "~/source/repos/cursor-heatmap"
-  :config
-  (cursor-heatmap-mode 1)
-  :custom
-  (cursor-heatmap-grid-width 20)
-  (cursor-heatmap-grid-height 20)
-  (cursor-heatmap-use-colors t))
-
-(use-package simply-annotate
-  :load-path "~/source/repos/simply-annotate"
-  :hook
-  (find-file-hook . simply-annotate-mode)
-  :bind
-  ("C-c A" . simply-annotate-mode)
-  ("C-c 0" . simply-annotate-show-all))
-
-(setq ollama-buddy-communication-backend 'curl)
-
-;;
 ;; -> ollama-buddy
 ;;
 (use-package ollama-buddy
@@ -515,3 +486,40 @@
 (eval-after-load 'dired
   '(progn
      (define-key dired-mode-map (kbd "C-c C-a") #'ollama-buddy-dired-attach-marked-files)))
+
+;;
+;; -> other
+;;
+(defun convert-weight (weight)
+  "Convert WEIGHT from string to pounds."
+  (let* ((parts (split-string weight ":"))
+         (stone (string-to-number (car parts)))
+         (pounds (string-to-number (cadr parts))))
+    (+ (* stone 14) pounds)))
+
+(use-package cursor-heatmap
+  :load-path "~/source/repos/cursor-heatmap"
+  :config
+  (cursor-heatmap-mode 1)
+  :custom
+  (cursor-heatmap-grid-width 20)
+  (cursor-heatmap-grid-height 20)
+  (cursor-heatmap-use-colors t))
+
+(use-package simply-annotate
+  :load-path "~/source/repos/simply-annotate"
+  :hook
+  (find-file-hook . simply-annotate-mode)
+  :bind
+  ("C-c A" . simply-annotate-mode)
+  ("C-c 0" . simply-annotate-show-all))
+
+(setq ollama-buddy-communication-backend 'curl)
+
+(setq flymake-show-diagnostics-at-end-of-line t)
+
+(tiny-diminish 'selected-window-accent-mode)
+(tiny-diminish 'cursor-heatmap-mode)
+(tiny-diminish 'simply-annotate-mode)
+(tiny-diminish 'simple-autosuggest-mode)
+(tiny-diminish 'org-indent-mode)
