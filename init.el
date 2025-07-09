@@ -516,7 +516,7 @@
 
 (setq ollama-buddy-communication-backend 'curl)
 
-(setq flymake-show-diagnostics-at-end-of-line t)
+(setq flymake-show-diagnostics-at-end-of-line nil)
 
 (tiny-diminish 'selected-window-accent-mode)
 (tiny-diminish 'cursor-heatmap-mode)
