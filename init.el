@@ -319,12 +319,12 @@
   (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
   (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
   ;; (setq font-general "Noto Sans Mono 11")
-  (setq font-general "Source Code Pro 10")
+  ;; (setq font-general "Source Code Pro 10")
   ;; (setq font-general "Source Code Pro Light 11")
-  ;; (setq font-general "Monospace 11")
+  ;; (setq font-general "Monospace 10")
   ;;(setq font-general "Nimbus Mono PS 13")
-  (set-frame-font font-general nil t)
-  (add-to-list 'default-frame-alist `(font . ,font-general))
+  ;; (set-frame-font font-general nil t)
+  ;; (add-to-list 'default-frame-alist `(font . ,font-general))
   (setq diary-file "~/DCIM/content/diary.org"))
 
 ;;
@@ -363,6 +363,15 @@
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
  '(custom-enabled-themes '(doom-oceanic-next))
+ '(package-selected-packages
+   '(all-the-icons-dired all-the-icons-ibuffer annotate bank-buddy
+                         chatgpt-shell consult corfu csv-mode
+                         doom-themes ef-themes ellama flycheck
+                         git-timemachine gnuplot gptel gruvbox-theme
+                         i3wm-config-mode ollama-buddy org-social
+                         org-superstar org-wc ox-hugo package-lint
+                         pkg-info powerthesaurus ready-player
+                         simply-annotate vecdb xkb-mode yaml-mode))
  '(tab-bar-mode t)
  '(tool-bar-mode nil)
  '(warning-suppress-log-types '((frameset)))
@@ -413,7 +422,7 @@
 ;; Bind the menu to C-c e
 (global-set-key (kbd "C-c e") 'export-menu)
 
-(my/sync-ui-accent-color "coral")
+;; (my/sync-ui-accent-color "coral")
 
 (use-package csv-mode)
 (use-package package-lint)
@@ -449,7 +458,7 @@
   
   ;; Then set the backend
   (setq ollama-buddy-communication-backend 'curl)
-  (setq ollama-buddy-default-model "c:claude-sonnet-4-20250514")
+  (setq ollama-buddy-default-model "c:claude-sonnet-4-5-20250929")
   (setq ollama-buddy-autocomplete-model "o:tinyllama:latest")
   (setq ollama-buddy-openai-api-key
         (auth-source-pick-first-password :host "ollama-buddy-openai" :user "apikey"))
@@ -498,15 +507,6 @@
          (pounds (string-to-number (cadr parts))))
     (+ (* stone 14) pounds)))
 
-(use-package cursor-heatmap
-  :load-path "~/source/repos/cursor-heatmap"
-  :config
-  (cursor-heatmap-mode 1)
-  :custom
-  (cursor-heatmap-grid-width 20)
-  (cursor-heatmap-grid-height 20)
-  (cursor-heatmap-use-colors t))
-
 (use-package simply-annotate
   :load-path "~/source/repos/simply-annotate"
   :hook
@@ -525,25 +525,12 @@
 (tiny-diminish 'simple-autosuggest-mode)
 (tiny-diminish 'org-indent-mode)
 
-;; (use-package evie
-;;   :load-path "~/source/repos/evie"
-;;   :config
-;;   ;; Enable EVIE globally
-;;   (evie-mode 1)
-
-;;   ;; Customize behavior
-;;   (setq evie-auto-view-files t                    ; Auto-enable view-mode
-;;         evie-return-to-view-after-save t          ; Return to view after save
-;;         evie-visual-feedback t                    ; Change cursor type
-;;         evie-scroll-lines 3                       ; Lines to scroll with u/d
-;;         evie-mode-line-indicator " 👶"))
-
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Source Code Pro" :foundry "ADBO" :slant normal :weight regular :height 100 :width normal))))
+ '(default ((t (:family "Monospace" :foundry "ADBO" :slant normal :weight regular :height 95 :width normal))))
  '(completions-common-part ((t (:foreground "#87ceeb"))))
  '(completions-first-difference ((t (:foreground "#ffb6c1"))))
  '(cursor ((t (:background "coral"))))
@@ -551,7 +538,7 @@
  '(ediff-even-diff-A ((t (:background "#bafbba" :foreground "#000000" :extend t))))
  '(ediff-fine-diff-A ((t (:background "#f4bd92" :foreground "#000000" :extend t))))
  '(ediff-odd-diff-A ((t (:background "#b8fbb8" :foreground "#000000" :extend t))))
- '(fixed-pitch ((t (:family "Source Code Pro" :height 110))))
+ '(fixed-pitch ((t (:family "Monospace" :height 110))))
  '(font-lock-warning-face ((t (:foreground "#930000" :inverse-video nil))))
  '(fringe ((t (:foreground "#2d3743" :background "#2d3743"))))
  '(hl-line ((t (:background "#3d4753"))))
@@ -575,3 +562,12 @@
  '(vertical-border ((t (:foreground "#000000"))))
  '(widget-button ((t (:inherit fixed-pitch :weight regular))))
  '(window-divider ((t (:foreground "black")))))
+
+(use-package meal-planner
+  :load-path "~/source/repos/meal-planner")
+
+(use-package org-social
+  :config
+  (setq org-social-file "https://host.org-social.org/vfile?token=31841933dc6ee63665fdd874eb60088a21b1ef066939f2b73dea8b51d8ce268d&ts=1764570277&sig=c7a678e4123f8ae5608de3d527fb507029325bce560556cb6465732f481e6de6")
+  (setq org-social-relay "https://relay.org-social.org/")
+  (setq org-social-my-public-url "https://host.org-social.org/captainflasmr/social.org"))
