@@ -367,16 +367,14 @@
  '(column-number-mode t)
  '(custom-enabled-themes '(doom-oceanic-next))
  '(package-selected-packages
-   '(all-the-icons-dired all-the-icons-ibuffer annotate bank-buddy
-                         chatgpt-shell claude-code consult corfu
-                         csv-mode dired-video-thumbnail dirvish
-                         doom-themes eat ef-themes ellama flycheck
-                         git-timemachine gnuplot gptel gruvbox-theme
-                         i3wm-config-mode inheritenv ollama-buddy
-                         org-social org-superstar org-wc ox-hugo
-                         package-lint pkg-info powerthesaurus
-                         ready-player simply-annotate vecdb xkb-mode
-                         yaml-mode))
+   '(aidermacs all-the-icons-dired all-the-icons-ibuffer annotate
+               bank-buddy chatgpt-shell claude-code consult corfu
+               csv-mode dired-video-thumbnail dirvish doom-themes eat
+               ef-themes ellama flycheck git-timemachine gnuplot gptel
+               gruvbox-theme i3wm-config-mode inheritenv ollama-buddy
+               org-social org-superstar org-wc ox-hugo package-lint
+               pkg-info powerthesaurus ready-player simply-annotate
+               vecdb xkb-mode yaml-mode))
  '(tab-bar-mode t)
  '(tool-bar-mode nil)
  '(warning-suppress-log-types '((frameset)))
@@ -1040,3 +1038,20 @@
           :description "List open Emacs buffers."
           :args nil
           :category "emacs"))))
+
+(use-package aidermacs
+  :config
+  (setq aidermacs-extra-args 
+        '("--model" "anthropic/claude-sonnet-4-5"
+          "--map-tokens" "2048"))
+  
+  (setenv "OPENAI_API_KEY" 
+          (auth-source-pick-first-password
+           :host "ollama-buddy-openai" 
+           :user "apikey"))
+  
+  (setenv "ANTHROPIC_API_KEY" 
+          (auth-source-pick-first-password
+           :host "ollama-buddy-claude" 
+           :user "apikey")))
+  
