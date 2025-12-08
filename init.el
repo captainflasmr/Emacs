@@ -14,7 +14,8 @@
 (when (eq system-type 'gnu/linux)
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                            ("elpa" . "https://elpa.gnu.org/packages/")
-                           ("org" . "https://orgmode.org/elpa/"))))
+                           ("org" . "https://orgmode.org/elpa/")
+                           ("nongnu" . "https://elpa.nongnu.org/nongnu/"))))
 
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
@@ -27,18 +28,20 @@
 ;; -> selected-window-accent-mode
 ;;
 
-(use-package selected-window-accent-mode
-  :load-path "~/source/repos/selected-window-accent-mode"
-  :config (selected-window-accent-mode 1)
-  :custom
-  (selected-window-accent-fringe-thickness 10)
-  (selected-window-accent-custom-color nil)
-  (selected-window-accent-mode-style 'default)
-  (selected-window-accent-percentage-darken 20)
-  (selected-window-accent-percentage-desaturate 20)
-  (selected-window-accent-tab-accent t)
-  (selected-window-accent-use-pywal t)
-  (selected-window-accent-smart-borders nil))
+;; (use-package selected-window-accent-mode
+;;   :load-path "~/source/repos/selected-window-accent-mode"
+;;   :config (selected-window-accent-mode 1)
+;;   :custom
+;;   (selected-window-accent-fringe-thickness 10)g
+;;   (selected-window-accent-custom-color nil)
+;;   (selected-window-accent-mode-style 'default)
+;;   (selected-window-accent-percentage-darken 20)
+;;   (selected-window-accent-percentage-desaturate 20)
+;;   (selected-window-accent-tab-accent t)
+;;   (selected-window-accent-use-pywal t)
+;;   (selected-window-accent-smart-borders nil))
+
+;; (global-set-key (kbd "C-c w") selected-window-accent-map)
 
 ;;
 ;; -> org-agenda
@@ -365,13 +368,15 @@
  '(custom-enabled-themes '(doom-oceanic-next))
  '(package-selected-packages
    '(all-the-icons-dired all-the-icons-ibuffer annotate bank-buddy
-                         chatgpt-shell consult corfu csv-mode
-                         doom-themes ef-themes ellama flycheck
+                         chatgpt-shell claude-code consult corfu
+                         csv-mode dired-video-thumbnail dirvish
+                         doom-themes eat ef-themes ellama flycheck
                          git-timemachine gnuplot gptel gruvbox-theme
-                         i3wm-config-mode ollama-buddy org-social
-                         org-superstar org-wc ox-hugo package-lint
-                         pkg-info powerthesaurus ready-player
-                         simply-annotate vecdb xkb-mode yaml-mode))
+                         i3wm-config-mode inheritenv ollama-buddy
+                         org-social org-superstar org-wc ox-hugo
+                         package-lint pkg-info powerthesaurus
+                         ready-player simply-annotate vecdb xkb-mode
+                         yaml-mode))
  '(tab-bar-mode t)
  '(tool-bar-mode nil)
  '(warning-suppress-log-types '((frameset)))
@@ -571,3 +576,467 @@
   (setq org-social-file "https://host.org-social.org/vfile?token=31841933dc6ee63665fdd874eb60088a21b1ef066939f2b73dea8b51d8ce268d&ts=1764570277&sig=c7a678e4123f8ae5608de3d527fb507029325bce560556cb6465732f481e6de6")
   (setq org-social-relay "https://relay.org-social.org/")
   (setq org-social-my-public-url "https://host.org-social.org/captainflasmr/social.org"))
+
+(use-package dired-video-thumbnail
+  :load-path "~/source/repos/dired-video-thumbnail"
+  :bind (:map dired-mode-map
+              ("C-t v" . dired-video-thumbnail))
+  :custom
+  (dired-video-thumbnail-size 250)
+  (dired-video-thumbnail-display-height 150)
+  (dired-video-thumbnail-columns 8)
+  (dired-video-thumbnail-timestamp "00:00:02")
+  (dired-video-thumbnail-video-player "mpv")
+  (dired-video-thumbnail-mark-border-width 5)
+  :custom-face
+  (dired-video-thumbnail-mark ((t (:foreground "orange")))))
+
+(use-package dirvish)
+
+;; install required inheritenv dependency:
+(use-package inheritenv
+  :vc (:url "https://github.com/purcell/inheritenv" :rev :newest))
+
+;; for eat terminal backend:
+(use-package eat :ensure t)
+
+;; for vterm terminal backend:
+(use-package vterm :ensure t)
+
+;; install claude-code.el
+(use-package claude-code :ensure t
+  :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
+  :config
+  ;; optional IDE integration with Monet
+  (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
+  (monet-mode 1)
+
+  (claude-code-mode)
+  :bind-keymap ("C-c C" . claude-code-command-map)
+
+  ;; Optionally define a repeat map so that "M" will cycle thru Claude auto-accept/plan/confirm modes after invoking claude-code-cycle-mode / C-c M.
+  :bind
+  (:repeat-map my-claude-code-map ("M" . claude-code-cycle-mode)))
+
+(global-set-key (kbd "C-c C") 'claude-code-transient)
+
+(use-package gptel
+  :ensure t
+  :config
+
+  ;; OpenAI API key (used by default backend)
+  (setq gptel-api-key (auth-source-pick-first-password
+                       :host "ollama-buddy-openai"
+                       :user "apikey"))
+
+  ;; Claude backend
+  (gptel-make-anthropic "Claude"
+    :stream t
+    :key (auth-source-pick-first-password
+          :host "ollama-buddy-claude"
+          :user "apikey"))
+
+  ;; Set Claude as default
+  (setq gptel-model 'claude-3-7-sonnet-20250219
+        gptel-backend (gptel-get-backend "Claude"))
+  
+  (setq gptel-default-mode 'org-mode)
+  (setq gptel-use-tools t)
+  (setq gptel-include-tool-results t)
+  (setq gptel-confirm-tool-calls t)
+
+  (setq gptel-directives
+        '((default . "You are a helpful assistant.")
+          (code-review . "You are a code review assistant.")
+          (engineer . "You are an expert software engineer. Use your tools to read files, search code, and help with programming tasks.")))
+
+  ;; ============================================================
+  ;; EDIFF-BASED FILE EDITING
+  ;; ============================================================
+
+  (defvar gptel-tool--ediff-target-file nil
+    "The file being edited via gptel ediff.")
+  
+  (defvar gptel-tool--ediff-result nil
+    "Result of the last gptel ediff operation.")
+
+  (defvar gptel-tool--ediff-buffers nil
+    "Cons of (original-buf . modified-buf) for cleanup.")
+
+  (defun gptel-tool--ediff-quit-hook ()
+    "Hook run when ediff quits. Prompts to save and cleans up."
+    (when gptel-tool--ediff-target-file
+      (let ((modified-content (with-current-buffer ediff-buffer-B
+                                (buffer-substring-no-properties (point-min) (point-max))))
+            (original-content (with-current-buffer ediff-buffer-A
+                                (buffer-substring-no-properties (point-min) (point-max)))))
+        (if (string= modified-content original-content)
+            (setq gptel-tool--ediff-result
+                  (format "No changes made to %s" gptel-tool--ediff-target-file))
+          (if (y-or-n-p (format "Save changes to %s? " gptel-tool--ediff-target-file))
+              (progn
+                (with-temp-file gptel-tool--ediff-target-file
+                  (insert modified-content))
+                ;; Revert the buffer if it's visiting this file
+                (when-let ((buf (find-buffer-visiting gptel-tool--ediff-target-file)))
+                  (with-current-buffer buf
+                    (revert-buffer t t t)))
+                (setq gptel-tool--ediff-result
+                      (format "Applied changes to %s" gptel-tool--ediff-target-file)))
+            (setq gptel-tool--ediff-result
+                  (format "Discarded changes to %s" gptel-tool--ediff-target-file)))))
+      
+      ;; Cleanup
+      (when gptel-tool--ediff-buffers
+        (ignore-errors (kill-buffer (car gptel-tool--ediff-buffers)))
+        (ignore-errors (kill-buffer (cdr gptel-tool--ediff-buffers))))
+      (setq gptel-tool--ediff-target-file nil)
+      (setq gptel-tool--ediff-buffers nil)))
+
+  (defun gptel-tool--ediff-replace (path old-string new-string)
+    "Replace OLD-STRING with NEW-STRING in file at PATH using ediff."
+    (let* ((full-path (expand-file-name path))
+           (original-content (condition-case err
+                                 (with-temp-buffer
+                                   (insert-file-contents full-path)
+                                   (buffer-string))
+                               (error (format "Error reading file: %s" (error-message-string err))))))
+      
+      ;; Check for read errors
+      (when (string-prefix-p "Error" original-content)
+        (cl-return-from gptel-tool--ediff-replace original-content))
+      
+      (let ((count (with-temp-buffer
+                     (insert original-content)
+                     (how-many (regexp-quote old-string) (point-min) (point-max)))))
+        (cond
+         ((= count 0)
+          (format "Error: String not found in %s" path))
+         ((> count 1)
+          (format "Error: String found %d times in %s. Must be unique for safe replacement." count path))
+         (t
+          (let* ((new-content (replace-regexp-in-string
+                               (regexp-quote old-string) new-string original-content t t))
+                 (original-buf (generate-new-buffer
+                                (format "*original: %s*" (file-name-nondirectory path))))
+                 (modified-buf (generate-new-buffer
+                                (format "*proposed: %s*" (file-name-nondirectory path)))))
+            
+            ;; Populate original buffer
+            (with-current-buffer original-buf
+              (insert original-content)
+              (goto-char (point-min))
+              (let ((buffer-file-name full-path))
+                (set-auto-mode)
+                (font-lock-ensure))
+              (set-buffer-modified-p nil)
+              (setq buffer-read-only t))
+            
+            ;; Populate modified buffer
+            (with-current-buffer modified-buf
+              (insert new-content)
+              (goto-char (point-min))
+              (let ((buffer-file-name full-path))
+                (set-auto-mode)
+                (font-lock-ensure))
+              (set-buffer-modified-p nil))
+            
+            ;; Prompt user for action
+            (let ((action (read-char-choice
+                           (format "Change in %s:\n\n  -%s\n  +%s\n\n[a]pply, [e]diff, [s]kip: "
+                                   (file-name-nondirectory path)
+                                   (truncate-string-to-width old-string 70 nil nil "...")
+                                   (truncate-string-to-width new-string 70 nil nil "..."))
+                           '(?a ?e ?s))))
+              (pcase action
+                (?a
+                 ;; Apply directly without ediff
+                 (with-temp-file full-path
+                   (insert new-content))
+                 (kill-buffer original-buf)
+                 (kill-buffer modified-buf)
+                 (when-let ((buf (find-buffer-visiting full-path)))
+                   (with-current-buffer buf
+                     (revert-buffer t t t)))
+                 (format "Applied change to %s" path))
+                
+                (?e
+                 ;; Launch ediff
+                 (setq gptel-tool--ediff-target-file full-path)
+                 (setq gptel-tool--ediff-buffers (cons original-buf modified-buf))
+                 (setq gptel-tool--ediff-result nil)
+                 
+                 ;; Add our quit hook
+                 (add-hook 'ediff-quit-hook #'gptel-tool--ediff-quit-hook)
+                 
+                 ;; Start ediff - A is original, B is proposed changes
+                 (ediff-buffers original-buf modified-buf)
+                 
+                 ;; Ediff runs asynchronously, return a pending message
+                 ;; The actual result will be shown when ediff quits
+                 (format "Ediff started for %s. Use 'n'/'p' to navigate hunks, 'a'/'b' to choose version, 'q' to quit and save." path))
+                
+                (?s
+                 ;; Skip
+                 (kill-buffer original-buf)
+                 (kill-buffer modified-buf)
+                 (format "Skipped change to %s" path))))))))))
+
+  ;; ============================================================
+  ;; SIMPLER DIFF ALTERNATIVE (if you prefer)
+  ;; ============================================================
+
+  (defun gptel-tool--diff-replace (path old-string new-string)
+    "Replace OLD-STRING with NEW-STRING in file at PATH, showing diff for confirmation."
+    (let* ((full-path (expand-file-name path))
+           (original-content (condition-case err
+                                 (with-temp-buffer
+                                   (insert-file-contents full-path)
+                                   (buffer-string))
+                               (error nil))))
+      (unless original-content
+        (cl-return-from gptel-tool--diff-replace
+          (format "Error: Cannot read file %s" path)))
+      
+      (let ((count (with-temp-buffer
+                     (insert original-content)
+                     (how-many (regexp-quote old-string) (point-min) (point-max)))))
+        (cond
+         ((= count 0)
+          (format "Error: String not found in %s" path))
+         ((> count 1)
+          (format "Error: String found %d times, must be unique" count))
+         (t
+          (let* ((new-content (replace-regexp-in-string
+                               (regexp-quote old-string) new-string original-content t t))
+                 (diff-output (let ((old-temp (make-temp-file "gptel-old"))
+                                    (new-temp (make-temp-file "gptel-new")))
+                                (unwind-protect
+                                    (progn
+                                      (with-temp-file old-temp (insert original-content))
+                                      (with-temp-file new-temp (insert new-content))
+                                      (shell-command-to-string
+                                       (format "diff -u --color=never %s %s | tail -n +3"
+                                               (shell-quote-argument old-temp)
+                                               (shell-quote-argument new-temp))))
+                                  (delete-file old-temp)
+                                  (delete-file new-temp)))))
+            
+            ;; Show diff in a buffer
+            (with-current-buffer (get-buffer-create "*gptel-diff*")
+              (let ((inhibit-read-only t))
+                (erase-buffer)
+                (insert (propertize (format "Proposed changes to: %s\n" path)
+                                    'face 'font-lock-keyword-face))
+                (insert (make-string 60 ?─) "\n\n")
+                (insert diff-output)
+                (goto-char (point-min))
+                (diff-mode)
+                (view-mode 1))
+              (display-buffer (current-buffer)
+                              '((display-buffer-reuse-window
+                                 display-buffer-below-selected)
+                                (window-height . 0.4))))
+            
+            (if (y-or-n-p (format "Apply change to %s? " path))
+                (progn
+                  (with-temp-file full-path
+                    (insert new-content))
+                  (when-let ((buf (find-buffer-visiting full-path)))
+                    (with-current-buffer buf
+                      (revert-buffer t t t)))
+                  (when-let ((diff-buf (get-buffer "*gptel-diff*")))
+                    (kill-buffer diff-buf))
+                  (format "Applied change to %s" path))
+              (when-let ((diff-buf (get-buffer "*gptel-diff*")))
+                (kill-buffer diff-buf))
+              (format "Skipped change to %s" path))))))))
+
+  ;; ============================================================
+  ;; TOOLS
+  ;; ============================================================
+
+  (setq gptel-tools
+        (list
+         ;; ============ FILE OPERATIONS ============
+         (gptel-make-tool
+          :function (lambda (path)
+                      (condition-case err
+                          (with-temp-buffer
+                            (insert-file-contents (expand-file-name path))
+                            (buffer-string))
+                        (error (format "Error reading file: %s" (error-message-string err)))))
+          :name "read_file"
+          :description "Read the contents of a file."
+          :args (list '(:name "path" :type string :description "The path to the file"))
+          :category "filesystem")
+
+         (gptel-make-tool
+          :function (lambda (path content)
+                      (let* ((full-path (expand-file-name path))
+                             (exists (file-exists-p full-path))
+                             (prompt (if exists
+                                         (format "Overwrite %s (%d bytes)? " path (length content))
+                                       (format "Create %s (%d bytes)? " path (length content)))))
+                        (if (y-or-n-p prompt)
+                            (progn
+                              (make-directory (file-name-directory full-path) t)
+                              (with-temp-file full-path
+                                (insert content))
+                              (format "Wrote %d bytes to %s" (length content) path))
+                          (format "Skipped writing to %s" path))))
+          :name "write_file"
+          :description "Write content to a file, creating or overwriting it."
+          :args (list '(:name "path" :type string :description "The path to the file")
+                      '(:name "content" :type string :description "The content to write"))
+          :category "filesystem")
+
+         (gptel-make-tool
+          :function #'gptel-tool--ediff-replace
+          :name "str_replace_in_file"
+          :description "Replace a unique string in a file with another string. Shows diff and asks for confirmation."
+          :args (list '(:name "path" :type string :description "The path to the file")
+                      '(:name "old_string" :type string :description "The exact string to replace (must be unique)")
+                      '(:name "new_string" :type string :description "The replacement string"))
+          :category "filesystem")
+
+         (gptel-make-tool
+          :function (lambda (directory)
+                      (condition-case err
+                          (mapconcat (lambda (f)
+                                       (if (file-directory-p (expand-file-name f directory))
+                                           (concat f "/") f))
+                                     (directory-files (expand-file-name directory) nil "^[^.]")
+                                     "\n")
+                        (error (format "Error: %s" (error-message-string err)))))
+          :name "list_directory"
+          :description "List files and directories. Directories have trailing slash."
+          :args (list '(:name "directory" :type string :description "The directory path"))
+          :category "filesystem")
+
+         (gptel-make-tool
+          :function (lambda (directory pattern)
+                      (shell-command-to-string
+                       (format "find %s -type f -name %s 2>/dev/null | head -50"
+                               (shell-quote-argument (expand-file-name directory))
+                               (shell-quote-argument pattern))))
+          :name "find_files"
+          :description "Find files matching a glob pattern."
+          :args (list '(:name "directory" :type string :description "The root directory")
+                      '(:name "pattern" :type string :description "Glob pattern like '*.py'"))
+          :category "filesystem")
+
+         ;; ============ CODE SEARCH ============
+         (gptel-make-tool
+          :function (lambda (pattern directory)
+                      (let ((cmd (if (executable-find "rg")
+                                     (format "rg -n --no-heading %s %s 2>/dev/null | head -100"
+                                             (shell-quote-argument pattern)
+                                             (shell-quote-argument (expand-file-name directory)))
+                                   (format "grep -rn %s %s 2>/dev/null | head -100"
+                                           (shell-quote-argument pattern)
+                                           (shell-quote-argument (expand-file-name directory))))))
+                        (let ((result (shell-command-to-string cmd)))
+                          (if (string-empty-p result) "No matches found." result))))
+          :name "search_code"
+          :description "Search for a pattern in files using ripgrep or grep."
+          :args (list '(:name "pattern" :type string :description "The search pattern")
+                      '(:name "directory" :type string :description "Directory to search"))
+          :category "code")
+
+         (gptel-make-tool
+          :function (lambda (symbol directory)
+                      (let ((cmd (if (executable-find "rg")
+                                     (format "rg -n --no-heading -w %s %s 2>/dev/null | head -50"
+                                             (shell-quote-argument symbol)
+                                             (shell-quote-argument (expand-file-name directory)))
+                                   (format "grep -rnw %s %s 2>/dev/null | head -50"
+                                           (shell-quote-argument symbol)
+                                           (shell-quote-argument (expand-file-name directory))))))
+                        (let ((result (shell-command-to-string cmd)))
+                          (if (string-empty-p result) "No matches found." result))))
+          :name "find_symbol"
+          :description "Find a symbol (function, variable, class) as a whole word."
+          :args (list '(:name "symbol" :type string :description "The symbol name")
+                      '(:name "directory" :type string :description "Directory to search"))
+          :category "code")
+
+         ;; ============ SHELL ============
+         (gptel-make-tool
+          :function (lambda (command directory)
+                      (let ((default-directory (expand-file-name (or directory default-directory))))
+                        (if (y-or-n-p (format "Run: %s\nin: %s? " command default-directory))
+                            (shell-command-to-string command)
+                          "Command cancelled by user")))
+          :name "run_shell_command"
+          :description "Run a shell command and return output."
+          :args (list '(:name "command" :type string :description "The shell command")
+                      '(:name "directory" :type string :description "Working directory (optional)"))
+          :category "system")
+
+         ;; ============ GIT ============
+         (gptel-make-tool
+          :function (lambda (directory)
+                      (let ((default-directory (expand-file-name directory)))
+                        (shell-command-to-string "git status --short 2>/dev/null || echo 'Not a git repo'")))
+          :name "git_status"
+          :description "Get git status."
+          :args (list '(:name "directory" :type string :description "Path to git repository"))
+          :category "git")
+
+         (gptel-make-tool
+          :function (lambda (directory)
+                      (let ((default-directory (expand-file-name directory)))
+                        (shell-command-to-string "git diff 2>/dev/null")))
+          :name "git_diff"
+          :description "Show unstaged git changes."
+          :args (list '(:name "directory" :type string :description "Path to git repository"))
+          :category "git")
+
+         (gptel-make-tool
+          :function (lambda (directory n)
+                      (let ((default-directory (expand-file-name directory)))
+                        (shell-command-to-string (format "git log --oneline -n %d 2>/dev/null" (or n 10)))))
+          :name "git_log"
+          :description "Show recent git commits."
+          :args (list '(:name "directory" :type string :description "Path to git repository")
+                      '(:name "n" :type integer :description "Number of commits (default 10)"))
+          :category "git")
+
+         ;; ============ EMACS ============
+         (gptel-make-tool
+          :function (lambda (buffer)
+                      (if (buffer-live-p (get-buffer buffer))
+                          (with-current-buffer buffer
+                            (buffer-substring-no-properties (point-min) (point-max)))
+                        (format "Buffer '%s' not found" buffer)))
+          :name "read_buffer"
+          :description "Read contents of an Emacs buffer."
+          :args (list '(:name "buffer" :type string :description "Buffer name"))
+          :category "emacs")
+
+         (gptel-make-tool
+          :function (lambda ()
+                      (format "Buffer: %s\nFile: %s\nMode: %s\nDirectory: %s"
+                              (buffer-name)
+                              (or buffer-file-name "none")
+                              major-mode
+                              default-directory))
+          :name "current_context"
+          :description "Get current buffer/file/directory info."
+          :args nil
+          :category "emacs")
+
+         (gptel-make-tool
+          :function (lambda ()
+                      (mapconcat (lambda (b)
+                                   (format "%s [%s]" (buffer-name b)
+                                           (buffer-local-value 'major-mode b)))
+                                 (seq-filter (lambda (b)
+                                               (not (string-prefix-p " " (buffer-name b))))
+                                             (buffer-list))
+                                 "\n"))
+          :name "list_buffers"
+          :description "List open Emacs buffers."
+          :args nil
+          :category "emacs"))))
