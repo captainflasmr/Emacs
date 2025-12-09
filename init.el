@@ -28,20 +28,20 @@
 ;; -> selected-window-accent-mode
 ;;
 
-;; (use-package selected-window-accent-mode
-;;   :load-path "~/source/repos/selected-window-accent-mode"
-;;   :config (selected-window-accent-mode 1)
-;;   :custom
-;;   (selected-window-accent-fringe-thickness 10)g
-;;   (selected-window-accent-custom-color nil)
-;;   (selected-window-accent-mode-style 'default)
-;;   (selected-window-accent-percentage-darken 20)
-;;   (selected-window-accent-percentage-desaturate 20)
-;;   (selected-window-accent-tab-accent t)
-;;   (selected-window-accent-use-pywal t)
-;;   (selected-window-accent-smart-borders nil))
+(use-package selected-window-accent-mode
+  :load-path "~/source/repos/selected-window-accent-mode"
+  :config (selected-window-accent-mode 1)
+  :custom
+  (selected-window-accent-fringe-thickness 10)
+  (selected-window-accent-custom-color nil)
+  (selected-window-accent-mode-style 'default)
+  (selected-window-accent-percentage-darken 20)
+  (selected-window-accent-percentage-desaturate 20)
+  (selected-window-accent-tab-accent t)
+  (selected-window-accent-use-pywal t)
+  (selected-window-accent-smart-borders nil))
 
-;; (global-set-key (kbd "C-c w") selected-window-accent-map)
+(global-set-key (kbd "C-c w") selected-window-accent-map)
 
 ;;
 ;; -> org-agenda
@@ -336,6 +336,18 @@
 (use-package doom-themes)
 (use-package ef-themes)
 (use-package gruvbox-theme)
+(use-package timu-caribbean-theme)
+
+(use-package timu-spacegrey-theme)
+;; (setq timu-spacegrey-flavour "light")
+;; (setq timu-spacegrey-scale-org-document-title 1.8)
+;; (setq timu-spacegrey-scale-org-document-info 1.4)
+;; (setq timu-spacegrey-scale-org-level-1 1.8)
+;; (setq timu-spacegrey-scale-org-level-2 1.4)
+;; (setq timu-spacegrey-scale-org-level-3 1.2)
+
+(use-package timu-rouge-theme)
+;; (setq timu-rouge-mode-line-border t)
 
 ;;
 ;; -> auto-mode-alist
@@ -365,7 +377,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
- '(custom-enabled-themes '(doom-oceanic-next))
+ '(custom-enabled-themes '(timu-rouge))
  '(package-selected-packages
    '(aidermacs all-the-icons-dired all-the-icons-ibuffer annotate
                bank-buddy chatgpt-shell claude-code consult corfu
@@ -374,7 +386,8 @@
                gruvbox-theme i3wm-config-mode inheritenv ollama-buddy
                org-social org-superstar org-wc ox-hugo package-lint
                pkg-info powerthesaurus ready-player simply-annotate
-               vecdb xkb-mode yaml-mode))
+               timu-caribbean-theme timu-rouge-theme
+               timu-spacegrey-theme vecdb xkb-mode yaml-mode))
  '(tab-bar-mode t)
  '(tool-bar-mode nil)
  '(warning-suppress-log-types '((frameset)))
@@ -1055,3 +1068,4 @@
            :host "ollama-buddy-claude" 
            :user "apikey")))
   
+(my/sync-ui-accent-color "orange")
