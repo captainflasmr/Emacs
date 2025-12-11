@@ -32,7 +32,7 @@
   :load-path "~/source/repos/selected-window-accent-mode"
   :config (selected-window-accent-mode 1)
   :custom
-  (selected-window-accent-fringe-thickness 10)
+  (select1ed-window-accent-fringe-thickness 10)
   (selected-window-accent-custom-color nil)
   (selected-window-accent-mode-style 'default)
   (selected-window-accent-percentage-darken 20)
@@ -338,16 +338,26 @@
 (use-package gruvbox-theme)
 (use-package timu-caribbean-theme)
 
-(use-package timu-spacegrey-theme)
-;; (setq timu-spacegrey-flavour "light")
-;; (setq timu-spacegrey-scale-org-document-title 1.8)
-;; (setq timu-spacegrey-scale-org-document-info 1.4)
-;; (setq timu-spacegrey-scale-org-level-1 1.8)
-;; (setq timu-spacegrey-scale-org-level-2 1.4)
-;; (setq timu-spacegrey-scale-org-level-3 1.2)
+(use-package timu-spacegrey-theme
+  :config
+  ;; (setq timu-spacegrey-flavour "light")
+  (setq timu-spacegrey-scale-org-document-title 1.8)
+  (setq timu-spacegrey-scale-org-document-info 1.4)
+  (setq timu-spacegrey-scale-org-level-1 1.8)
+  (setq timu-spacegrey-scale-org-level-2 1.4)
+  (setq timu-spacegrey-scale-org-level-3 1.2))
 
-(use-package timu-rouge-theme)
-;; (setq timu-rouge-mode-line-border t)
+(use-package timu-rouge-theme
+  :config
+  ;; (setq timu-rouge-org-intense-colors t)
+  (setq timu-rouge-mode-line-border t)
+  (setq timu-rouge-scale-org-document-title 1.8)
+  (setq timu-rouge-scale-org-document-info 1.4)
+  (setq timu-rouge-scale-org-level-1 1.8)
+  (setq timu-rouge-scale-org-level-2 1.4)
+  (setq timu-rouge-scale-org-level-3 1.2))
+
+(load-theme 'timu-spacegrey t)
 
 ;;
 ;; -> auto-mode-alist
@@ -377,17 +387,14 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
- '(custom-enabled-themes '(timu-rouge))
  '(package-selected-packages
-   '(aidermacs all-the-icons-dired all-the-icons-ibuffer annotate
-               bank-buddy chatgpt-shell claude-code consult corfu
-               csv-mode dired-video-thumbnail dirvish doom-themes eat
-               ef-themes ellama flycheck git-timemachine gnuplot gptel
-               gruvbox-theme i3wm-config-mode inheritenv ollama-buddy
-               org-social org-superstar org-wc ox-hugo package-lint
-               pkg-info powerthesaurus ready-player simply-annotate
-               timu-caribbean-theme timu-rouge-theme
-               timu-spacegrey-theme vecdb xkb-mode yaml-mode))
+   '(async claude-code consult corfu csv-mode dape dirvish doom-themes
+           eat eca ef-themes flycheck gptel gruvbox-theme
+           i3wm-config-mode org-social org-superstar ox-hugo
+           package-lint ready-player timu-caribbean-theme
+           timu-rouge-theme timu-spacegrey-theme vterm yaml-mode ztree))
+ '(package-vc-selected-packages
+   '((claude-code :url "https://github.com/stevemolitor/claude-code.el")))
  '(tab-bar-mode t)
  '(tool-bar-mode nil)
  '(warning-suppress-log-types '((frameset)))
@@ -484,6 +491,11 @@
         (auth-source-pick-first-password :host "ollama-buddy-gemini" :user "apikey"))
   (setq ollama-buddy-grok-api-key
         (auth-source-pick-first-password :host "ollama-buddy-grok" :user "apikey"))
+  (setq ollama-buddy-codestral-api-key
+        (auth-source-pick-first-password :host "ollama-buddy-codestral" :user "apikey"))
+
+  (setq ollama-buddy-codestral-api-endpoint "https://api.mistral.ai/v1/chat/completions")
+  ;; (setq ollama-buddy-codestral-default-model "codestral-latest")
   
   (add-to-list 'ollama-buddy-command-definitions
                '(OpenHere
@@ -497,6 +509,7 @@
   (require 'ollama-buddy-claude nil t)
   (require 'ollama-buddy-gemini nil t)
   (require 'ollama-buddy-grok nil t)
+  (require 'ollama-buddy-codestral nil t)
   
   (ollama-buddy-update-menu-entry
    'git-commit :model "a:gpt-4o")
@@ -634,7 +647,6 @@
 (use-package gptel
   :ensure t
   :config
-
   ;; OpenAI API key (used by default backend)
   (setq gptel-api-key (auth-source-pick-first-password
                        :host "ollama-buddy-openai"
@@ -1052,20 +1064,291 @@
           :args nil
           :category "emacs"))))
 
-(use-package aidermacs
-  :config
-  (setq aidermacs-extra-args 
-        '("--model" "anthropic/claude-sonnet-4-5"
-          "--map-tokens" "2048"))
-  
-  (setenv "OPENAI_API_KEY" 
-          (auth-source-pick-first-password
-           :host "ollama-buddy-openai" 
-           :user "apikey"))
-  
-  (setenv "ANTHROPIC_API_KEY" 
-          (auth-source-pick-first-password
-           :host "ollama-buddy-claude" 
-           :user "apikey")))
-  
+;; (use-package aidermacs
+;;   :config
+;;   (setq aidermacs-extra-args 
+;;         '("--model" "anthropic/claude-sonnet-4-5"
+;;           "--map-tokens" "2048"))
+
+;;   (setenv "OPENAI_API_KEY" 
+;;           (auth-source-pick-first-password
+;;            :host "ollama-buddy-openai" 
+;;            :user "apikey"))
+
+;;   (setenv "ANTHROPIC_API_KEY" 
+;;           (auth-source-pick-first-password
+;;            :host "ollama-buddy-claude" 
+;;            :user "apikey")))
+
 (my/sync-ui-accent-color "orange")
+
+(use-package corfu
+  :custom
+  (corfu-auto nil)
+  (corfu-auto-delay 0.1)
+  (corfu-auto-prefix 2)
+  (corfu-cycle t)
+  (corfu-separator ?\s)
+  (corfu-quit-at-boundary nil)
+  (corfu-quit-no-match nil)
+  (corfu-preview-current nil)
+  (corfu-preselect 'first)
+  (corfu-on-exact-match nil)
+  (corfu-scroll-margin 5))
+
+(use-package ztree
+  :config
+  (setq-default ztree-diff-filter-list
+                '(
+                  "build" "\.dll" "\.iso" "\.xmp" "\.cache" "\.gnupg" "\.local"
+                  "\.mozilla" "\.thunderbird" "\.wine" "\.mp3" "\.mp4" "\.arpack"
+                  "\.git" "^Volume$" "^Games$" "^cache$" "^chromium$" "^elpa$" "^nas$"
+                  "^syncthing$" "bin" "obj"
+                  ))
+  ;; (setq-default ztree-diff-additional-options '("-w" "-i"))
+  (setq-default ztree-diff-consider-file-size t)
+  (setq-default ztree-diff-consider-file-permissions nil)
+  (setq-default ztree-diff-show-equal-files nil)
+  
+  ;; Add key binding for 'g' to full rescan
+  (with-eval-after-load 'ztree-diff
+    (define-key ztree-mode-map (kbd "g") 'ztree-diff-full-rescan))
+  
+  ;; Helper function to get directories from dired windows
+  (defun ztree-get-dired-directories ()
+    "Get directories from all visible dired buffers."
+    (let ((directories '()))
+      (dolist (window (window-list))
+        (with-current-buffer (window-buffer window)
+          (when (eq major-mode 'dired-mode)
+            (let ((dir (dired-current-directory)))
+              (when dir
+                (push (expand-file-name dir) directories))))))
+      (reverse (delete-dups directories))))
+  
+  ;; Enhanced ztree-diff with directory DWIM
+  (defun ztree-diff-dwim ()
+    "Enhanced ztree-diff that suggests directories from dired windows."
+    (interactive)
+    (let* ((dired-dirs (ztree-get-dired-directories))
+           (default-dir1 (or (car dired-dirs) default-directory))
+           (default-dir2 (or (cadr dired-dirs) default-directory))
+           (dir1 (read-directory-name 
+                  (format "First directory (default: %s): " 
+                          (file-name-nondirectory (directory-file-name default-dir1)))
+                  default-dir1 default-dir1 t))
+           (dir2 (read-directory-name 
+                  (format "Second directory (default: %s): " 
+                          (file-name-nondirectory (directory-file-name default-dir2)))
+                  default-dir2 default-dir2 t)))
+      (ztree-diff dir1 dir2)))
+  
+  ;; Optionally bind the enhanced function to a key
+  (global-set-key (kbd "C-c z d") 'ztree-diff-dwim))
+
+(with-eval-after-load 'ztree
+
+  (define-key ztree-mode-map (kbd "n") #'ztree-next-line)
+  (define-key ztree-mode-map (kbd "p") #'ztree-previous-line)
+
+  ;; Preserve point in ztree buffers when switching tab history
+  ;; Some window-configuration changes (eg. `tab-bar-history-back') can
+  ;; redisplay buffers and reset their point. Save ztree buffer points
+  ;; before the history change and restore them for visible windows after.
+  (defun my/ztree-save-all-points ()
+    "Save point and window-start for all `ztree-mode' buffers." 
+    (dolist (buf (buffer-list))
+      (with-current-buffer buf
+        (when (derived-mode-p 'ztree-mode)
+          (set (make-local-variable 'my/ztree-saved-point) (point))
+          (let ((win (get-buffer-window buf t)))
+            (when win
+              (set (make-local-variable 'my/ztree-saved-window-start) (window-start win))))))))
+
+  (defun my/ztree-restore-visible-points ()
+    "Restore saved point and window-start for visible `ztree-mode' buffers." 
+    (dolist (win (window-list))
+      (let ((buf (window-buffer win)))
+        (with-current-buffer buf
+          (when (and (derived-mode-p 'ztree-mode)
+                     (boundp 'my/ztree-saved-point))
+            (let ((p (min my/ztree-saved-point (point-max))))
+              (with-selected-window win
+                (goto-char p))
+              (when (and (boundp 'my/ztree-saved-window-start)
+                         (integerp my/ztree-saved-window-start))
+                (set-window-start win (min my/ztree-saved-window-start (point-max))))))))))
+
+  (defun my/ztree--around-tab-history (orig-fun &rest args)
+    "Save/restore ztree points around tab history commands.
+ORIG-FUN is the original command and ARGS are its arguments."
+    (my/ztree-save-all-points)
+    (prog1
+        (apply orig-fun args)
+      (my/ztree-restore-visible-points)))
+
+  (advice-add 'tab-bar-history-back :around #'my/ztree--around-tab-history)
+  (advice-add 'tab-bar-history-forward :around #'my/ztree--around-tab-history))
+
+;; Remap ztree faces to sensible theme faces so ztree matches the current theme.
+(defun my/ztree-remap-faces ()
+  "Map ztree/ztreep faces to theme faces for coherence with current theme."
+  (dolist (fn (face-list))
+    (let ((name (symbol-name fn)))
+      (when (or (string-prefix-p "ztree" name)
+                (string-prefix-p "ztreep" name))
+        (cond
+         ((string-match-p "add\\|added\\|add-face" name)
+          (set-face-attribute fn nil :foreground 'unspecified :background 'unspecified :inherit 'success))
+         ((string-match-p "remove\\|del\\|delete\\|missing\\|removed" name)
+          (set-face-attribute fn nil :foreground 'unspecified :background 'unspecified :inherit 'error))
+         ((string-match-p "diff\\|model-diff\\|equal" name)
+          (set-face-attribute fn nil :foreground 'unspecified :background 'unspecified :inherit 'font-lock-comment-face))
+         ((string-match-p "model\\|name" name)
+          (set-face-attribute fn nil :foreground 'unspecified :background 'unspecified :inherit 'font-lock-function-name-face))
+         (t
+          (set-face-attribute fn nil :foreground 'unspecified :background 'unspecified :inherit 'default)))))))
+
+;; Run remapping after any theme is loaded, and now if a theme is already active.
+(advice-add 'load-theme :after (lambda (&rest _) (my/ztree-remap-faces)))
+(when custom-enabled-themes
+  (my/ztree-remap-faces))
+
+(use-package highlight-indent-guides
+  :load-path "z:/SharedVM/source/highlight-indent-guides-master"
+  :mode "\\.cshtml?\\'"
+  :hook (html-mode . highlight-indent-guides-mode)
+  :config
+  (setq highlight-indent-guides-method 'character)
+  ;; (setq highlight-indent-guides-method 'fill)
+  ;; highlight-indent-guides-character ?\|))
+  ;; (setq highlight-indent-guides-auto-enabled nil)
+  (setq highlight-indent-guides-auto-enabled nil)
+  (set-face-background 'highlight-indent-guides-odd-face "#e8e8e8")
+  (set-face-background 'highlight-indent-guides-even-face "#dedede")
+  (set-face-foreground 'highlight-indent-guides-character-face "#4e535e"))
+
+(defun insert-default-background-color ()
+  "Insert the default background color at point."
+  (interactive)
+  (insert (downcase (face-attribute 'default :background))))
+
+(global-set-key (kbd "C-q i") 'highlight-indent-guides-mode)
+(global-set-key (kbd "M-s b") ' insert-default-background-color)
+
+(use-package web-mode
+  :load-path "z:/SharedVM/source/web-mode-master"
+  :mode "\\.cshtml?\\'"
+  :hook (html-mode . web-mode)
+  :bind (:map web-mode-map ("M-;" . nil)))
+
+(add-to-list 'auto-mode-alist '("\\.cshtml\\'" . html-mode))
+
+(setq eglot-ignored-server-capabilities
+      '(
+        ;; :hoverProvider                    ; Documentation on hover
+        ;; :completionProvider               ; Code completion
+        ;; :signatureHelpProvider            ; Function signature help
+        ;; :definitionProvider               ; Go to definition
+        ;; :typeDefinitionProvider           ; Go to type definition
+        ;; :implementationProvider           ; Go to implementation
+        ;; :declarationProvider              ; Go to declaration
+        ;; :referencesProvider               ; Find references
+        ;; :documentHighlightProvider        ; Highlight symbols automatically
+        ;; :documentSymbolProvider           ; List symbols in buffer
+        ;; :workspaceSymbolProvider          ; List symbols in workspace
+        ;; :codeActionProvider               ; Execute code actions
+        ;; :codeLensProvider                 ; Code lens
+        ;; :documentFormattingProvider       ; Format buffer
+        ;; :documentRangeFormattingProvider  ; Format portion of buffer
+        ;; :documentOnTypeFormattingProvider ; On-type formatting
+        ;; :renameProvider                   ; Rename symbol
+        ;; :documentLinkProvider             ; Highlight links in document
+        ;; :colorProvider                    ; Decorate color references
+        ;; :foldingRangeProvider             ; Fold regions of buffer
+        ;; :executeCommandProvider           ; Execute custom commands
+        ;; :inlayHintProvider                ; Inlay hints
+        ))
+
+(use-package ibuffer
+  :bind (:map ibuffer-mode-map ("M-o" . nil)))
+
+(setq recentf-max-menu-items 40)
+(setq recentf-max-saved-items 40)
+
+(setq max-mini-window-height 6)
+
+(setq recentf-max-menu-items 40)
+(setq recentf-max-saved-items 40)
+
+(setq max-mini-window-height 12)
+(use-package dape
+  :init
+  ;; Set key prefix BEFORE loading dape
+  (setq dape-key-prefix (kbd "C-c d"))
+  :config
+  ;; Define common configuration
+  (defvar mimesis-netcoredbg-path "d:/source/emacs-30.1/bin/netcoredbg/netcoredbg.exe"
+    "Path to netcoredbg executable.")
+  (defvar mimesis-netcoredbg-log "d:/source/emacs-30.1/bin/netcoredbg/netcoredbg.log"
+    "Path to netcoredbg log file.")
+  (defvar mimesis-project-root "d:/source/MIMESIS-OVC"
+    "Root directory of MIMESIS-OVC project.")
+  (defvar mimesis-build-config "Debug"
+    "Build configuration (Debug or Release).")
+  (defvar mimesis-target-arch "x64"
+    "Target architecture (x64, x86, or AnyCPU).")
+  (defvar mimesis-vsdbg-path "C:/Users/vm.j.dyer/.vscode/extensions/ms-dotnettools.csharp-2.80.16-win32-x64/.debugger/x86_64/vsdbg.exe"
+    "Path to vsdbg from VSCode installation.")
+
+  ;; Helper function to create component configs
+  (defun mimesis-dape-config (component-name dll-name &optional stop-at-entry)
+    "Create a dape configuration for a component.
+COMPONENT-NAME is the component directory name
+DLL-NAME is the DLL filename without extension.
+STOP-AT-ENTRY if non-nil, stops at program entry point."
+    (let* ((component-dir (format "%s/%s" mimesis-project-root component-name))
+           (bin-path (format "%s/bin/%s/%s/net9.0"
+                             component-dir
+                             mimesis-target-arch
+                             mimesis-build-config))
+           (dll-path (format "%s/%s.dll" bin-path dll-name))
+           (config-name (intern (format "netcoredbg-launch-%s" 
+                                        (downcase component-name)))))
+      `(,config-name
+        modes (csharp-mode csharp-ts-mode)
+        command ,mimesis-netcoredbg-path
+        command-args (,(format "--interpreter=vscode")
+                      ,(format "--engineLogging=%s" mimesis-netcoredbg-log))
+        normalize-path-separator 'windows
+        :type "coreclr"
+        :request "launch"
+        :program ,dll-path
+        :cwd ,component-dir
+        :console "externalTerminal"
+        :internalConsoleOptions "neverOpen"
+        :suppressJITOptimizations t
+        :requireExactSource nil
+        :justMyCode t
+        :stopAtEntry ,(if stop-at-entry t :json-false))))
+
+  ;; Register all component configurations
+  (dolist (config (list
+                   (mimesis-dape-config "IGC" "MIMESIS.IGC" t)
+                   (mimesis-dape-config "MSS" "MIMESIS.MSS" t)
+                   (mimesis-dape-config "IGM" "MIMESIS.IGM" t)
+                   (mimesis-dape-config "VDS" "VDS.MSS" t)
+                   (mimesis-dape-config "DM" "DM.MSS" t)
+                   (mimesis-dape-config "Demo" "Demo.MSS" t)
+                   (mimesis-dape-config "Test_001" "Test" t)))
+    (add-to-list 'dape-configs config))
+  
+  ;; Set buffer arrangement and other options
+  (setq dape-buffer-window-arrangement 'gud)
+  (setq dape-debug t)
+  (setq dape-repl-echo-shell-output t))
+
+(use-package eca
+  :config
+  (setq eca-chat-diff-tool 'ediff)
+  (setq eca-completion-idle-delay 0.1))
