@@ -494,9 +494,6 @@
   (setq ollama-buddy-codestral-api-key
         (auth-source-pick-first-password :host "ollama-buddy-codestral" :user "apikey"))
 
-  (setq ollama-buddy-codestral-api-endpoint "https://api.mistral.ai/v1/chat/completions")
-  ;; (setq ollama-buddy-codestral-default-model "codestral-latest")
-  
   (add-to-list 'ollama-buddy-command-definitions
                '(OpenHere
                  :key ?O
