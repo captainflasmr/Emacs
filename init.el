@@ -29,7 +29,7 @@
 ;;
 
 (use-package selected-window-accent-mode
-  :load-path "~/source/repos/selected-window-accent-mode"
+  ;; :load-path "~/source/repos/selected-window-accent-mode"
   :config (selected-window-accent-mode 1)
   :custom
   (select1ed-window-accent-fringe-thickness 10)
@@ -50,7 +50,7 @@
                          "~/DCIM/content/aaa--calendar.org"
                          "~/DCIM/content/aab--repeat.org"
                          "~/DCIM/content/aaa--todo.org"
-                         "~/DCIM/content/aab--move.org"
+                         "~/evalDCIM/content/aab--move.org"
                          "~/DCIM/content/aab--sell.org"
                          "~/DCIM/content/aac--emacs-todo.org"
                          "~/DCIM/content/aaa--calendar.org"
@@ -70,25 +70,9 @@
 
 (setq org-capture-templates
       '(
-        ("t" "Tagged" plain
-         (file+function
-          "~/DCIM/content/tags--all.org"
-          my-capture-top-level)
-         "* DONE %^{title} tagged :%\\1:
-:PROPERTIES:
-:EXPORT_FILE_NAME: index
-:EXPORT_HUGO_SECTION: tagged/%\\1
-:EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
-:EXPORT_HUGO_TYPE: gallery
-:EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /tagged/%\\1.jpg
-:END:
-%\\1 tagged
-%?
-" :prepend t :jump-to-captured t)
-
         ("b" "Blog" plain
          (file+function
-          "~/DCIM/content/blog--all.org"
+          "~/publish/hugo-unified/blog.org"
           my-capture-top-level)
          "* TODO %^{title} :%(format-time-string \"%Y\"):
 :PROPERTIES:
@@ -100,16 +84,9 @@
 %?
 " :prepend t :jump-to-captured t)
 
-        ("g" "Gallery" plain
-         (file+function
-          "~/DCIM/content/blog--all.org"
-          my-capture-top-level)
-         (function my/org-hugo-new-subtree-post-capture-template)
-         :prepend t :jump-to-captured t)
-
         ("e" "Emacs" plain
          (file+function
-          "~/DCIM/content/emacs--all.org"
+          "~/publish//hugo-unified/emacs.org"
           my-capture-top-level)
          "* TODO %^{title} :emacs:%(format-time-string \"%Y\"):
 :PROPERTIES:
@@ -123,7 +100,7 @@
 
         ("l" "Linux" plain
          (file+function
-          "~/DCIM/content/linux--all.org"
+          "/publish/hugo-unified/linux.org"
           my-capture-top-level)
          "* TODO %^{title} :%(format-time-string \"%Y\"):
 :PROPERTIES:
@@ -139,7 +116,7 @@
 
         ("av" "Art Videos" plain
          (file+function
-          "~/DCIM/content/art--all.org"
+          "~/publish/hugo-unified/art.org"
           my-capture-top-level)
          "* TODO %^{title} :videos:painter:krita:artrage:%(format-time-string \"%Y\"):
 :PROPERTIES:
@@ -157,7 +134,7 @@
 
         ("aa" "Art" plain
          (file+function
-          "~/DCIM/content/art--all.org"
+          "~/publish/hugo-unified/art.org"
           my-capture-top-level)
          "* TODO %^{title} :painter:krita:artrage:%(format-time-string \"%Y\"):
 :PROPERTIES:
@@ -176,13 +153,13 @@
 
 (defun my-copy-marked-images-to-blog (dir thumb)
   "Copy the marked files in dired buffer to a new directory named TITLE."
-  (let* ((target-dir (concat "~/DCIM/content/" dir))
+  (let* ((target-dir (concat "~/publish/hugo-unified/static/" dir))
          (copied-files '())) ;; List to accumulate copied files.
     (message "THUMB : %s" thumb)
     ;; Create target directory if it doesn't exist.
     (make-directory target-dir t)
     ;; Copy the thumbnail image.
-    (copy-file thumb (concat "~/DCIM/content/" dir ".jpg"))
+    (copy-file thumb (concat "~/publish/hugo-unified/static/" dir ".jpg"))
     ;; Process each marked file.
     (dolist (file my/org-dired-marked-files)
       (let ((target-file (expand-file-name (file-name-nondirectory file) target-dir)))
@@ -244,7 +221,7 @@
 (add-to-list 'org-capture-templates
              '("g" "Gallery" plain
                (file+function
-                "~/DCIM/content/blog--all.org"
+                "~/publish/hugo-unified/blog.org"
                 my-capture-top-level)
                (function my/org-hugo-new-subtree-post-capture-template)
                :prepend t :jump-to-captured t))
@@ -274,10 +251,9 @@
 (use-package yaml-mode)
 
 (use-package ox-hugo
-  :defer t
+  :demand t
   :config
-  (setq org-hugo-front-matter-format "yaml"
-        org-hugo-base-dir "~/DCIM"))
+  (setq org-hugo-front-matter-format "yaml"))
 
 (use-package ready-player
   :init
@@ -304,7 +280,7 @@
               (find-file (concat user-emacs-directory "README.org"))))
 (define-key my-jump-keymap (kbd "a")
             (lambda () (interactive)
-              (find-file "~/DCIM/content/emacs--all.org")))
+              (find-file "~/publish/hugo-unified/emacs.org")))
 
 ;;
 ;; -> visuals
@@ -387,14 +363,19 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
+ '(custom-enabled-themes '(misterioso))
  '(package-selected-packages
-   '(async claude-code consult corfu csv-mode dape dirvish doom-themes
-           eat eca ef-themes flycheck gptel gruvbox-theme
-           i3wm-config-mode org-social org-superstar ox-hugo
-           package-lint ready-player timu-caribbean-theme
-           timu-rouge-theme timu-spacegrey-theme vterm yaml-mode ztree))
+   '(async claude-code claude-code-ide consult corfu csv-mode dape
+           dired-video-thumbnail dirvish doom-themes eat eca ef-themes
+           flycheck gptel gruvbox-theme highlight-indent-guides
+           i3wm-config-mode indent-bars org-social org-superstar
+           ox-hugo package-lint ready-player
+           selected-window-accent-mode timu-caribbean-theme
+           timu-rouge-theme timu-spacegrey-theme vecdb vterm yaml-mode
+           ztree))
  '(package-vc-selected-packages
-   '((claude-code :url "https://github.com/stevemolitor/claude-code.el")))
+   '((claude-code-ide :url
+                      "https://github.com/manzaltu/claude-code-ide.el")))
  '(tab-bar-mode t)
  '(tool-bar-mode nil)
  '(warning-suppress-log-types '((frameset)))
@@ -404,43 +385,6 @@
 ;; -> emacs-30.1
 ;;
 (setq tab-bar-auto-width-max '((120) 20))
-
-;;
-;; -> development
-;;
-(defun export-menu ()
-  "Menu for Export/Publishing commands."
-  (interactive)
-  (let ((key (read-key
-              (propertize
-               "--- Export Commands [q] Quit: ---
-    [h] Export to Hugo (with rsync)
-    [w] Export to HTML (with table highlighting)
-    [d] Export to DOCX (via ODT)"
-               'face 'minibuffer-prompt))))
-    (pcase key
-      (?h (save-excursion
-            (without-gc #'org-hugo-export-wim-to-md)
-            (mapc 'shell-command
-                  '("web rsync emacs" "web rsync art"
-                    "web rsync dyerdwelling"))))
-      (?w (progn
-            (org-html-export-to-html)
-            (my/html-promote-headers)
-            (my/html-org-table-highlight)
-            (my/html-flush-divs)))
-      (?d (progn
-            (org-odt-export-to-odt)
-            (async-shell-command
-             (concat "libreoffice --headless --convert-to docx "
-                     (file-name-with-extension
-                      (file-name-nondirectory (buffer-file-name))
-                      "odt")) "*create-docs*")))
-      ;; Quit
-      (?q (message "Quit Export menu."))
-      (?\C-g (message "Quit Export menu."))
-      ;; Default Invalid Key
-      (_ (message "Invalid key: %c" key)))))
 
 ;; Bind the menu to C-c e
 (global-set-key (kbd "C-c e") 'export-menu)
@@ -459,7 +403,7 @@
   (bank-buddy-core-monthly-spending-bar-width 160)
   (bank-buddy-core-monthly-spending-max-bar-categories 20)
   (bank-buddy-core-cat-list-defines
-   '(("katherine\\|james\\|kate" "prs") ("carpet" "hse") ("railw\\|railway\\|train" "trn") ("paypal" "pay") ("electric\\|energy\\|water" "utl") ("racing" "bet") ("pension" "pen") ("savings\\|saver" "sav") ("uber" "txi") ("magazine\\|news" "rdg") ("claude\\|reddit\\|mobile\\|backmarket\\|openai\\|web" "web") ("notemachine\\|withdrawal" "atm") ("finance" "fin") ("youtube\\|netflix" "str") ("card" "crd") ("top-up\\|phone" "phn") ("amaz\\|amz" "amz") ("pets\\|pet" "pet") ("dentist" "dnt") ("residential\\|rent\\|mortgage" "hse") ("deliveroo\\|just.*eat" "fod") ("ebay\\|apple\\|itunes" "shp") ("law" "law") ("anyvan" "hmv") ("CHANNEL-4" "str") ("GOOGLE-\\*Google-Play" "web") ("NOW-" "str") ("SALISBURY-CAFE-LOCAL" "fod") ("SAVE-THE-PENNIES" "sav") ("SOUTHAMPTON-GENERAL" "fod") ("TO-Evie" "sav") ("WH-Smith-Princess-Anne" "fod") ("SP-WAXMELTSBYNIC" "shp") ("WWW\\.SSE" "utl") ("THORTFUL" "shp") ("SCOTTISH-WIDOWS" "pen") ("WM-MORRISONS" "fod") ("H3G-REFERENCE" "phn") ("DOMINO" "fod") ("Prime-Video" "str") ("PRIVILEGE" "utl") ("PCC-COLLECTION" "utl") ("MORRISON" "fod") ("BT-GROUP" "web") ("ANTHROPIC" "web") ("INSURE" "utl") ("GOOGLE-Google-Play" "web") ("GILLETT-COPNOR-RD" "fod") ("TV-LICENCE" "utl") ("SAINSBURYS" "fod") ("TESCO" "shp") ("Vinted" "shp") ("PUMPKIN-CAFE" "fod") ("SP-CHAMPO" "shp") ("THE-RANGE" "shp") ("UNIVERSITY-HOSPITA" "fod") ("VIRGIN-MEDIA" "utl") ("GOLDBOUTIQUE" "shp") ("Surveyors" "law") ("Surveyors" "hse") ("INTERFLORA" "shp") ("INSURANCE" "utl") ("LUCINDA-ELLERY" "shp") ("MARKS&SPENCER" "fod") ("SW-PLC-STAKEHOLDE" "pen") ("JUST-MOVE" "hse") ("B&M" "shp") ("PASSPORT-OFFICE" "hse") ("PHARMACY" "shp") ("ONLINE-REDIRECTIONS" "hse") ("SERENATA-FLOWERS" "shp") ("SNAPPER-DESIGN" "shp") ("LOVEFORSLEEP" "shp") ("TJ-WASTE" "hse") ("M-&-S" "fod") ("MARDIN" "fod") ("MOVEWITHUS" "hse") ("STARBUCKS" "fod") ("CD-2515" "shp") ("DEBIT-INTEREST-ARRANGED" "atm") ("ME-GROUP-INTERNATIONAL" "shp") ("COSTA" "fod") ("NYX" "shp") ("NATWEST-BANK-REFERENCE" "hse") ("Streamline" "shp") ("BETHANIE-YEONG" "hse") ("Roofoods" "fod") ("Wayfair" "shp") ("WHSmith" "shp") ("The-Hut" "shp") ("Sky-Betting" "bet") ("NextLtd" "shp") ("NEW-LOOK-RETAILERS" "shp") ("Marks-and-Spencer" "fod") ("DisneyPlus" "str") ("DAZN-LIMITED" "str") ("Astrid-&-Miyu" "shp") ("ASOS\\.COM-Ltd" "shp") ("Cartridge-Tech-Ltd" "shp") ("Dplay-Entertainment-Ltd" "str") ("DeviantArt" "web") ("Dunelm" "shp") ("Asda-Stores" "shp") ("Argos" "shp") ("IKEA-Limited" "shp") ("Lisa-Angel-Limited" "shp") ("Matalan-Retail-Ltd" "shp") ("Royal-Mail-Group-Limited" "utl") ("SCHOTT-PACKAGING" "hse") ("Samsung-Electronics" "shp") ("Boohoo\\.com" "shp") ("Bizzy-Balloons-LLP" "shp") ("BRANDS-IN-BLOOM-LTD" "shp") ("Highland-and-Honey" "shp") ("Homebaked-Limited" "shp") ("Little-Crafts-London-LTD" "shp") ("Lush-Retail-Ltd" "shp") ("Mamas-&-Papas" "shp") ("Mi-Baby" "shp") ("NEOM-Ltd" "shp") ("Oliver-Bonas-Limited" "shp") ("Pandora-Jewellery-UK-Ltd" "shp") ("Papier" "shp") ("Peggy's-Difference" "shp") ("PlanetArt-Ltd" "shp") ("Pretty-Pastels" "shp") ("Royal-Mail-Group-Ltd" "hse") ("SAINSBURY" "fod") ("Sofology" "shp") ("Sostrene-Grenes" "shp") ("Their-Nibs" "shp") ("melodymaison" "shp") ("AO-Retail-Ltd" "shp") ("Abbott-Lyon" "shp") ("Bellaboo" "shp") ("Devon-wick-Candle-Co\\.-Ltd" "shp") ("Hugo-&-Me-Ltd" "shp") ("Lick-Home-Ltd" "shp") ("Mabel-&-Fox" "shp") ("THE-KID-COLLECTIVE-LTD" "shp") ("TruffleShuffle-Retail-Ltd" "shp") ("UM-Fashion" "shp") ("littledaisydream" "shp") ("Coconut-Lane" "shp") ("Eleanor-Bowmer" "shp") ("Emma-Matratzen" "shp") ("SharkNinja" "shp") ("lookfantastic" "shp") ("cleverbridge" "web") ("Select-Specs" "shp") ("Green-Sheep-Group-Limited" "shp") ("FastSpring-Limited" "shp") ("Hair-Solutions" "har") ("URBN-UK-LIMITED" "shp") ("Semantical-Ltd" "shp") ("United-Arts" "shp") (".*" "o"))))
+   '(("katherine\\|james\\|kate" "prs") ("carpet" "hse") ("railw\\|railway\\|train" "trn") ("paypal" "pay") ("electric\\|energy\\|water" "utl") ("racing" "bet") ("pension" "pen") ("savings\\|saver" "sav") ("uber" "txi") ("magazine\\|news" "rdg") ("claude\\|reddit\\|mobile\\|backmarket\\|openai\\|web" "web") ("notemachine\\|withdrawal" "atm") ("finance" "fin") ("youtube\\|netflix" "str") ("card" "crd") ("top-up\\|phone" "phn") ("amaz\\|amz" "amz") ("pets\\|pet" "pet") ("dentist" "dnt") ("residential\\|rent\\|mortgage" "hse") ("lidl" "fod") ("co\\-op" "fod") ("deliveroo\\|just.*eat" "fod") ("PIPINGROCK" "shp") ("ebay\\|apple\\|itunes" "shp") ("law" "law") ("anyvan" "hmv") ("CHANNEL-4" "str") ("GOOGLE-\\*Google-Play" "web") ("NOW-" "str") ("SALISBURY-CAFE-LOCAL" "fod") ("SAVE-THE-PENNIES" "sav") ("SOUTHAMPTON-GENERAL" "fod") ("TO-Evie" "sav") ("WH-Smith-Princess-Anne" "fod") ("SP-WAXMELTSBYNIC" "shp") ("THORTFUL" "shp") ("SCOTTISH-WIDOWS" "pen") ("WM-MORRISONS" "fod") ("H3G-REFERENCE" "phn") ("DOMINO" "fod") ("Prime-Video" "str") ("PRIVILEGE" "utl") ("PCC-COLLECTION" "utl") ("MORRISON" "fod") ("BT-GROUP" "web") ("ANTHROPIC" "web") ("INSURE" "utl")  ("WWW\\.SSE" "utl") ("GAS" "utl") ("GOOGLE-Google-Play" "web") ("GILLETT-COPNOR-RD" "fod") ("TV-LICENCE" "utl") ("SAINSBURYS" "fod") ("OCADO" "fod") ("TESCO" "fod") ("Vinted" "shp") ("PUMPKIN-CAFE" "fod") ("SP-CHAMPO" "shp") ("THE-RANGE" "shp") ("UNIVERSITY-HOSPITA" "fod") ("VIRGIN-MEDIA" "utl") ("GOLDBOUTIQUE" "shp") ("Surveyors" "law") ("Surveyors" "hse") ("INTERFLORA" "shp") ("INSURANCE" "utl") ("LUCINDA-ELLERY" "shp") ("MARKS&SPENCER" "fod") ("SW-PLC-STAKEHOLDE" "pen") ("JUST-MOVE" "hse") ("B&M" "shp") ("PASSPORT-OFFICE" "hse") ("PHARMACY" "shp") ("ONLINE-REDIRECTIONS" "hse") ("SERENATA-FLOWERS" "shp") ("SNAPPER-DESIGN" "shp") ("LOVEFORSLEEP" "shp") ("TJ-WASTE" "hse") ("M-&-S" "fod") ("MARDIN" "fod") ("MOVEWITHUS" "hse") ("STARBUCKS" "fod") ("CD-2515" "shp") ("DEBIT-INTEREST-ARRANGED" "atm") ("ME-GROUP-INTERNATIONAL" "shp") ("COSTA" "fod") ("NYX" "shp") ("NATWEST-BANK-REFERENCE" "hse") ("Streamline" "shp") ("BETHANIE-YEONG" "hse") ("Roofoods" "fod") ("Wayfair" "shp") ("WHSmith" "shp") ("The-Hut" "shp") ("Sky-Betting" "bet") ("NextLtd" "shp") ("NEW-LOOK-RETAILERS" "shp") ("Marks-and-Spencer" "fod") ("DisneyPlus" "str") ("DAZN-LIMITED" "str") ("Astrid-&-Miyu" "shp") ("ASOS\\.COM-Ltd" "shp") ("Cartridge-Tech-Ltd" "shp") ("Dplay-Entertainment-Ltd" "str") ("DeviantArt" "web") ("Dunelm" "shp") ("Asda-Stores" "shp") ("Argos" "shp") ("IKEA-Limited" "shp") ("Lisa-Angel-Limited" "shp") ("Matalan-Retail-Ltd" "shp") ("Royal-Mail-Group-Limited" "utl") ("SCHOTT-PACKAGING" "hse") ("Samsung-Electronics" "shp") ("Boohoo\\.com" "shp") ("Bizzy-Balloons-LLP" "shp") ("BRANDS-IN-BLOOM-LTD" "shp") ("Highland-and-Honey" "shp") ("Homebaked-Limited" "shp") ("Little-Crafts-London-LTD" "shp") ("Lush-Retail-Ltd" "shp") ("Mamas-&-Papas" "shp") ("Mi-Baby" "shp") ("NEOM-Ltd" "shp") ("Oliver-Bonas-Limited" "shp") ("Pandora-Jewellery-UK-Ltd" "shp") ("Papier" "shp") ("Peggy's-Difference" "shp") ("PlanetArt-Ltd" "shp") ("Pretty-Pastels" "shp") ("Royal-Mail-Group-Ltd" "hse") ("SAINSBURY" "fod") ("Sofology" "shp") ("Sostrene-Grenes" "shp") ("Their-Nibs" "shp") ("melodymaison" "shp") ("AO-Retail-Ltd" "shp") ("Abbott-Lyon" "shp") ("Bellaboo" "shp") ("Devon-wick-Candle-Co\\.-Ltd" "shp") ("Hugo-&-Me-Ltd" "shp") ("Lick-Home-Ltd" "shp") ("Mabel-&-Fox" "shp") ("THE-KID-COLLECTIVE-LTD" "shp") ("TruffleShuffle-Retail-Ltd" "shp") ("UM-Fashion" "shp") ("littledaisydream" "shp") ("Coconut-Lane" "shp") ("Eleanor-Bowmer" "shp") ("Emma-Matratzen" "shp") ("SharkNinja" "shp") ("lookfantastic" "shp") ("cleverbridge" "web") ("Select-Specs" "shp") ("Green-Sheep-Group-Limited" "shp") ("FastSpring-Limited" "shp") ("Hair-Solutions" "har") ("URBN-UK-LIMITED" "shp") ("Semantical-Ltd" "shp") ("United-Arts" "shp") (".*" "o"))))
 
 (with-eval-after-load 'bank-buddy
   (add-hook 'org-mode-hook 'bank-buddy-cat-maybe-enable))
@@ -472,6 +416,7 @@
 (use-package ollama-buddy
   ;; :load-path "~/source/repos/ollama-buddy/ollama-buddy-mini"
   :load-path "~/source/repos/ollama-buddy"
+  :demand t
   :bind
   ("C-c o" . ollama-buddy-menu)
   ("C-c O" . ollama-buddy-transient-menu-wrapper)
@@ -517,7 +462,8 @@
   (ollama-buddy-update-menu-entry
    'synonym :model "o:llama3.2:3b")
   (ollama-buddy-update-menu-entry
-   'proofread :model "a:gpt-4.1"))
+   'proofread :model "a:gpt-4.1")
+  )
 
 (eval-after-load 'dired
   '(progn
@@ -560,6 +506,7 @@
  '(completions-common-part ((t (:foreground "#87ceeb"))))
  '(completions-first-difference ((t (:foreground "#ffb6c1"))))
  '(cursor ((t (:background "coral"))))
+ '(eca-chat-context-cursor-face ((t (:foreground "gainsboro" :underline t :height 1.0))) t)
  '(ediff-current-diff-A ((t (:extend t :background "#b5daeb" :foreground "#000000"))))
  '(ediff-even-diff-A ((t (:background "#bafbba" :foreground "#000000" :extend t))))
  '(ediff-fine-diff-A ((t (:background "#f4bd92" :foreground "#000000" :extend t))))
@@ -625,19 +572,19 @@
 (use-package vterm :ensure t)
 
 ;; install claude-code.el
-(use-package claude-code :ensure t
-  :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
-  :config
-  ;; optional IDE integration with Monet
-  (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
-  (monet-mode 1)
+;; (use-package claude-code :ensure t
+;;   :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
+;;   :config
+;;   ;; optional IDE integration with Monet
+;;   (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
+;;   (monet-mode 1)
 
-  (claude-code-mode)
-  :bind-keymap ("C-c C" . claude-code-command-map)
+;;   (claude-code-mode)
+;;   :bind-keymap ("C-c C" . claude-code-command-map)
 
-  ;; Optionally define a repeat map so that "M" will cycle thru Claude auto-accept/plan/confirm modes after invoking claude-code-cycle-mode / C-c M.
-  :bind
-  (:repeat-map my-claude-code-map ("M" . claude-code-cycle-mode)))
+;;   ;; Optionally define a repeat map so that "M" will cycle thru Claude auto-accept/plan/confirm modes after invoking claude-code-cycle-mode / C-c M.
+;;   :bind
+;;   (:repeat-map my-claude-code-map ("M" . claude-code-cycle-mode)))
 
 (global-set-key (kbd "C-c C") 'claude-code-transient)
 
@@ -1212,7 +1159,7 @@ ORIG-FUN is the original command and ARGS are its arguments."
   (my/ztree-remap-faces))
 
 (use-package highlight-indent-guides
-  :load-path "z:/SharedVM/source/highlight-indent-guides-master"
+  ;; :load-path "z:/SharedVM/source/highlight-indent-guides-master"
   :mode "\\.cshtml?\\'"
   :hook (html-mode . highlight-indent-guides-mode)
   :config
@@ -1275,10 +1222,6 @@ ORIG-FUN is the original command and ARGS are its arguments."
 
 (setq max-mini-window-height 6)
 
-(setq recentf-max-menu-items 40)
-(setq recentf-max-saved-items 40)
-
-(setq max-mini-window-height 12)
 (use-package dape
   :init
   ;; Set key prefix BEFORE loading dape
@@ -1346,6 +1289,67 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
   (setq dape-repl-echo-shell-output t))
 
 (use-package eca
+  :bind
+  ("C-c E" . eca-transient-menu)
+  :bind (:map eca-chat-mode-map
+              ("M-p" . eca-chat--key-pressed-previous-prompt-history)
+              ("M-n" . eca-chat--key-pressed-next-prompt-history))
+  :custom-face
+  (eca-chat-context-cursor-face ((t (:foreground "gainsboro" :underline nil :height 1.0))))
   :config
+  (setq eca-chat-use-side-window nil)
+  (setq eca-chat-auto-add-cursor nil)
+  (setq eca-chat-window-width 0.5)
+  (setq eca-chat-expand-pending-approval-tools nil)
   (setq eca-chat-diff-tool 'ediff)
-  (setq eca-completion-idle-delay 0.1))
+  (setq eca-completion-idle-delay 0)
+  (eca-completion-mode 1))
+
+(setq ollama-buddy-concat-exclude-directories
+      '("node_modules" ".git" "dist" "build" "ollama-buddy-presets" "ollama-buddy-user-prompts" "tests" "docs" "img"))
+
+(use-package dired-image-thumbnail
+  :load-path "/home/jdyer/source/repos/dired-image-thumbnail"
+  :demand t
+  :bind
+  (:map dired-mode-map
+        ("C-t d" . (lambda() (interactive)
+                     (image-dired default-directory)
+                     (dired-image-thumbnail-refresh)))
+        ("C-t m" . dired-image-thumbnail)  ; m for modern/enhanced
+        ("C-t s" . dired-image-thumbnail-insert-image-subdirs)  ; s for smart subdirs
+        ("C-t z" . dired-image-thumbnail-insert-subdir-recursive)  ; z for all (last letter)
+        ("C-t k" . dired-image-thumbnail-kill-all-subdirs)))  ; k for kill
+
+;; Install the pg dependency first
+(use-package pg
+  :ensure t)
+
+;; Then install vecdb
+(use-package vecdb
+  :ensure nil
+  :vc (:url "https://github.com/ahyatt/vecdb"
+            :rev :newest))
+
+;; (read-multiple-choice
+;;  "Continue connecting?"
+;;  '((?a "always" "Accept certificate for this and future sessions.")
+;;    (?s "session only" "Accept certificate this session only.")
+;;    (?n "no" "Refuse to use certificate, close connection.")))
+
+;; (defun sentry (sentry)
+;;   "Sets minibuffer completion style."
+;;   (interactive
+;;    (let ((choices '((?o "(orderless)")
+;;                     (?b "(basic substring)")
+;;                     (?p "(partial-completion)")
+;;                     (?f "(flex)")
+;;                     (?i "(initials)"))))
+
+;;      (alist-get (car (read-multiple-choice "Sentry: " choices))
+;;                 choices)))
+;;   (message "`completion-style' set to %s"
+;;            (setq completion-styles (read sentry))))
+
+(use-package indent-bars)
+;; :hook ((python-mode yaml-mode) . indent-bars-mode)) 
