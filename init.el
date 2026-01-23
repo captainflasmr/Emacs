@@ -86,7 +86,7 @@
 
         ("e" "Emacs" plain
          (file+function
-          "~/publish//hugo-unified/emacs.org"
+          "~/publish//hugo-unified/README.org"
           my-capture-top-level)
          "* TODO %^{title} :emacs:%(format-time-string \"%Y\"):
 :PROPERTIES:
@@ -151,49 +151,11 @@
 %?
 " :prepend t :jump-to-captured t)))
 
-(defun my-copy-marked-images-to-blog (dir thumb)
-  "Copy the marked files in dired buffer to a new directory named TITLE."
-  (let* ((target-dir (concat "~/publish/hugo-unified/static/" dir))
-         (copied-files '())) ;; List to accumulate copied files.
-    (message "THUMB : %s" thumb)
-    ;; Create target directory if it doesn't exist.
-    (make-directory target-dir t)
-    ;; Copy the thumbnail image.
-    (copy-file thumb (concat "~/publish/hugo-unified/static/" dir ".jpg"))
-    ;; Process each marked file.
-    (dolist (file my/org-dired-marked-files)
-      (let ((target-file (expand-file-name (file-name-nondirectory file) target-dir)))
-        (copy-file file target-file)
-        (push target-file copied-files)
-        (message "Copied: %s to %s" file target-file)))
-    ;; After copying, run PictureCrush on all copied files in one shell command.
-    (when copied-files
-      (let ((command (concat "PictureCrush " (mapconcat 'identity copied-files " "))))
-        (async-shell-command command "*convert*")
-        (message "Executed PictureCrush on: %s" (string-join copied-files ", "))))))
-
 (defvar my/org-dired-marked-files nil
   "Stores the current dired marked files.")
 
-(defun my/capture-finalize ()
-  (let ((key (plist-get org-capture-plist :key))
-        (desc (plist-get org-capture-plist :description))
-        (template (plist-get org-capture-plist :template))
-        (thumb (nth (random (length my/org-dired-marked-files)) my/org-dired-marked-files))
-        (export-hugo-section nil))
-    (when (string-match ":EXPORT_HUGO_SECTION: \\(.*\\)$" template)
-      (setq export-hugo-section (match-string 1 template)))
-    (prin1 my/org-dired-marked-files)
-    (message "Extracted %s : %s" export-hugo-section thumb)
-    (if org-note-abort
-        (progn
-          (message "Template with key %s and description “%s” aborted" key desc))
-      (progn
-        (message "Template with key %s and description “%s” run successfully" key desc)
-        (when (string= desc "Gallery")
-          (my-copy-marked-images-to-blog export-hugo-section thumb))))))
-
-(add-hook 'org-capture-after-finalize-hook 'my/capture-finalize)
+(defvar my/gallery-hugo-section nil
+  "Stores the HUGO section for the current gallery capture.")
 
 (defun my/org-hugo-new-subtree-post-capture-template ()
   (let* ((default-date (format-time-string "%Y-%m-%d" (current-time)))
@@ -204,19 +166,36 @@
          (year-string (format-time-string "%Y" parsed-date))
          (timestamp-string (format-time-string "%Y%m%d%H%M%S" parsed-date))
          (title (read-from-minibuffer "Post Title: "))
-         (fname (org-hugo-slug title)))
+         (fname (org-hugo-slug title))
+         (section (concat "blog/" timestamp-string "-blog--" fname)))
+    (setq my/gallery-hugo-section section)
     (mapconcat #'identity
-               `(
-                 ,(concat "* DONE Photos " title " " date-string " :" year-string ":")
+               `(,(concat "* DONE Photos " title " " date-string " :" year-string ":")
                  ":PROPERTIES:"
                  ":EXPORT_FILE_NAME: index"
-                 ,(concat ":EXPORT_HUGO_SECTION: blog/" timestamp-string "-blog--" fname)
+                 ,(concat ":EXPORT_HUGO_SECTION: " section)
                  ,(concat ":EXPORT_HUGO_LASTMOD: " date)
                  ":EXPORT_HUGO_TYPE: gallery"
-                 ,(concat ":EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /blog/" timestamp-string "-blog--" fname ".jpg")
+                 ,(concat ":EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /" section ".jpg")
                  ":END:"
                  "%?\n")
                "\n")))
+
+(defun my/gallery-after-finalize ()
+  "Copy gallery images to Hugo static dir and run PictureCrush."
+  (unless org-note-abort
+    (let* ((target-dir (concat "~/publish/hugo-unified/static/" my/gallery-hugo-section))
+           (thumb (nth (random (length my/org-dired-marked-files)) my/org-dired-marked-files))
+           (copied-files '()))
+      (make-directory target-dir t)
+      (copy-file thumb (concat "~/publish/hugo-unified/static/" my/gallery-hugo-section ".jpg"))
+      (dolist (file my/org-dired-marked-files)
+        (let ((target-file (expand-file-name (file-name-nondirectory file) target-dir)))
+          (copy-file file target-file)
+          (push target-file copied-files)))
+      (when copied-files
+        (async-shell-command (concat "PictureCrush " (mapconcat #'identity copied-files " "))
+                             "*convert*")))))
 
 (add-to-list 'org-capture-templates
              '("g" "Gallery" plain
@@ -224,22 +203,17 @@
                 "~/publish/hugo-unified/blog.org"
                 my-capture-top-level)
                (function my/org-hugo-new-subtree-post-capture-template)
-               :prepend t :jump-to-captured t))
-
-(defun my/external-org-capture-blog-with-gallery (files-string)
-  "Capture gallery triggering gallery image storage."
-  (interactive)
-  (setq my/org-dired-marked-files (split-string files-string ";" t))
-  (org-capture nil "g"))
+               :prepend t :jump-to-captured t :after-finalize my/gallery-after-finalize))
 
 (defun my/create-gallery ()
-  "Tag pictures from any context (dired or image-dired)."
+  "Create a gallery blog post from marked files in dired or image-dired."
   (interactive)
   (let ((files (my/get-files-from-context)))
     (if files
-        (let ((files-string (mapconcat 'identity files ";")))
-          (my/external-org-capture-blog-with-gallery files-string))
-      (message "No files found to tag"))))
+        (progn
+          (setq my/org-dired-marked-files files)
+          (org-capture nil "g"))
+      (message "No files found for gallery"))))
 
 ;;
 ;; -> use-package
@@ -280,7 +254,7 @@
               (find-file (concat user-emacs-directory "README.org"))))
 (define-key my-jump-keymap (kbd "a")
             (lambda () (interactive)
-              (find-file "~/publish/hugo-unified/emacs.org")))
+              (find-file "~/publish/hugo-unified/README.org")))
 
 ;;
 ;; -> visuals
@@ -365,14 +339,14 @@
  '(column-number-mode t)
  '(custom-enabled-themes '(misterioso))
  '(package-selected-packages
-   '(async claude-code claude-code-ide consult corfu csv-mode dape
-           dired-video-thumbnail dirvish doom-themes eat eca ef-themes
-           flycheck gptel gruvbox-theme highlight-indent-guides
-           i3wm-config-mode indent-bars org-social org-superstar
-           ox-hugo package-lint ready-player
-           selected-window-accent-mode timu-caribbean-theme
-           timu-rouge-theme timu-spacegrey-theme vecdb vterm yaml-mode
-           ztree))
+   '(agent-shell async claude-code claude-code-ide consult corfu csv-mode
+                 dape dired-video-thumbnail dirvish doom-themes eat
+                 eca ef-themes flycheck gptel gruvbox-theme
+                 highlight-indent-guides i3wm-config-mode indent-bars
+                 org-social org-superstar ox-hugo package-lint
+                 ready-player selected-window-accent-mode
+                 timu-caribbean-theme timu-rouge-theme
+                 timu-spacegrey-theme vecdb vterm yaml-mode ztree))
  '(package-vc-selected-packages
    '((claude-code-ide :url
                       "https://github.com/manzaltu/claude-code-ide.el")))
@@ -1353,3 +1327,9 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
 
 (use-package indent-bars)
 ;; :hook ((python-mode yaml-mode) . indent-bars-mode)) 
+
+(use-package agent-shell)
+
+(setq agent-shell-anthropic-authentication
+      (agent-shell-anthropic-make-authentication
+       :api-key (lambda () (auth-source-pick-first-password :host "ollama-buddy-claude" :user "apikey"))))
