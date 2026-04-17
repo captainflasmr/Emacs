@@ -29,10 +29,11 @@
 ;;
 
 (use-package selected-window-accent-mode
-  ;; :load-path "~/source/repos/selected-window-accent-mode"
+  :load-path "~/source/repos/selected-window-accent-mode"
   :config (selected-window-accent-mode 1)
   :custom
-  (select1ed-window-accent-fringe-thickness 10)
+  (selected-window-accent-fringe-minimum 10)
+  (selected-window-accent-fringe-thickness 10)
   (selected-window-accent-custom-color nil)
   (selected-window-accent-mode-style 'default)
   (selected-window-accent-percentage-darken 20)
@@ -50,7 +51,7 @@
                          "~/DCIM/content/aaa--calendar.org"
                          "~/DCIM/content/aab--repeat.org"
                          "~/DCIM/content/aaa--todo.org"
-                         "~/evalDCIM/content/aab--move.org"
+                         "~/DCIM/content/aab--move.org"
                          "~/DCIM/content/aab--sell.org"
                          "~/DCIM/content/aac--emacs-todo.org"
                          "~/DCIM/content/aaa--calendar.org"
@@ -218,9 +219,7 @@
 ;;
 ;; -> use-package
 ;;
-(use-package flycheck)
 (use-package async)
-(use-package consult)
 (use-package i3wm-config-mode)
 (use-package yaml-mode)
 
@@ -241,10 +240,6 @@
    '((ready-player-is-audio-p "mplayer")
      (ready-player-is-video-p "mpv"))))
 
-(use-package org-superstar
-  :hook
-  (org-mode . org-superstar-mode))
-
 ;;
 ;; -> keys-navigation
 ;;
@@ -259,8 +254,8 @@
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 85)
-(add-to-list 'default-frame-alist '(alpha-background . 85))
+(set-frame-parameter nil 'alpha-background 90)
+(add-to-list 'default-frame-alist '(alpha-background . 90))
 
 ;;
 ;; -> linux specific
@@ -271,13 +266,6 @@
   (define-key my-jump-keymap (kbd "j") (lambda () (interactive) (find-file "~/DCIM/content/aaa--todo.org")))
   (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
   (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
-  ;; (setq font-general "Noto Sans Mono 11")
-  ;; (setq font-general "Source Code Pro 10")
-  ;; (setq font-general "Source Code Pro Light 11")
-  ;; (setq font-general "Monospace 10")
-  ;;(setq font-general "Nimbus Mono PS 13")
-  ;; (set-frame-font font-general nil t)
-  ;; (add-to-list 'default-frame-alist `(font . ,font-general))
   (setq diary-file "~/DCIM/content/diary.org"))
 
 ;;
@@ -307,8 +295,6 @@
   (setq timu-rouge-scale-org-level-2 1.4)
   (setq timu-rouge-scale-org-level-3 1.2))
 
-(load-theme 'timu-spacegrey t)
-
 ;;
 ;; -> auto-mode-alist
 ;;
@@ -318,7 +304,7 @@
 (add-to-list 'auto-mode-alist '("/sway/.*config.*/" . i3wm-config-mode))
 (add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode))
 (cl-loop for ext in '("\\.gpr$" "\\.ada$" "\\.ads$" "\\.adb$")
-         do (add-to-list 'auto-mode-alist (cons ext 'ada-mode)))
+         do (add-to-list 'auto-mode-alist (cons ext 'ada-light-mode)))
 
 ;;
 ;; -> dired
@@ -331,39 +317,11 @@
 ;;
 ;; -> custom-settings
 ;;
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(column-number-mode t)
- '(custom-enabled-themes '(misterioso))
- '(package-selected-packages
-   '(agent-shell async claude-code claude-code-ide consult corfu csv-mode
-                 dape dired-video-thumbnail dirvish doom-themes eat
-                 eca ef-themes flycheck gptel gruvbox-theme
-                 highlight-indent-guides i3wm-config-mode indent-bars
-                 org-social org-superstar ox-hugo package-lint
-                 ready-player selected-window-accent-mode
-                 timu-caribbean-theme timu-rouge-theme
-                 timu-spacegrey-theme vecdb vterm yaml-mode ztree))
- '(package-vc-selected-packages
-   '((claude-code-ide :url
-                      "https://github.com/manzaltu/claude-code-ide.el")))
- '(tab-bar-mode t)
- '(tool-bar-mode nil)
- '(warning-suppress-log-types '((frameset)))
- '(warning-suppress-types '((frameset))))
 
 ;;
 ;; -> emacs-30.1
 ;;
 (setq tab-bar-auto-width-max '((120) 20))
-
-;; Bind the menu to C-c e
-(global-set-key (kbd "C-c e") 'export-menu)
-
-;; (my/sync-ui-accent-color "coral")
 
 (use-package csv-mode)
 (use-package package-lint)
@@ -382,66 +340,112 @@
 (with-eval-after-load 'bank-buddy
   (add-hook 'org-mode-hook 'bank-buddy-cat-maybe-enable))
 
-(define-key my-jump-keymap (kbd "l") #'consult-theme)
-
 ;;
 ;; -> ollama-buddy
 ;;
+
 (use-package ollama-buddy
-  ;; :load-path "~/source/repos/ollama-buddy/ollama-buddy-mini"
   :load-path "~/source/repos/ollama-buddy"
   :demand t
   :bind
-  ("C-c o" . ollama-buddy-menu)
-  ("C-c O" . ollama-buddy-transient-menu-wrapper)
+  ("C-c o" . ollama-buddy-role-transient-menu)
+  ("C-c O" . ollama-buddy-transient-menu)
   :config
-  ;; Load curl backend first
-  (require 'ollama-buddy-curl nil t)
-  
-  ;; Then set the backend
-  (setq ollama-buddy-communication-backend 'curl)
-  (setq ollama-buddy-default-model "c:claude-sonnet-4-5-20250929")
-  (setq ollama-buddy-autocomplete-model "o:tinyllama:latest")
-  (setq ollama-buddy-openai-api-key
-        (auth-source-pick-first-password :host "ollama-buddy-openai" :user "apikey"))
-  (setq ollama-buddy-claude-api-key
-        (auth-source-pick-first-password :host "ollama-buddy-claude" :user "apikey"))
-  (setq ollama-buddy-gemini-api-key
-        (auth-source-pick-first-password :host "ollama-buddy-gemini" :user "apikey"))
-  (setq ollama-buddy-grok-api-key
-        (auth-source-pick-first-password :host "ollama-buddy-grok" :user "apikey"))
-  (setq ollama-buddy-codestral-api-key
-        (auth-source-pick-first-password :host "ollama-buddy-codestral" :user "apikey"))
+  ;; overall default model
+  (setq ollama-buddy-default-model "deepseek-v3.1:671b-cloud")
 
-  (add-to-list 'ollama-buddy-command-definitions
-               '(OpenHere
-                 :key ?O
-                 :description "Open Here"
-                 :action (lambda () (switch-to-buffer "*Ollama Buddy Chat*")
-                           (ollama-buddy--initialize-chat-buffer)
-                           (goto-char (point-max)))))
+  (require 'ollama-buddy-annotate nil t)
   
-  (require 'ollama-buddy-openai nil t)
-  (require 'ollama-buddy-claude nil t)
-  (require 'ollama-buddy-gemini nil t)
-  (require 'ollama-buddy-grok nil t)
-  (require 'ollama-buddy-codestral nil t)
+  ;; acp2ollama tesitng
+  ;; (setq ollama-buddy-port 12345)
+  ;; (setq ollama-buddy-host "localhost")
   
-  (ollama-buddy-update-menu-entry
-   'git-commit :model "a:gpt-4o")
-  (ollama-buddy-update-menu-entry
-   'describe-code :model "o:qwen2.5-coder:3b")
-  (ollama-buddy-update-menu-entry
-   'dictionary-lookup :model "o:llama3.2:3b")
-  (ollama-buddy-update-menu-entry
-   'synonym :model "o:llama3.2:3b")
-  (ollama-buddy-update-menu-entry
-   'proofread :model "a:gpt-4.1")
-  )
+  ;; cloud / web-search keys (not provider-managed)
+  (setq ollama-buddy-cloud-api-key
+        (auth-source-pick-first-password :host "ollama-buddy-cloud" :user "apikey"))
+  (setq ollama-buddy-web-search-api-key
+        (auth-source-pick-first-password :host "ollama-buddy-web-search" :user "apikey"))
+  (setq ollama-buddy-cloud-session-token "YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0-IFgyNTUxOSBnVXZ6cFN5NFREWE5jOTgwenNnRlNpTzRKZkR0MVdkTkJRRnA5LytCVVJRCmt2NXpOcVkxSEVZMFloUitGdFNlcmN6Tmg2eVlhNUE1cHQ1cFk3SWRjMG8KLS0tIDhxSmJHR293ci9hMWJRUHZQRlpETmgxS1QySFdQK3JLNWVQUGVqRjY5WmcKStpAGR0Zb4FGLsfhJFv_4Ud_jcuWyJsUdaiMr6Cq-RGokYe4U_EvJjwJEDbuM3kRiIpJYv3cwms-FGvwhhPsnckty5SBuAE4FDWN1Wx0ngFmk9ynTXPjmYVMYfaZjurlDL52zFuzAz_O5CvMd_CFcdPgSc07RgVwXiru4dre7-CSFuaAajB6OobXVQ==")
 
-(eval-after-load 'dired
-  '(progn
-     (define-key dired-mode-map (kbd "C-c C-a") #'ollama-buddy-dired-attach-marked-files)))
+  (setq ollama-buddy-max-history-length 999)
+  
+  ;; ;; Generic provider registration (replaces individual require files)
+  ;; (require 'ollama-buddy-provider)
+
+  ;; (ollama-buddy-provider-create
+  ;;  :name "LM Studio"
+  ;;  :prefix "l:"
+  ;;  :endpoint "http://localhost:1234/v1/chat/completions"
+  ;;  :models-endpoint "http://localhost:1234/v1/models")
+  
+  ;; (ollama-buddy-provider-create
+  ;;  :name "OpenAI" :prefix "a:"
+  ;;  :api-key (lambda () (auth-source-pick-first-password
+  ;;                       :host "ollama-buddy-openai" :user "apikey"))
+  ;;  :endpoint "https://api.openai.com/v1/chat/completions"
+  ;;  :models-endpoint "https://api.openai.com/v1/models"
+  ;;  :models-filter (lambda (id) (string-match-p "\\(gpt\\|o[0-9]\\)" id)))
+
+  ;; (ollama-buddy-provider-create
+  ;;  :name "Claude" :prefix "c:" :api-type 'claude
+  ;;  :api-key (lambda () (auth-source-pick-first-password
+  ;;                       :host "ollama-buddy-claude" :user "apikey"))
+  ;;  :endpoint "https://api.anthropic.com/v1/messages"
+  ;;  :models-endpoint "https://api.anthropic.com/v1/models")
+
+  ;; (ollama-buddy-provider-create
+  ;;  :name "Gemini" :prefix "g:" :api-type 'gemini
+  ;;  :api-key (lambda () (auth-source-pick-first-password
+  ;;                       :host "ollama-buddy-gemini" :user "apikey"))
+  ;;  :endpoint "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent"
+  ;;  :models-endpoint "https://generativelanguage.googleapis.com/v1/models"
+  ;;  :models-filter (lambda (id) (string-match-p "gemini" id)))
+
+  ;; (ollama-buddy-provider-create
+  ;;  :name "Grok" :prefix "k:"
+  ;;  :api-key (lambda () (auth-source-pick-first-password
+  ;;                       :host "ollama-buddy-grok" :user "apikey"))
+  ;;  :endpoint "https://api.x.ai/v1/chat/completions"
+  ;;  :models-endpoint "https://api.x.ai/v1/models")
+
+  ;; (ollama-buddy-provider-create
+  ;;  :name "Codestral" :prefix "s:"
+  ;;  :api-key (lambda () (auth-source-pick-first-password
+  ;;                       :host "ollama-buddy-codestral" :user "apikey"))
+  ;;  :endpoint "https://api.mistral.ai/v1/chat/completions"
+  ;;  :models '("codestral-latest"))
+
+  ;; (ollama-buddy-provider-create
+  ;;  :name "OpenRouter" :prefix "r:"
+  ;;  :api-key (lambda () (auth-source-pick-first-password
+  ;;                       :host "ollama-buddy-openrouter" :user "apikey"))
+  ;;  :endpoint "https://openrouter.ai/api/v1/chat/completions"
+  ;;  :models-endpoint "https://openrouter.ai/api/v1/models"
+  ;;  :extra-headers '(("HTTP-Referer" . "https://github.com/captainflasmr/ollama-buddy")
+  ;;                   ("X-Title" . "ollama-buddy")))
+
+  ;; (ollama-buddy-provider-create
+  ;;  :name "DeepSeek" :prefix "d:"
+  ;;  :api-key (lambda () (auth-source-pick-first-password
+  ;;                       :host "ollama-buddy-deepseek" :user "apikey"))
+  ;;  :endpoint "https://api.deepseek.com/chat/completions"
+  ;;  :models '("deepseek-chat" "deepseek-reasoner"))
+
+  (require 'ollama-buddy-completion)
+
+  (setq ollama-buddy-completion-model "qwen3-coder-next:cloud")
+
+  ;; setup default custom menu for preferred models
+  (ollama-buddy-update-menu-entry 'refactor-code     :model "minimax-m2.1:cloud")
+  (ollama-buddy-update-menu-entry 'git-commit        :model "glm-4.7:cloud")
+  (ollama-buddy-update-menu-entry 'describe-code     :model "minimax-m2.1:cloud")
+  (ollama-buddy-update-menu-entry 'dictionary-lookup :model "minimax-m2.1:cloud")
+  (ollama-buddy-update-menu-entry 'synonym           :model "minimax-m2.1:cloud")
+  (ollama-buddy-update-menu-entry 'proofread         :model "minimax-m2.1:cloud")
+
+  ;; dired integration
+  (with-eval-after-load 'dired
+    (define-key dired-mode-map (kbd "C-c C-a") #'ollama-buddy-dired-attach-marked-files)))
 
 ;;
 ;; -> other
@@ -454,61 +458,32 @@
     (+ (* stone 14) pounds)))
 
 (use-package simply-annotate
+  :demand t
   :load-path "~/source/repos/simply-annotate"
-  :hook
-  (find-file-hook . simply-annotate-mode)
-  :bind
-  ("C-c A" . simply-annotate-mode)
-  ("C-c 0" . simply-annotate-show-all))
+  :hook (find-file-hook . simply-annotate-mode)
+  :config
+  (global-set-key (kbd "M-s") simply-annotate-command-map)
+  (setq simply-annotate-inline-position 'above)
+  (setq simply-annotate-tint-amount 20)
+  
+  ;; ;; Heavy L-bracket
+  (setq simply-annotate-inline-pointer-above "┗━▶")
+  (setq simply-annotate-inline-pointer-after "┏━▶")
+  ;; (setq simply-annotate-inline-pointer-after "▲")
+  ;; (setq simply-annotate-inline-pointer-above "▼")
+  (setq simply-annotate-author-list '("John Doe" "Jane Smith" "James Dyer"))
+  (setq simply-annotate-prompt-for-author 'threads-only)  ; Prompt only for replies
+  (setq simply-annotate-database-strategy 'both)
+  ;; (setq simply-annotate-display-style '(bracket))
+  (setq simply-annotate-inline-default t))
 
-(setq ollama-buddy-communication-backend 'curl)
+(with-eval-after-load 'simply-annotate
+  (add-hook 'dired-mode-hook #'simply-annotate-dired-mode))
 
-(setq flymake-show-diagnostics-at-end-of-line nil)
-
-(tiny-diminish 'selected-window-accent-mode)
 (tiny-diminish 'cursor-heatmap-mode)
-(tiny-diminish 'simply-annotate-mode)
+;; (tiny-diminish 'simply-annotate-mode)
 (tiny-diminish 'simple-autosuggest-mode)
 (tiny-diminish 'org-indent-mode)
-
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:family "Monospace" :foundry "ADBO" :slant normal :weight regular :height 95 :width normal))))
- '(completions-common-part ((t (:foreground "#87ceeb"))))
- '(completions-first-difference ((t (:foreground "#ffb6c1"))))
- '(cursor ((t (:background "coral"))))
- '(eca-chat-context-cursor-face ((t (:foreground "gainsboro" :underline t :height 1.0))) t)
- '(ediff-current-diff-A ((t (:extend t :background "#b5daeb" :foreground "#000000"))))
- '(ediff-even-diff-A ((t (:background "#bafbba" :foreground "#000000" :extend t))))
- '(ediff-fine-diff-A ((t (:background "#f4bd92" :foreground "#000000" :extend t))))
- '(ediff-odd-diff-A ((t (:background "#b8fbb8" :foreground "#000000" :extend t))))
- '(fixed-pitch ((t (:family "Monospace" :height 110))))
- '(font-lock-warning-face ((t (:foreground "#930000" :inverse-video nil))))
- '(fringe ((t (:foreground "#2d3743" :background "#2d3743"))))
- '(hl-line ((t (:background "#3d4753"))))
- '(icomplete-first-match ((t (:foreground "#7c7c75" :background "#3a3a3a" :weight bold))))
- '(icomplete-selected-match ((t (:foreground "#ffffff" :background "#5f87af" :weight bold))))
- '(indent-guide-face ((t (:background "#282828" :foreground "#666666"))))
- '(mode-line ((t (:height 140 :underline nil :overline nil :box nil))))
- '(mode-line-inactive ((t (:height 140 :underline nil :overline nil :box nil))))
- '(org-level-1 ((t (:inherit default :weight regular :height 1.0))))
- '(org-level-2 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-3 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-4 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-5 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-6 ((t (:inherit default :weight light :height 1.0))))
- '(org-link ((t (:underline nil))))
- '(org-tag ((t (:height 0.9))))
- '(tab-bar ((t (:inherit default :background "#2d3743" :foreground "#e1e1e0"))))
- '(tab-bar-tab ((t (:inherit 'highlight :background "coral" :foreground "#000000"))))
- '(tab-bar-tab-inactive ((t (:inherit default :background "#2d3743" :foreground "#e1e1e0" :box (:line-width 1 :color "#2d3743" :style flat-button)))))
- '(variable-pitch ((t (:family "DejaVu Sans" :height 120 :weight normal))))
- '(vertical-border ((t (:foreground "#000000"))))
- '(widget-button ((t (:inherit fixed-pitch :weight regular))))
- '(window-divider ((t (:foreground "black")))))
 
 (use-package meal-planner
   :load-path "~/source/repos/meal-planner")
@@ -533,486 +508,7 @@
   :custom-face
   (dired-video-thumbnail-mark ((t (:foreground "orange")))))
 
-(use-package dirvish)
-
-;; install required inheritenv dependency:
-(use-package inheritenv
-  :vc (:url "https://github.com/purcell/inheritenv" :rev :newest))
-
-;; for eat terminal backend:
-(use-package eat :ensure t)
-
-;; for vterm terminal backend:
-(use-package vterm :ensure t)
-
-;; install claude-code.el
-;; (use-package claude-code :ensure t
-;;   :vc (:url "https://github.com/stevemolitor/claude-code.el" :rev :newest)
-;;   :config
-;;   ;; optional IDE integration with Monet
-;;   (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
-;;   (monet-mode 1)
-
-;;   (claude-code-mode)
-;;   :bind-keymap ("C-c C" . claude-code-command-map)
-
-;;   ;; Optionally define a repeat map so that "M" will cycle thru Claude auto-accept/plan/confirm modes after invoking claude-code-cycle-mode / C-c M.
-;;   :bind
-;;   (:repeat-map my-claude-code-map ("M" . claude-code-cycle-mode)))
-
-(global-set-key (kbd "C-c C") 'claude-code-transient)
-
-(use-package gptel
-  :ensure t
-  :config
-  ;; OpenAI API key (used by default backend)
-  (setq gptel-api-key (auth-source-pick-first-password
-                       :host "ollama-buddy-openai"
-                       :user "apikey"))
-
-  ;; Claude backend
-  (gptel-make-anthropic "Claude"
-    :stream t
-    :key (auth-source-pick-first-password
-          :host "ollama-buddy-claude"
-          :user "apikey"))
-
-  ;; Set Claude as default
-  (setq gptel-model 'claude-3-7-sonnet-20250219
-        gptel-backend (gptel-get-backend "Claude"))
-  
-  (setq gptel-default-mode 'org-mode)
-  (setq gptel-use-tools t)
-  (setq gptel-include-tool-results t)
-  (setq gptel-confirm-tool-calls t)
-
-  (setq gptel-directives
-        '((default . "You are a helpful assistant.")
-          (code-review . "You are a code review assistant.")
-          (engineer . "You are an expert software engineer. Use your tools to read files, search code, and help with programming tasks.")))
-
-  ;; ============================================================
-  ;; EDIFF-BASED FILE EDITING
-  ;; ============================================================
-
-  (defvar gptel-tool--ediff-target-file nil
-    "The file being edited via gptel ediff.")
-  
-  (defvar gptel-tool--ediff-result nil
-    "Result of the last gptel ediff operation.")
-
-  (defvar gptel-tool--ediff-buffers nil
-    "Cons of (original-buf . modified-buf) for cleanup.")
-
-  (defun gptel-tool--ediff-quit-hook ()
-    "Hook run when ediff quits. Prompts to save and cleans up."
-    (when gptel-tool--ediff-target-file
-      (let ((modified-content (with-current-buffer ediff-buffer-B
-                                (buffer-substring-no-properties (point-min) (point-max))))
-            (original-content (with-current-buffer ediff-buffer-A
-                                (buffer-substring-no-properties (point-min) (point-max)))))
-        (if (string= modified-content original-content)
-            (setq gptel-tool--ediff-result
-                  (format "No changes made to %s" gptel-tool--ediff-target-file))
-          (if (y-or-n-p (format "Save changes to %s? " gptel-tool--ediff-target-file))
-              (progn
-                (with-temp-file gptel-tool--ediff-target-file
-                  (insert modified-content))
-                ;; Revert the buffer if it's visiting this file
-                (when-let ((buf (find-buffer-visiting gptel-tool--ediff-target-file)))
-                  (with-current-buffer buf
-                    (revert-buffer t t t)))
-                (setq gptel-tool--ediff-result
-                      (format "Applied changes to %s" gptel-tool--ediff-target-file)))
-            (setq gptel-tool--ediff-result
-                  (format "Discarded changes to %s" gptel-tool--ediff-target-file)))))
-      
-      ;; Cleanup
-      (when gptel-tool--ediff-buffers
-        (ignore-errors (kill-buffer (car gptel-tool--ediff-buffers)))
-        (ignore-errors (kill-buffer (cdr gptel-tool--ediff-buffers))))
-      (setq gptel-tool--ediff-target-file nil)
-      (setq gptel-tool--ediff-buffers nil)))
-
-  (defun gptel-tool--ediff-replace (path old-string new-string)
-    "Replace OLD-STRING with NEW-STRING in file at PATH using ediff."
-    (let* ((full-path (expand-file-name path))
-           (original-content (condition-case err
-                                 (with-temp-buffer
-                                   (insert-file-contents full-path)
-                                   (buffer-string))
-                               (error (format "Error reading file: %s" (error-message-string err))))))
-      
-      ;; Check for read errors
-      (when (string-prefix-p "Error" original-content)
-        (cl-return-from gptel-tool--ediff-replace original-content))
-      
-      (let ((count (with-temp-buffer
-                     (insert original-content)
-                     (how-many (regexp-quote old-string) (point-min) (point-max)))))
-        (cond
-         ((= count 0)
-          (format "Error: String not found in %s" path))
-         ((> count 1)
-          (format "Error: String found %d times in %s. Must be unique for safe replacement." count path))
-         (t
-          (let* ((new-content (replace-regexp-in-string
-                               (regexp-quote old-string) new-string original-content t t))
-                 (original-buf (generate-new-buffer
-                                (format "*original: %s*" (file-name-nondirectory path))))
-                 (modified-buf (generate-new-buffer
-                                (format "*proposed: %s*" (file-name-nondirectory path)))))
-            
-            ;; Populate original buffer
-            (with-current-buffer original-buf
-              (insert original-content)
-              (goto-char (point-min))
-              (let ((buffer-file-name full-path))
-                (set-auto-mode)
-                (font-lock-ensure))
-              (set-buffer-modified-p nil)
-              (setq buffer-read-only t))
-            
-            ;; Populate modified buffer
-            (with-current-buffer modified-buf
-              (insert new-content)
-              (goto-char (point-min))
-              (let ((buffer-file-name full-path))
-                (set-auto-mode)
-                (font-lock-ensure))
-              (set-buffer-modified-p nil))
-            
-            ;; Prompt user for action
-            (let ((action (read-char-choice
-                           (format "Change in %s:\n\n  -%s\n  +%s\n\n[a]pply, [e]diff, [s]kip: "
-                                   (file-name-nondirectory path)
-                                   (truncate-string-to-width old-string 70 nil nil "...")
-                                   (truncate-string-to-width new-string 70 nil nil "..."))
-                           '(?a ?e ?s))))
-              (pcase action
-                (?a
-                 ;; Apply directly without ediff
-                 (with-temp-file full-path
-                   (insert new-content))
-                 (kill-buffer original-buf)
-                 (kill-buffer modified-buf)
-                 (when-let ((buf (find-buffer-visiting full-path)))
-                   (with-current-buffer buf
-                     (revert-buffer t t t)))
-                 (format "Applied change to %s" path))
-                
-                (?e
-                 ;; Launch ediff
-                 (setq gptel-tool--ediff-target-file full-path)
-                 (setq gptel-tool--ediff-buffers (cons original-buf modified-buf))
-                 (setq gptel-tool--ediff-result nil)
-                 
-                 ;; Add our quit hook
-                 (add-hook 'ediff-quit-hook #'gptel-tool--ediff-quit-hook)
-                 
-                 ;; Start ediff - A is original, B is proposed changes
-                 (ediff-buffers original-buf modified-buf)
-                 
-                 ;; Ediff runs asynchronously, return a pending message
-                 ;; The actual result will be shown when ediff quits
-                 (format "Ediff started for %s. Use 'n'/'p' to navigate hunks, 'a'/'b' to choose version, 'q' to quit and save." path))
-                
-                (?s
-                 ;; Skip
-                 (kill-buffer original-buf)
-                 (kill-buffer modified-buf)
-                 (format "Skipped change to %s" path))))))))))
-
-  ;; ============================================================
-  ;; SIMPLER DIFF ALTERNATIVE (if you prefer)
-  ;; ============================================================
-
-  (defun gptel-tool--diff-replace (path old-string new-string)
-    "Replace OLD-STRING with NEW-STRING in file at PATH, showing diff for confirmation."
-    (let* ((full-path (expand-file-name path))
-           (original-content (condition-case err
-                                 (with-temp-buffer
-                                   (insert-file-contents full-path)
-                                   (buffer-string))
-                               (error nil))))
-      (unless original-content
-        (cl-return-from gptel-tool--diff-replace
-          (format "Error: Cannot read file %s" path)))
-      
-      (let ((count (with-temp-buffer
-                     (insert original-content)
-                     (how-many (regexp-quote old-string) (point-min) (point-max)))))
-        (cond
-         ((= count 0)
-          (format "Error: String not found in %s" path))
-         ((> count 1)
-          (format "Error: String found %d times, must be unique" count))
-         (t
-          (let* ((new-content (replace-regexp-in-string
-                               (regexp-quote old-string) new-string original-content t t))
-                 (diff-output (let ((old-temp (make-temp-file "gptel-old"))
-                                    (new-temp (make-temp-file "gptel-new")))
-                                (unwind-protect
-                                    (progn
-                                      (with-temp-file old-temp (insert original-content))
-                                      (with-temp-file new-temp (insert new-content))
-                                      (shell-command-to-string
-                                       (format "diff -u --color=never %s %s | tail -n +3"
-                                               (shell-quote-argument old-temp)
-                                               (shell-quote-argument new-temp))))
-                                  (delete-file old-temp)
-                                  (delete-file new-temp)))))
-            
-            ;; Show diff in a buffer
-            (with-current-buffer (get-buffer-create "*gptel-diff*")
-              (let ((inhibit-read-only t))
-                (erase-buffer)
-                (insert (propertize (format "Proposed changes to: %s\n" path)
-                                    'face 'font-lock-keyword-face))
-                (insert (make-string 60 ?─) "\n\n")
-                (insert diff-output)
-                (goto-char (point-min))
-                (diff-mode)
-                (view-mode 1))
-              (display-buffer (current-buffer)
-                              '((display-buffer-reuse-window
-                                 display-buffer-below-selected)
-                                (window-height . 0.4))))
-            
-            (if (y-or-n-p (format "Apply change to %s? " path))
-                (progn
-                  (with-temp-file full-path
-                    (insert new-content))
-                  (when-let ((buf (find-buffer-visiting full-path)))
-                    (with-current-buffer buf
-                      (revert-buffer t t t)))
-                  (when-let ((diff-buf (get-buffer "*gptel-diff*")))
-                    (kill-buffer diff-buf))
-                  (format "Applied change to %s" path))
-              (when-let ((diff-buf (get-buffer "*gptel-diff*")))
-                (kill-buffer diff-buf))
-              (format "Skipped change to %s" path))))))))
-
-  ;; ============================================================
-  ;; TOOLS
-  ;; ============================================================
-
-  (setq gptel-tools
-        (list
-         ;; ============ FILE OPERATIONS ============
-         (gptel-make-tool
-          :function (lambda (path)
-                      (condition-case err
-                          (with-temp-buffer
-                            (insert-file-contents (expand-file-name path))
-                            (buffer-string))
-                        (error (format "Error reading file: %s" (error-message-string err)))))
-          :name "read_file"
-          :description "Read the contents of a file."
-          :args (list '(:name "path" :type string :description "The path to the file"))
-          :category "filesystem")
-
-         (gptel-make-tool
-          :function (lambda (path content)
-                      (let* ((full-path (expand-file-name path))
-                             (exists (file-exists-p full-path))
-                             (prompt (if exists
-                                         (format "Overwrite %s (%d bytes)? " path (length content))
-                                       (format "Create %s (%d bytes)? " path (length content)))))
-                        (if (y-or-n-p prompt)
-                            (progn
-                              (make-directory (file-name-directory full-path) t)
-                              (with-temp-file full-path
-                                (insert content))
-                              (format "Wrote %d bytes to %s" (length content) path))
-                          (format "Skipped writing to %s" path))))
-          :name "write_file"
-          :description "Write content to a file, creating or overwriting it."
-          :args (list '(:name "path" :type string :description "The path to the file")
-                      '(:name "content" :type string :description "The content to write"))
-          :category "filesystem")
-
-         (gptel-make-tool
-          :function #'gptel-tool--ediff-replace
-          :name "str_replace_in_file"
-          :description "Replace a unique string in a file with another string. Shows diff and asks for confirmation."
-          :args (list '(:name "path" :type string :description "The path to the file")
-                      '(:name "old_string" :type string :description "The exact string to replace (must be unique)")
-                      '(:name "new_string" :type string :description "The replacement string"))
-          :category "filesystem")
-
-         (gptel-make-tool
-          :function (lambda (directory)
-                      (condition-case err
-                          (mapconcat (lambda (f)
-                                       (if (file-directory-p (expand-file-name f directory))
-                                           (concat f "/") f))
-                                     (directory-files (expand-file-name directory) nil "^[^.]")
-                                     "\n")
-                        (error (format "Error: %s" (error-message-string err)))))
-          :name "list_directory"
-          :description "List files and directories. Directories have trailing slash."
-          :args (list '(:name "directory" :type string :description "The directory path"))
-          :category "filesystem")
-
-         (gptel-make-tool
-          :function (lambda (directory pattern)
-                      (shell-command-to-string
-                       (format "find %s -type f -name %s 2>/dev/null | head -50"
-                               (shell-quote-argument (expand-file-name directory))
-                               (shell-quote-argument pattern))))
-          :name "find_files"
-          :description "Find files matching a glob pattern."
-          :args (list '(:name "directory" :type string :description "The root directory")
-                      '(:name "pattern" :type string :description "Glob pattern like '*.py'"))
-          :category "filesystem")
-
-         ;; ============ CODE SEARCH ============
-         (gptel-make-tool
-          :function (lambda (pattern directory)
-                      (let ((cmd (if (executable-find "rg")
-                                     (format "rg -n --no-heading %s %s 2>/dev/null | head -100"
-                                             (shell-quote-argument pattern)
-                                             (shell-quote-argument (expand-file-name directory)))
-                                   (format "grep -rn %s %s 2>/dev/null | head -100"
-                                           (shell-quote-argument pattern)
-                                           (shell-quote-argument (expand-file-name directory))))))
-                        (let ((result (shell-command-to-string cmd)))
-                          (if (string-empty-p result) "No matches found." result))))
-          :name "search_code"
-          :description "Search for a pattern in files using ripgrep or grep."
-          :args (list '(:name "pattern" :type string :description "The search pattern")
-                      '(:name "directory" :type string :description "Directory to search"))
-          :category "code")
-
-         (gptel-make-tool
-          :function (lambda (symbol directory)
-                      (let ((cmd (if (executable-find "rg")
-                                     (format "rg -n --no-heading -w %s %s 2>/dev/null | head -50"
-                                             (shell-quote-argument symbol)
-                                             (shell-quote-argument (expand-file-name directory)))
-                                   (format "grep -rnw %s %s 2>/dev/null | head -50"
-                                           (shell-quote-argument symbol)
-                                           (shell-quote-argument (expand-file-name directory))))))
-                        (let ((result (shell-command-to-string cmd)))
-                          (if (string-empty-p result) "No matches found." result))))
-          :name "find_symbol"
-          :description "Find a symbol (function, variable, class) as a whole word."
-          :args (list '(:name "symbol" :type string :description "The symbol name")
-                      '(:name "directory" :type string :description "Directory to search"))
-          :category "code")
-
-         ;; ============ SHELL ============
-         (gptel-make-tool
-          :function (lambda (command directory)
-                      (let ((default-directory (expand-file-name (or directory default-directory))))
-                        (if (y-or-n-p (format "Run: %s\nin: %s? " command default-directory))
-                            (shell-command-to-string command)
-                          "Command cancelled by user")))
-          :name "run_shell_command"
-          :description "Run a shell command and return output."
-          :args (list '(:name "command" :type string :description "The shell command")
-                      '(:name "directory" :type string :description "Working directory (optional)"))
-          :category "system")
-
-         ;; ============ GIT ============
-         (gptel-make-tool
-          :function (lambda (directory)
-                      (let ((default-directory (expand-file-name directory)))
-                        (shell-command-to-string "git status --short 2>/dev/null || echo 'Not a git repo'")))
-          :name "git_status"
-          :description "Get git status."
-          :args (list '(:name "directory" :type string :description "Path to git repository"))
-          :category "git")
-
-         (gptel-make-tool
-          :function (lambda (directory)
-                      (let ((default-directory (expand-file-name directory)))
-                        (shell-command-to-string "git diff 2>/dev/null")))
-          :name "git_diff"
-          :description "Show unstaged git changes."
-          :args (list '(:name "directory" :type string :description "Path to git repository"))
-          :category "git")
-
-         (gptel-make-tool
-          :function (lambda (directory n)
-                      (let ((default-directory (expand-file-name directory)))
-                        (shell-command-to-string (format "git log --oneline -n %d 2>/dev/null" (or n 10)))))
-          :name "git_log"
-          :description "Show recent git commits."
-          :args (list '(:name "directory" :type string :description "Path to git repository")
-                      '(:name "n" :type integer :description "Number of commits (default 10)"))
-          :category "git")
-
-         ;; ============ EMACS ============
-         (gptel-make-tool
-          :function (lambda (buffer)
-                      (if (buffer-live-p (get-buffer buffer))
-                          (with-current-buffer buffer
-                            (buffer-substring-no-properties (point-min) (point-max)))
-                        (format "Buffer '%s' not found" buffer)))
-          :name "read_buffer"
-          :description "Read contents of an Emacs buffer."
-          :args (list '(:name "buffer" :type string :description "Buffer name"))
-          :category "emacs")
-
-         (gptel-make-tool
-          :function (lambda ()
-                      (format "Buffer: %s\nFile: %s\nMode: %s\nDirectory: %s"
-                              (buffer-name)
-                              (or buffer-file-name "none")
-                              major-mode
-                              default-directory))
-          :name "current_context"
-          :description "Get current buffer/file/directory info."
-          :args nil
-          :category "emacs")
-
-         (gptel-make-tool
-          :function (lambda ()
-                      (mapconcat (lambda (b)
-                                   (format "%s [%s]" (buffer-name b)
-                                           (buffer-local-value 'major-mode b)))
-                                 (seq-filter (lambda (b)
-                                               (not (string-prefix-p " " (buffer-name b))))
-                                             (buffer-list))
-                                 "\n"))
-          :name "list_buffers"
-          :description "List open Emacs buffers."
-          :args nil
-          :category "emacs"))))
-
-;; (use-package aidermacs
-;;   :config
-;;   (setq aidermacs-extra-args 
-;;         '("--model" "anthropic/claude-sonnet-4-5"
-;;           "--map-tokens" "2048"))
-
-;;   (setenv "OPENAI_API_KEY" 
-;;           (auth-source-pick-first-password
-;;            :host "ollama-buddy-openai" 
-;;            :user "apikey"))
-
-;;   (setenv "ANTHROPIC_API_KEY" 
-;;           (auth-source-pick-first-password
-;;            :host "ollama-buddy-claude" 
-;;            :user "apikey")))
-
 (my/sync-ui-accent-color "orange")
-
-(use-package corfu
-  :custom
-  (corfu-auto nil)
-  (corfu-auto-delay 0.1)
-  (corfu-auto-prefix 2)
-  (corfu-cycle t)
-  (corfu-separator ?\s)
-  (corfu-quit-at-boundary nil)
-  (corfu-quit-no-match nil)
-  (corfu-preview-current nil)
-  (corfu-preselect 'first)
-  (corfu-on-exact-match nil)
-  (corfu-scroll-margin 5))
 
 (use-package ztree
   :config
@@ -1132,61 +628,21 @@ ORIG-FUN is the original command and ARGS are its arguments."
 (when custom-enabled-themes
   (my/ztree-remap-faces))
 
-(use-package highlight-indent-guides
-  ;; :load-path "z:/SharedVM/source/highlight-indent-guides-master"
-  :mode "\\.cshtml?\\'"
-  :hook (html-mode . highlight-indent-guides-mode)
-  :config
-  (setq highlight-indent-guides-method 'character)
-  ;; (setq highlight-indent-guides-method 'fill)
-  ;; highlight-indent-guides-character ?\|))
-  ;; (setq highlight-indent-guides-auto-enabled nil)
-  (setq highlight-indent-guides-auto-enabled nil)
-  (set-face-background 'highlight-indent-guides-odd-face "#e8e8e8")
-  (set-face-background 'highlight-indent-guides-even-face "#dedede")
-  (set-face-foreground 'highlight-indent-guides-character-face "#4e535e"))
+(my/ztree-remap-faces)
 
 (defun insert-default-background-color ()
   "Insert the default background color at point."
   (interactive)
   (insert (downcase (face-attribute 'default :background))))
 
-(global-set-key (kbd "C-q i") 'highlight-indent-guides-mode)
 (global-set-key (kbd "M-s b") ' insert-default-background-color)
 
 (use-package web-mode
-  :load-path "z:/SharedVM/source/web-mode-master"
   :mode "\\.cshtml?\\'"
   :hook (html-mode . web-mode)
   :bind (:map web-mode-map ("M-;" . nil)))
 
 (add-to-list 'auto-mode-alist '("\\.cshtml\\'" . html-mode))
-
-(setq eglot-ignored-server-capabilities
-      '(
-        ;; :hoverProvider                    ; Documentation on hover
-        ;; :completionProvider               ; Code completion
-        ;; :signatureHelpProvider            ; Function signature help
-        ;; :definitionProvider               ; Go to definition
-        ;; :typeDefinitionProvider           ; Go to type definition
-        ;; :implementationProvider           ; Go to implementation
-        ;; :declarationProvider              ; Go to declaration
-        ;; :referencesProvider               ; Find references
-        ;; :documentHighlightProvider        ; Highlight symbols automatically
-        ;; :documentSymbolProvider           ; List symbols in buffer
-        ;; :workspaceSymbolProvider          ; List symbols in workspace
-        ;; :codeActionProvider               ; Execute code actions
-        ;; :codeLensProvider                 ; Code lens
-        ;; :documentFormattingProvider       ; Format buffer
-        ;; :documentRangeFormattingProvider  ; Format portion of buffer
-        ;; :documentOnTypeFormattingProvider ; On-type formatting
-        ;; :renameProvider                   ; Rename symbol
-        ;; :documentLinkProvider             ; Highlight links in document
-        ;; :colorProvider                    ; Decorate color references
-        ;; :foldingRangeProvider             ; Fold regions of buffer
-        ;; :executeCommandProvider           ; Execute custom commands
-        ;; :inlayHintProvider                ; Inlay hints
-        ))
 
 (use-package ibuffer
   :bind (:map ibuffer-mode-map ("M-o" . nil)))
@@ -1196,140 +652,325 @@ ORIG-FUN is the original command and ARGS are its arguments."
 
 (setq max-mini-window-height 6)
 
-(use-package dape
-  :init
-  ;; Set key prefix BEFORE loading dape
-  (setq dape-key-prefix (kbd "C-c d"))
-  :config
-  ;; Define common configuration
-  (defvar mimesis-netcoredbg-path "d:/source/emacs-30.1/bin/netcoredbg/netcoredbg.exe"
-    "Path to netcoredbg executable.")
-  (defvar mimesis-netcoredbg-log "d:/source/emacs-30.1/bin/netcoredbg/netcoredbg.log"
-    "Path to netcoredbg log file.")
-  (defvar mimesis-project-root "d:/source/MIMESIS-OVC"
-    "Root directory of MIMESIS-OVC project.")
-  (defvar mimesis-build-config "Debug"
-    "Build configuration (Debug or Release).")
-  (defvar mimesis-target-arch "x64"
-    "Target architecture (x64, x86, or AnyCPU).")
-  (defvar mimesis-vsdbg-path "C:/Users/vm.j.dyer/.vscode/extensions/ms-dotnettools.csharp-2.80.16-win32-x64/.debugger/x86_64/vsdbg.exe"
-    "Path to vsdbg from VSCode installation.")
+;; (use-package dape
+;;   :init
+;;   ;; Set key prefix BEFORE loading dape
+;;   (setq dape-key-prefix (kbd "C-c d"))
+;;   :config
+;;   ;; Define common configuration
+;;   (defvar mimesis-netcoredbg-path "d:/source/emacs-30.1/bin/netcoredbg/netcoredbg.exe"
+;;     "Path to netcoredbg executable.")
+;;   (defvar mimesis-netcoredbg-log "d:/source/emacs-30.1/bin/netcoredbg/netcoredbg.log"
+;;     "Path to netcoredbg log file.")
+;;   (defvar mimesis-project-root "d:/source/MIMESIS-OVC"
+;;     "Root directory of MIMESIS-OVC project.")
+;;   (defvar mimesis-build-config "Debug"
+;;     "Build configuration (Debug or Release).")
+;;   (defvar mimesis-target-arch "x64"
+;;     "Target architecture (x64, x86, or AnyCPU).")
+;;   (defvar mimesis-vsdbg-path "C:/Users/vm.j.dyer/.vscode/extensions/ms-dotnettools.csharp-2.80.16-win32-x64/.debugger/x86_64/vsdbg.exe"
+;;     "Path to vsdbg from VSCode installation.")
 
-  ;; Helper function to create component configs
-  (defun mimesis-dape-config (component-name dll-name &optional stop-at-entry)
-    "Create a dape configuration for a component.
-COMPONENT-NAME is the component directory name
-DLL-NAME is the DLL filename without extension.
-STOP-AT-ENTRY if non-nil, stops at program entry point."
-    (let* ((component-dir (format "%s/%s" mimesis-project-root component-name))
-           (bin-path (format "%s/bin/%s/%s/net9.0"
-                             component-dir
-                             mimesis-target-arch
-                             mimesis-build-config))
-           (dll-path (format "%s/%s.dll" bin-path dll-name))
-           (config-name (intern (format "netcoredbg-launch-%s" 
-                                        (downcase component-name)))))
-      `(,config-name
-        modes (csharp-mode csharp-ts-mode)
-        command ,mimesis-netcoredbg-path
-        command-args (,(format "--interpreter=vscode")
-                      ,(format "--engineLogging=%s" mimesis-netcoredbg-log))
-        normalize-path-separator 'windows
-        :type "coreclr"
-        :request "launch"
-        :program ,dll-path
-        :cwd ,component-dir
-        :console "externalTerminal"
-        :internalConsoleOptions "neverOpen"
-        :suppressJITOptimizations t
-        :requireExactSource nil
-        :justMyCode t
-        :stopAtEntry ,(if stop-at-entry t :json-false))))
+;;   ;; Helper function to create component configs
+;;   (defun mimesis-dape-config (component-name dll-name &optional stop-at-entry)
+;;     "Create a dape configuration for a component.
+;; COMPONENT-NAME is the component directory name
+;; DLL-NAME is the DLL filename without extension.
+;; STOP-AT-ENTRY if non-nil, stops at program entry point."
+;;     (let* ((component-dir (format "%s/%s" mimesis-project-root component-name))
+;;            (bin-path (format "%s/bin/%s/%s/net9.0"
+;;                              component-dir
+;;                              mimesis-target-arch
+;;                              mimesis-build-config))
+;;            (dll-path (format "%s/%s.dll" bin-path dll-name))
+;;            (config-name (intern (format "netcoredbg-launch-%s" 
+;;                                         (downcase component-name)))))
+;;       `(,config-name
+;;         modes (csharp-mode csharp-ts-mode)
+;;         command ,mimesis-netcoredbg-path
+;;         command-args (,(format "--interpreter=vscode")
+;;                       ,(format "--engineLogging=%s" mimesis-netcoredbg-log))
+;;         normalize-path-separator 'windows
+;;         :type "coreclr"
+;;         :request "launch"
+;;         :program ,dll-path
+;;         :cwd ,component-dir
+;;         :console "externalTerminal"
+;;         :internalConsoleOptions "neverOpen"
+;;         :suppressJITOptimizations t
+;;         :requireExactSource nil
+;;         :justMyCode t
+;;         :stopAtEntry ,(if stop-at-entry t :json-false))))
 
-  ;; Register all component configurations
-  (dolist (config (list
-                   (mimesis-dape-config "IGC" "MIMESIS.IGC" t)
-                   (mimesis-dape-config "MSS" "MIMESIS.MSS" t)
-                   (mimesis-dape-config "IGM" "MIMESIS.IGM" t)
-                   (mimesis-dape-config "VDS" "VDS.MSS" t)
-                   (mimesis-dape-config "DM" "DM.MSS" t)
-                   (mimesis-dape-config "Demo" "Demo.MSS" t)
-                   (mimesis-dape-config "Test_001" "Test" t)))
-    (add-to-list 'dape-configs config))
-  
-  ;; Set buffer arrangement and other options
-  (setq dape-buffer-window-arrangement 'gud)
-  (setq dape-debug t)
-  (setq dape-repl-echo-shell-output t))
+;;   ;; Register all component configurations
+;;   (dolist (config (list
+;;                    (mimesis-dape-config "IGC" "MIMESIS.IGC" t)
+;;                    (mimesis-dape-config "MSS" "MIMESIS.MSS" t)
+;;                    (mimesis-dape-config "IGM" "MIMESIS.IGM" t)
+;;                    (mimesis-dape-config "VDS" "VDS.MSS" t)
+;;                    (mimesis-dape-config "DM" "DM.MSS" t)
+;;                    (mimesis-dape-config "Demo" "Demo.MSS" t)
+;;                    (mimesis-dape-config "Test_001" "Test" t)))
+;;     (add-to-list 'dape-configs config))
 
-(use-package eca
-  :bind
-  ("C-c E" . eca-transient-menu)
-  :bind (:map eca-chat-mode-map
-              ("M-p" . eca-chat--key-pressed-previous-prompt-history)
-              ("M-n" . eca-chat--key-pressed-next-prompt-history))
-  :custom-face
-  (eca-chat-context-cursor-face ((t (:foreground "gainsboro" :underline nil :height 1.0))))
-  :config
-  (setq eca-chat-use-side-window nil)
-  (setq eca-chat-auto-add-cursor nil)
-  (setq eca-chat-window-width 0.5)
-  (setq eca-chat-expand-pending-approval-tools nil)
-  (setq eca-chat-diff-tool 'ediff)
-  (setq eca-completion-idle-delay 0)
-  (eca-completion-mode 1))
-
-(setq ollama-buddy-concat-exclude-directories
-      '("node_modules" ".git" "dist" "build" "ollama-buddy-presets" "ollama-buddy-user-prompts" "tests" "docs" "img"))
+;;   ;; Set buffer arrangement and other options
+;;   (setq dape-buffer-window-arrangement 'gud)
+;;   (setq dape-debug t)
+;;   (setq dape-repl-echo-shell-output t))
 
 (use-package dired-image-thumbnail
   :load-path "/home/jdyer/source/repos/dired-image-thumbnail"
   :demand t
+  :config
+  (setq dired-image-thumbnail-auto-accept t)
+  (setq dired-image-thumbnail-sort-by 'date)
+  (setq dired-image-thumbnail-sort-order 'descending)
+  (setq dired-image-thumbnail-window-layout 'left-right)
+  (setq dired-image-thumbnail-window-ratio 0.6)
   :bind
   (:map dired-mode-map
-        ("C-t d" . (lambda() (interactive)
-                     (image-dired default-directory)
-                     (dired-image-thumbnail-refresh)))
-        ("C-t m" . dired-image-thumbnail)  ; m for modern/enhanced
+        ("C-t d" . dired-image-thumbnail)  ; m for modern/enhanced
         ("C-t s" . dired-image-thumbnail-insert-image-subdirs)  ; s for smart subdirs
         ("C-t z" . dired-image-thumbnail-insert-subdir-recursive)  ; z for all (last letter)
         ("C-t k" . dired-image-thumbnail-kill-all-subdirs)))  ; k for kill
 
-;; Install the pg dependency first
-(use-package pg
-  :ensure t)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-enabled-themes '(doom-oceanic-next))
+ '(package-selected-packages nil)
+ '(warning-suppress-log-types '((frameset)))
+ '(warning-suppress-types '((frameset))))
 
-;; Then install vecdb
-(use-package vecdb
-  :ensure nil
-  :vc (:url "https://github.com/ahyatt/vecdb"
-            :rev :newest))
+;;
+;; -> typescript-support
+;;
 
-;; (read-multiple-choice
-;;  "Continue connecting?"
-;;  '((?a "always" "Accept certificate for this and future sessions.")
-;;    (?s "session only" "Accept certificate this session only.")
-;;    (?n "no" "Refuse to use certificate, close connection.")))
+(add-to-list 'auto-mode-alist '("\\.ts\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
 
-;; (defun sentry (sentry)
-;;   "Sets minibuffer completion style."
-;;   (interactive
-;;    (let ((choices '((?o "(orderless)")
-;;                     (?b "(basic substring)")
-;;                     (?p "(partial-completion)")
-;;                     (?f "(flex)")
-;;                     (?i "(initials)"))))
+(use-package agent-shell
+  :ensure t
+  :config
+  ;; Use login-based auth (uses your Claude Code Pro subscription)
+  (setq agent-shell-anthropic-authentication
+        (agent-shell-anthropic-make-authentication :login t))
 
-;;      (alist-get (car (read-multiple-choice "Sentry: " choices))
-;;                 choices)))
-;;   (message "`completion-style' set to %s"
-;;            (setq completion-styles (read sentry))))
+  ;; Inherit environment from Emacs (picks up PATH etc.)
+  (setq agent-shell-anthropic-claude-environment
+        (agent-shell-make-environment-variables :inherit-env t))
 
-(use-package indent-bars)
-;; :hook ((python-mode yaml-mode) . indent-bars-mode)) 
+  ;; Make Claude Code the default agent
+  (setq agent-shell-preferred-agent-config
+        (agent-shell-anthropic-make-claude-code-config))
 
-(use-package agent-shell)
+  ;; Show usage info at end of each turn
+  (setq agent-shell-show-usage-at-turn-end t)
 
-(setq agent-shell-anthropic-authentication
-      (agent-shell-anthropic-make-authentication
-       :api-key (lambda () (auth-source-pick-first-password :host "ollama-buddy-claude" :user "apikey"))))
+  (setq agent-shell-prefer-session-resume t)
+  (setq agent-shell-show-session-id t)
+  (setq agent-shell-session-strategy 'prompt)
+
+  :bind (:map agent-shell-mode-map
+              ;; Match ollama-buddy: RET for newline, C-c RET to send
+              ("RET"     . newline)
+              ("C-c m" . agent-shell-set-session-model)
+              ("C-c RET" . shell-maker-submit)
+              ("C-c C-c" . shell-maker-submit)          ; ollama-buddy also uses C-c C-c
+              ("C-c C-k" . agent-shell-interrupt)        ; same as ollama-buddy cancel
+              ;; History navigation (same as ollama-buddy M-p/M-n)
+              ("M-p"     . comint-previous-input)
+              ("M-n"     . comint-next-input)))
+
+;;
+;; -> qvm
+;;
+(use-package qemu-manager
+  :load-path "~/source/repos/qemu-manager"
+  :bind ("C-c q" . qemu-manager-list))
+
+(use-package eglot
+  :ensure t
+  :config
+  (add-to-list 'eglot-server-programs
+               `(java-mode . ("/home/jdyer/.emacs.d/bin/jdtls/bin/jdtls"
+                              :initializationOptions
+                              (:bundles ["/home/jdyer/.emacs.d/bin/jdtls/com.microsoft.java.debug.plugin-0.53.2.jar"]))))
+
+  ;; Disable resource-intensive features for the target system
+  (setq eglot-ignored-server-capabilities
+        '(
+          ;; :hoverProvider                    ; Documentation on hover
+          ;; :completionProvider               ; Code completion
+          ;; :signatureHelpProvider            ; Function signature help
+          ;; :definitionProvider               ; Go to definition
+          ;; :typeDefinitionProvider           ; Go to type definition
+          ;; :implementationProvider           ; Go to implementation
+          ;; :declarationProvider              ; Go to declaration
+          ;; :referencesProvider               ; Find references
+          ;; :documentHighlightProvider        ; Highlight symbols automatically
+          ;; :documentSymbolProvider           ; List symbols in buffer
+          ;; :workspaceSymbolProvider          ; List symbols in workspace
+          ;; :codeActionProvider               ; Execute code actions
+          ;; :codeLensProvider                 ; Code lens
+          ;; :documentFormattingProvider       ; Format buffer
+          ;; :documentRangeFormattingProvider  ; Format portion of buffer
+          ;; :documentOnTypeFormattingProvider ; On-type formatting
+          ;; :renameProvider                   ; Rename symbol
+          ;; :documentLinkProvider             ; Highlight links in document
+          ;; :colorProvider                    ; Decorate color references
+          ;; :foldingRangeProvider             ; Fold regions of buffer
+          ;; :executeCommandProvider           ; Execute custom commands
+          ;; :inlayHintProvider                ; Inlay hints
+          )))
+
+;; Configure Eglot to use the TypeScript server for web-mode buffers.
+;; We add this to eglot-server-programs so Eglot knows what command to run.
+;; (with-eval-after-load 'eglot
+;;   (add-to-list 'eglot-server-programs
+;;                '(web-mode . ("typescript-language-server" "--stdio")))
+;;   (add-to-list 'eglot-server-programs
+;;                `(java-mode . ("/home/jdyer/.emacs.d/bin/jdtls/bin/jdtls"))))
+
+(defun dape--jdtls-start-debug-session (config)
+  "Resolve classpath via JDTLS, start a debug session, and configure dape."
+  (let ((server (eglot-current-server)))
+    (unless server
+      (user-error "Eglot is not active, run M-x eglot first"))
+    (let* ((main-class (plist-get config :mainClass))
+           (project-name (plist-get config :projectName))
+           ;; Ask JDTLS to resolve classpath for the main class
+           (classpath-result (eglot-execute-command
+                              server "vscode.java.resolveClasspath"
+                              (vector main-class project-name)))
+           ;; Keep as vectors so they serialize to JSON arrays (not null)
+           (module-paths (aref classpath-result 0))
+           (class-paths (aref classpath-result 1))
+           ;; Start the debug adapter session inside JDTLS
+           (port (eglot-execute-command
+                  server "vscode.java.startDebugSession" nil)))
+      (setq config (plist-put config 'port port))
+      (setq config (plist-put config 'host "localhost"))
+      (setq config (plist-put config :modulePaths module-paths))
+      (setq config (plist-put config :classPaths class-paths))
+      config)))
+
+(use-package dape
+  :ensure t
+  :bind
+  (("<f5>"    . dape)                       ; Start/continue debugging
+   ("<S-f5>"  . dape-kill)                  ; Stop debugging
+   ("<f9>"    . dape-breakpoint-toggle)     ; Toggle breakpoint
+   ("<f10>"   . dape-next)                  ; Step over
+   ("<f11>"   . dape-step-in)              ; Step into
+   ("<S-f11>" . dape-step-out)             ; Step out
+   ("<C-f5>"  . dape-restart))            ; Restart session
+  :config
+  ;; Java VM startup can be slow; increase from the default 10 seconds
+  (setq dape-request-timeout 30)
+
+  ;; FedProClient: HLA 4 Chat sample
+  (add-to-list 'dape-configs
+               '(fedpro-sample
+                 modes (java-mode java-ts-mode)
+                 fn dape--jdtls-start-debug-session
+                 :type "java"
+                 :request "launch"
+                 :mainClass "se.pitch.oss.chat1516_4.Chat"
+                 :projectName "sample"
+                 :cwd "/home/jdyer/source/FedProClient-main/java"
+                 :console "internalConsole"
+                 :stopAtEntry t))
+
+  ;; FedProClient: HLA Evolved Chat sample
+  (add-to-list 'dape-configs
+               '(fedpro-sample-evolved
+                 modes (java-mode java-ts-mode)
+                 fn dape--jdtls-start-debug-session
+                 :type "java"
+                 :request "launch"
+                 :mainClass "se.pitch.oss.chat1516e.Chat"
+                 :projectName "sample_evolved"
+                 :cwd "/home/jdyer/source/FedProClient-main/java"
+                 :console "internalConsole"
+                 :stopAtEntry t))
+
+  ;; FedProClient: CUIS Server
+  (add-to-list 'dape-configs
+               '(fedpro-cuis-server
+                 modes (java-mode java-ts-mode)
+                 fn dape--jdtls-start-debug-session
+                 :type "java"
+                 :request "launch"
+                 :mainClass "se.pitch.oss.fedpro.cuis.server.CuisMain"
+                 :projectName "cuis-server"
+                 :cwd "/home/jdyer/source/FedProClient-main/java"
+                 :console "internalConsole"
+                 :stopAtEntry t))
+
+  ;; FedProClient: CUIS Demo/Test
+  (add-to-list 'dape-configs
+               '(fedpro-cuis-demo
+                 modes (java-mode java-ts-mode)
+                 fn dape--jdtls-start-debug-session
+                 :type "java"
+                 :request "launch"
+                 :mainClass "se.pitch.oss.fedpro.cuis.test.demo.CuisDemo"
+                 :projectName "cuis-test"
+                 :cwd "/home/jdyer/source/FedProClient-main/java"
+                 :console "internalConsole"
+                 :stopAtEntry t))
+
+  ;; FedProClient: Attach to Gradle --debug-jvm (port 5005)
+  (add-to-list 'dape-configs
+               '(fedpro-attach
+                 modes (java-mode java-ts-mode)
+                 host "localhost"
+                 port 5005
+                 :type "java"
+                 :request "attach"
+                 :hostName "localhost"
+                 :port 5005)))
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:family "Monospace" :foundry "ADBO" :slant normal :weight regular :height 100 :width normal))))
+ '(completions-common-part ((t (:foreground "#87ceeb"))))
+ '(completions-first-difference ((t (:foreground "#ffb6c1"))))
+ '(cursor ((t (:background "coral"))))
+ '(eca-chat-context-cursor-face ((t (:foreground "gainsboro" :underline t :height 1.0))) t)
+ '(ediff-current-diff-A ((t (:extend t :background "#b5daeb" :foreground "#000000"))))
+ '(ediff-even-diff-A ((t (:background "#bafbba" :foreground "#000000" :extend t))))
+ '(ediff-fine-diff-A ((t (:background "#f4bd92" :foreground "#000000" :extend t))))
+ '(ediff-odd-diff-A ((t (:background "#b8fbb8" :foreground "#000000" :extend t))))
+ '(fixed-pitch ((t (:family "Monospace" :height 110))))
+ '(font-lock-warning-face ((t (:foreground "#930000" :inverse-video nil))))
+ '(fringe ((t (:foreground "#2d3743" :background "#2d3743"))))
+ '(hl-line ((t (:background "#3636424250b6"))))
+ '(icomplete-first-match ((t (:foreground "#7c7c75" :background "#3a3a3a" :weight bold))))
+ '(icomplete-selected-match ((t (:foreground "#ffffff" :background "#5f87af" :weight bold))))
+ '(indent-guide-face ((t (:background "#282828" :foreground "#666666"))))
+ '(mode-line ((t (:height 140 :underline nil :overline nil :box nil))))
+ '(mode-line-inactive ((t (:height 140 :underline nil :overline nil :box nil))))
+ '(org-level-1 ((t (:inherit default :weight regular :height 1.0))))
+ '(org-level-2 ((t (:inherit default :weight light :height 1.0))))
+ '(org-level-3 ((t (:inherit default :weight light :height 1.0))))
+ '(org-level-4 ((t (:inherit default :weight light :height 1.0))))
+ '(org-level-5 ((t (:inherit default :weight light :height 1.0))))
+ '(org-level-6 ((t (:inherit default :weight light :height 1.0))))
+ '(org-link ((t (:underline nil))))
+ '(org-tag ((t (:height 0.9))))
+ '(tab-bar ((t (:inherit default :background "#2d3743" :foreground "#e1e1e0"))))
+ '(tab-bar-tab ((t (:inherit 'highlight :background "coral" :foreground "#000000"))))
+ '(tab-bar-tab-inactive ((t (:inherit default :background "#2d3743" :foreground "#e1e1e0" :box (:line-width 1 :color "#2d3743" :style flat-button)))))
+ '(variable-pitch ((t (:family "DejaVu Sans" :height 120 :weight normal))))
+ '(vertical-border ((t (:foreground "#000000"))))
+ '(widget-button ((t (:inherit fixed-pitch :weight regular))))
+ '(window-divider ((t (:foreground "black")))))
+
+(load-theme 'doom-old-hope t)
