@@ -1,0 +1,46 @@
+-*- mode: org; fill-column: 80; eval: (display-fill-column-indicator-mode 1); -*-
+#+title: Emacs Configuration
+#+options: toc:nil author:t title:t
+#+startup: overview
+
+Personal Emacs configuration. Uses a two-layer approach: a vanilla (no external packages) base loaded first, then third-party packages on top via =use-package=.
+
+* Top-level files
+
+- =init.el= :: Main configuration. Loads =Emacs-vanilla/init.el= then layers third-party packages via =use-package=.
+- =early-init.el= :: Runs before the GUI; sets a dark background to avoid a white flash on startup.
+- =emacs--init-all.org= :: Literate version of the full configuration. Tangles to =init.el= and =early-init.el=.
+- =emacs--straight.org= :: Alternative literate configuration using =straight.el= instead of =package.el=.
+- =gallery.el= :: Helpers for batch-processing Hugo blog galleries (thumbnails, picture tags).
+- =menu.el= :: Menu-bar customisations.
+- =abbrev_defs= :: Saved Emacs abbrevs.
+- =templates= :: tempo-style snippet templates.
+- =keymap_with_locked_modifiers.xkb= / =keymap_with_sticky_modifiers.xkb= :: xkb keymap files for system-level key remapping.
+
+* Directories
+
+- =Emacs-vanilla/= :: Vanilla-only Emacs configuration layer (separate repo).  Pure Emacs 27.2+ features; ~60 custom =my/= utility functions, no external packages. Loaded by =init.el= as the base layer.
+- =Emacs-DIYer/= :: DIY extensions layer (separate repo). Small hand-rolled replacements for common packages, aimed at offline use.
+- =offline-packages/= :: Shell scripts for building local ELPA mirrors on an online machine and transferring them to an offline Emacs of a matching version. See [[file:offline-packages/build-mirror.sh][build-mirror.sh]].
+- =ollama-buddy-user-prompts/= :: System prompts for =ollama-buddy= grouped by category (coding, analysis, creative, emacs, documentation).
+- =old-ada-mode/= :: Vendored legacy =ada-mode=.
+- =themes/= :: Local =james-00N-theme.el= colour themes.
+- =eshell/= :: Eshell aliases.
+
+* Configuration layout
+
+The =init.el= file and the literate =emacs--init-all.org= are kept in sync via tangling. Section markers follow the pattern =;; -> section-name= for navigation; major sections include =package-archives=, =org-agenda=, =org-capture=, =use-package=, =keys-navigation=, and =ollama-buddy=.
+
+Key prefixes:
+- =M-l= :: Jump keymap (navigate to common locations/files).
+- =C-q= :: Window/visual operations.
+- =M-s= :: Search/edit operations.
+- =C-c O= :: =ollama-buddy= transient menu.
+
+* Offline package workflow
+
+Run =offline-packages/build-mirror.sh= on an online machine with the same Emacs version as the offline target. It produces a tarball under =emacs-<ver>/<os-slug>/<arch>/= containing a local ELPA archive plus =MANIFEST.txt= and =PACKAGES.txt=. On the offline machine, extract the tarball and point =package-archives= at the resulting directory.
+
+* Licence
+
+See [[file:LICENSE][LICENSE]].
