@@ -189,7 +189,10 @@ else
 fi
 
 # --- Optional GNU Emacs source tarball ---
-# Pulled from / cached in sources/ (shared with fetch-source.sh).
+# Pulled from / cached in sources/ (shared with fetch-source.sh). A download
+# failure (offline machine, corporate TLS interception, etc.) is non-fatal —
+# the toolkit is built without the source bundle and a warning is surfaced.
+SOURCE_SKIP_REASON=""
 if [[ "$WITH_SOURCE" -eq 1 ]]; then
   SOURCES_DIR="${SCRIPT_DIR}/sources"
   mkdir -p "$SOURCES_DIR"
@@ -197,12 +200,19 @@ if [[ "$WITH_SOURCE" -eq 1 ]]; then
   SRC_PATH="${SOURCES_DIR}/${SRC_NAME}"
   if [[ ! -f "$SRC_PATH" ]]; then
     echo ">> Downloading ${SRC_NAME} into sources/..."
-    curl -fL --progress-bar \
-      "https://ftpmirror.gnu.org/emacs/${SRC_NAME}" -o "$SRC_PATH"
+    if ! curl -fL --progress-bar \
+         "https://ftpmirror.gnu.org/emacs/${SRC_NAME}" -o "$SRC_PATH"; then
+      echo "!! Source download failed — continuing without the source bundle." >&2
+      echo "   Pre-fetch on a machine with working TLS:" >&2
+      echo "     ./fetch-source.sh ${EMACS_SOURCE_VERSION}" >&2
+      rm -f "$SRC_PATH"
+      WITH_SOURCE=0
+      SOURCE_SKIP_REASON="download failed (${SRC_NAME})"
+    fi
   else
     echo ">> Using sources/${SRC_NAME}"
   fi
-  cp "$SRC_PATH" "$STAGING/"
+  [[ "$WITH_SOURCE" -eq 1 ]] && cp "$SRC_PATH" "$STAGING/"
 fi
 
 # --- Installer: setup.sh ---
@@ -280,7 +290,11 @@ chmod +x "${STAGING}/setup.sh"
   echo "OS slug:       ${OS_SLUG}"
   echo "Architecture:  ${ARCH}"
   echo "Mirror:        $(basename "$MIRROR_TARBALL") ($(du -h "$MIRROR_TARBALL" | cut -f1))"
-  [[ "$WITH_SOURCE" -eq 1 ]] && echo "Emacs src:     emacs-${EMACS_SOURCE_VERSION}.tar.xz"
+  if [[ "$WITH_SOURCE" -eq 1 ]]; then
+    echo "Emacs src:     emacs-${EMACS_SOURCE_VERSION}.tar.xz"
+  elif [[ -n "$SOURCE_SKIP_REASON" ]]; then
+    echo "Emacs src:     (skipped — ${SOURCE_SKIP_REASON})"
+  fi
   echo
   echo "Contents:"
   (cd "$STAGING" && find . -mindepth 1 -maxdepth 2 -printf '  %p  %s bytes\n' 2>/dev/null \
