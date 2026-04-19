@@ -4,16 +4,19 @@
 #
 # Usage: ./build-mirror.sh [OUT_DIR]
 #   OUT_DIR defaults to $HOME.
+#   EMACS env var selects the Emacs binary (default: emacs).
 #
-# Output layout:
-#   OUT_DIR/emacs-<ver>/<os-slug>/<arch>/<mirror-base>.tar.gz
+# Output layout (flat, architecture-agnostic):
+#   OUT_DIR/emacs-<ver>/<mirror-base>.tar.gz
 # where <mirror-base> is elpa-mirror-emacs-<ver>-<os-slug>-<arch>-<stamp>-<N>pkgs.
+# OS/arch are retained in the filename for provenance but not in the path.
 # The tarball also embeds MANIFEST.txt (build provenance) and PACKAGES.txt.
 
 set -euo pipefail
 
 OUT_DIR="${1:-$HOME}"
-EMACS_VERSION="$(emacs --batch --eval '(princ emacs-version)' 2>&1 | tail -n1)"
+EMACS="${EMACS:-emacs}"
+EMACS_VERSION="$("$EMACS" --batch --eval '(princ emacs-version)' 2>&1 | tail -n1)"
 ARCH="$(uname -m)"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 
@@ -32,7 +35,7 @@ fi
 STAGING="${OUT_DIR}/.elpa-mirror-staging-$$"
 trap 'rm -rf "$STAGING"' EXIT
 
-emacs --batch \
+"$EMACS" --batch \
   --eval "(require 'package)" \
   --eval "(package-initialize)" \
   --eval "(unless (package-installed-p 'elpa-mirror)
@@ -44,7 +47,7 @@ emacs --batch \
   --eval "(elpamr-create-mirror-for-installed \"${STAGING}\" t)"
 
 # PACKAGES.txt — sorted list of installed packages with versions
-emacs --batch \
+"$EMACS" --batch \
   --eval "(require 'package)" \
   --eval "(package-initialize)" \
   --eval "(with-temp-file \"${STAGING}/PACKAGES.txt\"
@@ -60,7 +63,7 @@ emacs --batch \
 PKG_COUNT="$(wc -l < "${STAGING}/PACKAGES.txt" | tr -d ' ')"
 
 MIRROR_BASE="elpa-mirror-emacs-${EMACS_VERSION}-${OS_SLUG}-${ARCH}-${STAMP}-${PKG_COUNT}pkgs"
-TARGET_DIR="${OUT_DIR}/emacs-${EMACS_VERSION}/${OS_SLUG}/${ARCH}"
+TARGET_DIR="${OUT_DIR}/emacs-${EMACS_VERSION}"
 OUT_TARBALL="${TARGET_DIR}/${MIRROR_BASE}.tar.gz"
 
 # MANIFEST.txt — source-system provenance
@@ -74,7 +77,7 @@ OUT_TARBALL="${TARGET_DIR}/${MIRROR_BASE}.tar.gz"
   echo "OS slug:       ${OS_SLUG}"
   echo "Architecture:  ${ARCH}"
   echo "Emacs:         ${EMACS_VERSION}"
-  echo "Emacs binary:  $(command -v emacs)"
+  echo "Emacs binary:  $(command -v "$EMACS" 2>/dev/null || echo "$EMACS")"
   echo "Package count: ${PKG_COUNT}"
 } > "${STAGING}/MANIFEST.txt"
 

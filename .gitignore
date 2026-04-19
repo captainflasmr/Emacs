@@ -10,9 +10,14 @@
 !emacs-init-all.org
 !emacs-straight.org
 !gallery.el
+!early-init.el
 !init.el
 !keymap_with_locked_modifiers.xkb
 !keymap_with_sticky_modifiers.xkb
 !menu.el
 !plantuml jar
 !templates
+!offline-packages/
+!offline-packages/**
+!ollama-buddy-user-prompts/
+!ollama-buddy-user-prompts/**

@@ -739,7 +739,6 @@ ORIG-FUN is the original command and ARGS are its arguments."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-enabled-themes '(doom-oceanic-next))
  '(package-selected-packages nil)
  '(warning-suppress-log-types '((frameset)))
  '(warning-suppress-types '((frameset))))
@@ -974,3 +973,8 @@ ORIG-FUN is the original command and ARGS are its arguments."
  '(window-divider ((t (:foreground "black")))))
 
 (load-theme 'doom-old-hope t)
+
+(use-package dwell-map
+  :load-path "~/source/repos/dwell-map")
+
+ (dwell-map-mode 1)

@@ -2,17 +2,22 @@
 # Build a deployable offline Emacs toolkit tarball.
 # Run on the ONLINE build machine.
 #
-# Picks one of the per-target ELPA mirrors under offline-packages/, bundles
-# it alongside the shared init.el, the Emacs-vanilla and Emacs-DIYer literate
-# configs, an early-init.el if present, and an installer (setup.sh). Optional
-# GNU Emacs source tarball for rebuild on the target.
+# Picks one of the per-version ELPA mirrors under mirrors/emacs-<VER>/ (built
+# by create-install.sh), bundles it alongside the rendered init.el, the
+# Emacs-vanilla and Emacs-DIYer literate configs, an early-init.el if present,
+# and an installer (setup.sh). Optional GNU Emacs source tarball for rebuild
+# on the target.
 #
 # Output: $OUT_DIR/emacs-offline-toolkit-<ver>-<os>-<arch>-<stamp>.tar.xz
 #
 # Usage: ./build-toolkit.sh [options]
-#   -t, --target SPEC       Target "emacs-VER/OS/ARCH" (skip interactive pick)
+#   -t, --target SPEC       Target "emacs-VER" (skip interactive pick)
 #   -o, --out-dir DIR       Output directory (default: $HOME)
-#   -s, --with-source VER   Bundle GNU Emacs source tarball for VER
+#   -s, --with-source VER   Bundle GNU Emacs source tarball for VER.
+#                           Defaults to mirrors/emacs-<VER>/source-version.
+#                           Pass --with-source none to skip.
+#       --local-configs     Copy Emacs-vanilla/DIYer from ~/.emacs.d/<d>/
+#                           instead of pulling fresh from GitHub.
 #   -l, --list              List available targets and exit
 #   -h, --help              This help
 
@@ -20,16 +25,25 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EMACS_D_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+MIRRORS_DIR="${SCRIPT_DIR}/mirrors"
 OUT_DIR="${HOME}"
 WITH_SOURCE=0
 EMACS_SOURCE_VERSION=""
 TARGET=""
+LOCAL_CONFIGS=0
+
+# Literate config sources — fetched from GitHub main by default.
+VANILLA_REPO="captainflasmr/Emacs-vanilla"
+DIYER_REPO="captainflasmr/Emacs-DIYer"
+CONFIG_REF="main"
 
 list_targets() {
-  find "${SCRIPT_DIR}" -mindepth 4 -maxdepth 4 -name 'elpa-mirror-*.tar.gz' 2>/dev/null \
-    | while read -r f; do
-        dir="$(dirname "$f")"
-        echo "${dir#${SCRIPT_DIR}/}"
+  find "${MIRRORS_DIR}" -mindepth 1 -maxdepth 1 -type d -name 'emacs-*' 2>/dev/null \
+    | while read -r d; do
+        # only list dirs that actually contain a mirror tarball
+        if compgen -G "${d}/elpa-mirror-*.tar.gz" >/dev/null; then
+          echo "$(basename "$d")"
+        fi
       done | sort -u
 }
 
@@ -71,6 +85,7 @@ while [[ $# -gt 0 ]]; do
     -t|--target)      TARGET="$2"; shift 2 ;;
     -o|--out-dir)     OUT_DIR="$2"; shift 2 ;;
     -s|--with-source) WITH_SOURCE=1; EMACS_SOURCE_VERSION="$2"; shift 2 ;;
+    --local-configs)  LOCAL_CONFIGS=1; shift ;;
     -l|--list)        list_targets; exit 0 ;;
     -h|--help)        usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage; exit 1 ;;
@@ -79,7 +94,10 @@ done
 
 [[ -z "$TARGET" ]] && TARGET="$(pick_target)"
 
-TARGET_DIR="${SCRIPT_DIR}/${TARGET}"
+# Allow either "emacs-27.2" or plain "27.2".
+[[ "$TARGET" == emacs-* ]] || TARGET="emacs-${TARGET}"
+
+TARGET_DIR="${MIRRORS_DIR}/${TARGET}"
 [[ -d "$TARGET_DIR" ]] || { echo "Target dir not found: $TARGET_DIR" >&2; exit 1; }
 
 # Newest mirror tarball in the target dir wins.
@@ -87,8 +105,26 @@ MIRROR_TARBALL="$(ls -t "${TARGET_DIR}"/elpa-mirror-*.tar.gz 2>/dev/null | head 
 [[ -n "$MIRROR_TARBALL" && -f "$MIRROR_TARBALL" ]] \
   || { echo "No elpa-mirror-*.tar.gz in $TARGET_DIR" >&2; exit 1; }
 
-IFS='/' read -r VER_DIR OS_SLUG ARCH <<< "$TARGET"
-EMACS_VERSION="${VER_DIR#emacs-}"
+EMACS_VERSION="${TARGET#emacs-}"
+# Derive OS_SLUG and ARCH from the mirror tarball filename.
+# Pattern: elpa-mirror-emacs-<VER>-<OS>-<ARCH>-<STAMP>-<N>pkgs.tar.gz
+MIRROR_BASENAME="$(basename "$MIRROR_TARBALL" .tar.gz)"
+_mtail="${MIRROR_BASENAME#elpa-mirror-emacs-${EMACS_VERSION}-}"
+_mtail="${_mtail%-*-*pkgs}"      # strip -<STAMP>-<N>pkgs
+ARCH="${_mtail##*-}"
+OS_SLUG="${_mtail%-${ARCH}}"
+
+# --with-source auto: read the per-version source-version file.
+if [[ "$WITH_SOURCE" -eq 1 && "$EMACS_SOURCE_VERSION" == "auto" ]]; then
+  _srcfile="${TARGET_DIR}/source-version"
+  if [[ -f "$_srcfile" ]]; then
+    EMACS_SOURCE_VERSION="$(head -n1 "$_srcfile" | tr -d '[:space:]')"
+    echo ">> Auto source version from ${_srcfile}: ${EMACS_SOURCE_VERSION}"
+  else
+    echo "!! --with-source auto but ${_srcfile} missing; skipping source bundle" >&2
+    WITH_SOURCE=0
+  fi
+fi
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 TOOLKIT_NAME="emacs-offline-toolkit-${EMACS_VERSION}-${OS_SLUG}-${ARCH}-${STAMP}"
 STAGING="${OUT_DIR}/.${TOOLKIT_NAME}-staging-$$"
@@ -98,38 +134,72 @@ trap 'rm -rf "$STAGING"' EXIT
 echo ">> Staging at: $STAGING"
 
 # --- Core files ---
-cp "${SCRIPT_DIR}/init.el" "${STAGING}/init.el"
+# Prefer the rendered per-version init.el; fall back to the template only if
+# the per-version one hasn't been created yet.
+if [[ -f "${TARGET_DIR}/init.el" ]]; then
+  cp "${TARGET_DIR}/init.el" "${STAGING}/init.el"
+else
+  echo "!! No rendered init.el in ${TARGET_DIR} — re-run create-install.sh ${EMACS_VERSION}" >&2
+  exit 1
+fi
 cp "${MIRROR_TARBALL}" "${STAGING}/"
 [[ -f "${EMACS_D_DIR}/early-init.el" ]] && cp "${EMACS_D_DIR}/early-init.el" "${STAGING}/"
 [[ -f "${SCRIPT_DIR}/README.org" ]] && cp "${SCRIPT_DIR}/README.org" "${STAGING}/"
 
-# --- Literate configs: Emacs-vanilla + Emacs-DIYer (minus VCS/caches) ---
-for d in Emacs-vanilla Emacs-DIYer; do
-  if [[ -d "${EMACS_D_DIR}/${d}" ]]; then
-    echo ">> Copying ${d}..."
-    tar -C "${EMACS_D_DIR}" \
-        --exclude='.git' --exclude='.gitmodules' --exclude='.gitignore' \
-        --exclude='.claude' --exclude='.github' \
-        --exclude='*.elc' --exclude='*~' --exclude='.#*' --exclude='#*#' \
-        --exclude='eln-cache' --exclude='auto-save-list' \
-        -cf - "$d" | tar -C "$STAGING" -xf -
-  else
-    echo "!! ${d} not found, skipping" >&2
-  fi
-done
+# --- Literate configs: Emacs-vanilla + Emacs-DIYer ---
+# By default pulled fresh from GitHub; pass --local-configs to copy from
+# ~/.emacs.d/<d>/ instead (useful when testing uncommitted edits offline).
+
+_tar_excludes=(
+  --exclude='.git' --exclude='.gitmodules' --exclude='.gitignore'
+  --exclude='.claude' --exclude='.github'
+  --exclude='*.elc' --exclude='*~' --exclude='.#*' --exclude='#*#'
+  --exclude='eln-cache' --exclude='auto-save-list'
+)
+
+if [[ "$LOCAL_CONFIGS" -eq 1 ]]; then
+  for d in Emacs-vanilla Emacs-DIYer; do
+    if [[ -d "${EMACS_D_DIR}/${d}" ]]; then
+      echo ">> Copying ${d} from local ${EMACS_D_DIR}/${d}..."
+      tar -C "${EMACS_D_DIR}" "${_tar_excludes[@]}" -cf - "$d" \
+        | tar -C "$STAGING" -xf -
+    else
+      echo "!! ${d} not found locally, skipping" >&2
+    fi
+  done
+else
+  for spec in "Emacs-vanilla:${VANILLA_REPO}" "Emacs-DIYer:${DIYER_REPO}"; do
+    d="${spec%%:*}"
+    repo="${spec#*:}"
+    url="https://github.com/${repo}/archive/refs/heads/${CONFIG_REF}.tar.gz"
+    echo ">> Fetching ${d} from ${repo}@${CONFIG_REF}..."
+    tmp="$(mktemp "${TMPDIR:-/tmp}/${d}-XXXXXX.tar.gz")"
+    if ! curl -fL --progress-bar "$url" -o "$tmp"; then
+      echo "!! Failed to fetch ${url}" >&2
+      rm -f "$tmp"; exit 1
+    fi
+    tar -xzf "$tmp" -C "$STAGING" "${_tar_excludes[@]}"
+    rm -f "$tmp"
+    # GitHub extracts as <repo-basename>-<ref>/; rename to <d>/.
+    extracted="${STAGING}/$(basename "$repo")-${CONFIG_REF}"
+    [[ -d "$extracted" ]] || { echo "!! extracted dir missing: $extracted" >&2; exit 1; }
+    mv "$extracted" "${STAGING}/${d}"
+  done
+fi
 
 # --- Optional GNU Emacs source tarball ---
+# Pulled from / cached in sources/ (shared with fetch-source.sh).
 if [[ "$WITH_SOURCE" -eq 1 ]]; then
-  CACHE_DIR="${SCRIPT_DIR}/.cache"
-  mkdir -p "$CACHE_DIR"
+  SOURCES_DIR="${SCRIPT_DIR}/sources"
+  mkdir -p "$SOURCES_DIR"
   SRC_NAME="emacs-${EMACS_SOURCE_VERSION}.tar.xz"
-  SRC_PATH="${CACHE_DIR}/${SRC_NAME}"
+  SRC_PATH="${SOURCES_DIR}/${SRC_NAME}"
   if [[ ! -f "$SRC_PATH" ]]; then
-    echo ">> Downloading ${SRC_NAME} to cache..."
+    echo ">> Downloading ${SRC_NAME} into sources/..."
     curl -fL --progress-bar \
       "https://ftpmirror.gnu.org/emacs/${SRC_NAME}" -o "$SRC_PATH"
   else
-    echo ">> Using cached ${SRC_NAME}"
+    echo ">> Using sources/${SRC_NAME}"
   fi
   cp "$SRC_PATH" "$STAGING/"
 fi

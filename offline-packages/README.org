@@ -3,31 +3,37 @@
 #+options: toc:2 num:nil
 #+startup: content
 
-A self-contained toolkit for bringing up my Emacs configuration on machines with no network access. Builds per-distro, per-version ELPA mirrors on an online machine and packages everything into a single tarball that can be dropped on an offline target.
+A self-contained toolkit for bringing up my Emacs configuration on machines with no network access. The package set is keyed purely on Emacs version — architecture is not tracked separately. Three scripts do the work:
 
-* Overview
+- =create-install.sh= — on an /online/ machine: render an init.el from a per-version package list, download every package into an isolated =$HOME=, and tar it up as an ELPA mirror.
+- =build-toolkit.sh= — on any /online/ machine with this repo: bundle a chosen version's mirror with =init.el=, the =Emacs-vanilla= + =Emacs-DIYer= literate configs, an installer, and (optionally) the GNU Emacs source tarball.
+- =setup.sh= — lives inside each built toolkit, run on the /offline/ target to drop everything into =~/.emacs.d/=.
 
-The workflow has three pieces:
-
-1. =build-mirror.sh= — run on an /online/ machine that matches the target's Emacs version and OS. Builds an ELPA mirror tarball containing every currently-installed package.
-2. =build-toolkit.sh= — run on any /online/ machine with access to this repo. Picks one of the mirrors built in step 1 and packages it with the shared =init.el=, the =Emacs-vanilla= + =Emacs-DIYer= literate configs, an installer, and (optionally) the GNU Emacs source tarball.
-3. =setup.sh= — lives inside each built toolkit, run on the /offline/ target. Drops everything into =~/.emacs.d/= and extracts the mirror into =~/=.
-
-The =init.el= auto-detects =~/elpa-mirror-emacs-*/= at startup and points =package-archives= at the local mirror when =my/offline-packages= is =t=.  No edits required after install.
+The rendered =init.el= auto-detects =~/elpa-mirror-emacs-*/= at startup and points =package-archives= at the local mirror when one is present. No manual toggle required.
 
 * Directory layout
 
 #+begin_example
 offline-packages/
-├── build-mirror.sh         ← run on online machine matching target
-├── build-toolkit.sh        ← assemble a deployable toolkit
-├── init.el                 ← shared, offline-aware init for all targets
-├── README.org              ← this file
-└── emacs-<VER>/<OS>/<ARCH>/
-    └── elpa-mirror-emacs-<VER>-<OS>-<ARCH>-<STAMP>-<N>pkgs.tar.gz
+├── create-install.sh            ← step 1: build a mirror for an Emacs version
+├── build-mirror.sh              ← called by create-install.sh; wraps elpa-mirror
+├── build-toolkit.sh             ← step 2: assemble a deployable toolkit
+├── fetch-source.sh              ← download GNU Emacs source into sources/
+├── init.el.in                   ← template rendered per Emacs version
+├── packages/
+│   ├── emacs-27.2.el            ← one package symbol per line + SOURCE_VERSION header
+│   └── emacs-30.2.el
+├── mirrors/
+│   ├── emacs-27.2/
+│   │   ├── elpa-mirror-*.tar.gz ← produced by build-mirror.sh
+│   │   ├── init.el              ← rendered from init.el.in
+│   │   └── source-version       ← "27.2" (used by --with-source auto)
+│   └── emacs-30.2/…
+├── sources/                     ← GNU Emacs source tarballs (gitignored)
+│   ├── LATEST_STABLE            ← single line, e.g. "30.1"
+│   └── emacs-30.1.tar.xz        ← fetched by fetch-source.sh
+└── README.org                   ← this file
 #+end_example
-
-Each target directory holds exactly one (or many, newest wins) ELPA mirror tarball built by =build-mirror.sh=. The =emacs-<VER>=, =<OS>= (slug from =/etc/os-release=), and =<ARCH>= (=uname -m=) components come from the machine on which the mirror was built.
 
 Current targets:
 
@@ -35,21 +41,47 @@ Current targets:
 ./build-toolkit.sh --list
 #+end_src
 
-* Building an ELPA mirror (step 1)
+* Package configuration format
 
-Run on the online machine. It must match the offline target's Emacs version and OS as closely as possible, because some packages ship native-compiled =.eln= artefacts tied to the build environment.
+Each =packages/emacs-<VER>.el= is a plain list — one package symbol per line, blank lines and =;= comments ignored. The first =;; SOURCE_VERSION: <v>= header line tells =build-toolkit.sh --with-source auto= which GNU Emacs source tarball to bundle.
+
+#+begin_src text
+;; SOURCE_VERSION: 27.2
+
+async
+use-package
+yaml-mode
+doom-themes
+…
+#+end_src
+
+Edit this file to change the package set — nothing else needs editing. Missing/incompatible packages log to =*Messages*= rather than aborting, so leaving =ef-themes= in an Emacs 27.2 list is harmless (it just won't install).
+
+* Building a mirror (step 1)
+
+Run on the online machine:
 
 #+begin_src sh
 cd ~/.emacs.d/offline-packages
-./build-mirror.sh               # writes under $HOME by default
-./build-mirror.sh /path/to/out  # or pick an explicit output directory
+./create-install.sh 27.2            # or 30.2
 #+end_src
 
-Output tarball layout:
+=create-install.sh= will:
+
+1. Look for an =emacs-<VER>= binary under =$HOME/emacs-versions/=, =$HOME/bin/=, or =$PATH=. If none is found, it offers to invoke =Emacs-vanilla/scripts/build-emacs-versions.sh <VER>= to build it.
+2. Read =packages/emacs-<VER>.el= (package list + =SOURCE_VERSION=).
+3. Render =init.el.in= → a staged init.el with packages injected.
+4. Run =HOME=<staging> emacs-<VER> --batch -l <rendered-init.el>= so packages land in an isolated ELPA directory, independent of your real =~/.emacs.d/=.
+5. Call =build-mirror.sh= (with =EMACS= and =HOME= pointing at the staged Emacs/ELPA) to tar up the mirror into =mirrors/emacs-<VER>/=.
+6. Copy the rendered =init.el= and write a =source-version= file alongside the tarball.
+
+Mirror tarball name:
 
 #+begin_example
-<OUT_DIR>/emacs-<VER>/<OS>/<ARCH>/elpa-mirror-emacs-<VER>-<OS>-<ARCH>-<STAMP>-<N>pkgs.tar.gz
+mirrors/emacs-<VER>/elpa-mirror-emacs-<VER>-<OS>-<ARCH>-<STAMP>-<N>pkgs.tar.gz
 #+end_example
+
+OS/arch stay in the filename for provenance, but the directory is flat — you can build on different distros and all the tarballs coexist under =mirrors/emacs-<VER>/= (newest wins at toolkit-build time).
 
 Inside the tarball:
 
@@ -60,41 +92,54 @@ Inside the tarball:
 | =MANIFEST.txt=       | Build provenance (host, kernel, Emacs version, timestamp) |
 | =PACKAGES.txt=       | Sorted =package  version  summary= listing                |
 
-Move the output into this repo under =offline-packages/emacs-<VER>/<OS>/<ARCH>/= and commit, so =build-toolkit.sh= can find it.
+** Running build-mirror.sh standalone
+
+If you already have packages installed in your /real/ =~/.emacs.d/elpa= and just want to tar them up, you can call =build-mirror.sh= directly:
+
+#+begin_src sh
+./build-mirror.sh                 # writes under $HOME by default
+./build-mirror.sh /path/to/out    # explicit output directory
+EMACS=emacs-27.2 ./build-mirror.sh
+#+end_src
+
+Output layout: =<OUT_DIR>/emacs-<VER>/<mirror-base>.tar.gz= (flat).
 
 * Building a deployable toolkit (step 2)
 
 Interactive:
 
 #+begin_src sh
-cd ~/.emacs.d/offline-packages
-./build-toolkit.sh
+./build-toolkit.sh                      # fzf / numbered menu picker
 #+end_src
-
-Picks a target interactively (via =fzf= if available, otherwise a numbered menu) and writes =$HOME/emacs-offline-toolkit-...tar.xz=.
 
 Non-interactive:
 
 #+begin_src sh
-./build-toolkit.sh --target emacs-27.2/opensuse-leap-15.4/x86_64
-./build-toolkit.sh --target emacs-30.2/garuda/x86_64 --out-dir /tmp
+./build-toolkit.sh --target emacs-27.2
+./build-toolkit.sh --target emacs-30.2 --out-dir /tmp
 #+end_src
 
-With a bundled GNU Emacs source tarball for rebuild on the target:
+With a bundled GNU Emacs source tarball (read from =mirrors/emacs-<VER>/source-version=):
 
 #+begin_src sh
-./build-toolkit.sh -t emacs-27.2/opensuse-leap-15.4/x86_64 -s 27.2
+./build-toolkit.sh -t emacs-27.2 --with-source auto
+#+end_src
+
+Or with an explicit source version:
+
+#+begin_src sh
+./build-toolkit.sh -t emacs-27.2 --with-source 27.2
 #+end_src
 
 Flags:
 
-| Flag                    | Purpose                                    |
-|-------------------------+--------------------------------------------|
-| =-t=, =--target SPEC=   | =emacs-VER/OS/ARCH= spec; skip picker      |
-| =-o=, =--out-dir DIR=   | Output directory (default: =$HOME=)        |
-| =-s=, =--with-source VER= | Download + bundle =emacs-VER.tar.xz=     |
-| =-l=, =--list=          | List available targets and exit            |
-| =-h=, =--help=          | Show help                                  |
+| Flag                       | Purpose                                          |
+|----------------------------+--------------------------------------------------|
+| =-t=, =--target SPEC=      | =emacs-VER= spec; skip picker                    |
+| =-o=, =--out-dir DIR=      | Output directory (default: =$HOME=)              |
+| =-s=, =--with-source VER=  | Bundle =emacs-VER.tar.xz=; =auto= reads the file |
+| =-l=, =--list=             | List available targets and exit                  |
+| =-h=, =--help=             | Show help                                        |
 
 ** What goes into the toolkit
 
@@ -102,7 +147,7 @@ Flags:
 emacs-offline-toolkit-<VER>-<OS>-<ARCH>-<STAMP>/
 ├── MANIFEST.txt            ← build provenance + file inventory
 ├── README.org              ← this document
-├── init.el                 ← shared offline-aware init
+├── init.el                 ← per-version rendered init
 ├── early-init.el           ← if present in ~/.emacs.d/
 ├── setup.sh                ← installer for the offline machine
 ├── elpa-mirror-*.tar.gz    ← the selected ELPA mirror
@@ -110,6 +155,8 @@ emacs-offline-toolkit-<VER>-<OS>-<ARCH>-<STAMP>/
 ├── Emacs-DIYer/            ← literate config (READMEs, init.el, dictionary)
 └── emacs-<VER>.tar.xz      ← optional GNU Emacs source
 #+end_example
+
+=Emacs-vanilla= and =Emacs-DIYer= are pulled fresh from the =main= branches of =captainflasmr/Emacs-vanilla= and =captainflasmr/Emacs-DIYer= on GitHub. Pass =--local-configs= to copy from =~/.emacs.d/<d>/= instead (for testing uncommitted edits).
 
 Excluded from =Emacs-vanilla/= and =Emacs-DIYer/= to keep the toolkit small:
 
@@ -121,16 +168,14 @@ Excluded from =Emacs-vanilla/= and =Emacs-DIYer/= to keep the toolkit small:
 
 Compression is =xz -9e= (extreme preset). Typical sizes:
 
-| Target           | Mirror | Configs | Total (no source) | Total (+source) |
-|------------------+--------+---------+-------------------+-----------------|
+| Target               | Mirror | Configs | Total (no source) | Total (+source) |
+|----------------------+--------+---------+-------------------+-----------------|
 | Emacs 27.2 (14 pkgs) | ~600 KB | ~700 KB | ~1–2 MB          | ~55–65 MB       |
 | Emacs 30.2 (28 pkgs) | ~1.7 MB | ~700 KB | ~2–3 MB          | ~55–65 MB       |
 
-The Emacs source is already =xz=-compressed, so the outer =xz= adds minor overhead but simplifies the distribution to a single archive.
-
 * Deploying on the offline target (step 3)
 
-Copy the =.tar.xz= to the target by whatever means (USB stick, air-gapped file transfer, etc.), then:
+Copy the =.tar.xz= to the target by whatever means (USB, air-gapped transfer, …), then:
 
 #+begin_src sh
 tar -xJf emacs-offline-toolkit-*.tar.xz
@@ -140,26 +185,26 @@ cd emacs-offline-toolkit-*/
 
 =setup.sh= will:
 
-1. Back up any existing =~/.emacs.d/init.el=, =early-init.el=, =Emacs-vanilla/=, and =Emacs-DIYer/= with a timestamped =.pre-toolkit-<STAMP>= suffix.
+1. Back up any existing =~/.emacs.d/init.el=, =early-init.el=, =Emacs-vanilla/=, =Emacs-DIYer/= with a timestamped =.pre-toolkit-<STAMP>= suffix.
 2. Extract the ELPA mirror tarball into =~/=, creating =~/elpa-mirror-emacs-<VER>-<OS>-<ARCH>-<STAMP>-<N>pkgs/=.
 3. Install the literate config directories under =~/.emacs.d/=.
 4. Install =init.el= (and =early-init.el= if bundled) under =~/.emacs.d/=.
 5. Report instructions for building the bundled Emacs source, if present.
 
-Launch Emacs and check =*Messages*=. You should see:
+Launch Emacs and check =*Messages*=:
 
 #+begin_example
 my/offline-packages=t  dir=/home/you/elpa-mirror-emacs-...
 #+end_example
 
-If =dir=<none found>= appears, the ELPA mirror wasn't extracted into =$HOME= or the pattern =~/elpa-mirror-emacs-*= didn't match — see Troubleshooting.
+If =dir=<none found>= appears, the mirror wasn't extracted into =$HOME= or the =~/elpa-mirror-emacs-*= glob didn't match — see Troubleshooting.
 
 * How the online/offline toggle works
 
-The shared =init.el= ([[file:init.el]]) exposes one variable:
+The rendered =init.el= sets:
 
 #+begin_src emacs-lisp
-(setq my/offline-packages t)       ; flip to nil for online archives
+(setq my/offline-packages t)     ; set to nil to force online archives
 (setq my/offline-packages-dir
       (car (sort (file-expand-wildcards
                   (expand-file-name "~/elpa-mirror-emacs-*"))
@@ -167,15 +212,31 @@ The shared =init.el= ([[file:init.el]]) exposes one variable:
 #+end_src
 
 - =t= + a discovered mirror dir → =package-archives= is set to the local mirror only.
-- =nil= (or no mirror found) → =package-archives= falls back to MELPA / ELPA / NonGNU ELPA / Org ELPA over the network.
+- =nil=, or no mirror found → =package-archives= falls back to MELPA / ELPA / Org ELPA over the network.
 
-The mirror directory is detected automatically by globbing =~/elpa-mirror-emacs-*=; newest wins. No edits needed when a new mirror is installed.
+The mirror directory is detected automatically by globbing =~/elpa-mirror-emacs-*=; newest wins. No edits needed when a new mirror is installed. The same file works:
 
-All =require= calls for optional packages are wrapped in =(require 'foo nil t)= so a missing package logs to =*Messages*= rather than aborting init.  =custom-set-variables=, =custom-set-faces=, and the trailing =load-theme= are wrapped in =condition-case= for the same reason — useful when running a pared-down mirror that lacks certain themes.
+- at =create-install.sh= time (no mirror in the staged HOME → online archives used to download packages), and
+- on the deployed offline target (mirror extracted into =$HOME= → local archive used).
+
+All per-package =require= calls are wrapped =(require 'foo nil t)= so a missing package logs rather than aborts. =custom-set-faces= is wrapped in =condition-case= for the same reason.
+
+* Pre-fetching GNU Emacs source
+
+=fetch-source.sh= downloads a GNU Emacs source tarball into =sources/=:
+
+#+begin_src sh
+./fetch-source.sh          # reads sources/LATEST_STABLE (e.g. "30.1")
+./fetch-source.sh 27.2     # explicit version
+#+end_src
+
+The download is idempotent — if =sources/emacs-<VER>.tar.xz= already exists the script is a no-op. Tarballs are gitignored.
+
+=build-emacs-versions.sh= picks them up automatically when =create-install.sh= invokes it: the orchestrator exports =SOURCES_DIR="$SCRIPT_DIR/sources"=, and the build script prefers a tarball there over a fresh =wget= from =ftp.gnu.org=. Pre-fetch once on the online machine and subsequent builds (online or offline-then-online) reuse the cached source.
 
 * Rebuilding Emacs from the bundled source (optional)
 
-When =--with-source VER= was used at toolkit build time, an =emacs-<VER>.tar.xz= is bundled. To build:
+When =--with-source VER= (or =--with-source auto=) was used at toolkit build time, an =emacs-<VER>.tar.xz= is bundled. To build:
 
 #+begin_src sh
 tar -xf emacs-<VER>.tar.xz -C /tmp
@@ -186,27 +247,29 @@ make install
 export PATH="$HOME/.local/bin:$PATH"
 #+end_src
 
-Dependencies the configure step will typically want installed from the distro's /own/ offline repos:
+Dependencies the =configure= step will typically want from the distro's /own/ offline repos:
 
-- =libgtk-3-dev= or =libncurses-dev= depending on whether you want GUI or TUI
+- =libgtk-3-dev= or =libncurses-dev= (GUI vs TUI)
 - =libgnutls28-dev=, =libxml2-dev=, =libjpeg-dev=, =libpng-dev=, =libtiff-dev=
-- =libgif-dev=, =libjansson-dev= (for native JSON), =libtree-sitter-dev=
+- =libgif-dev=, =libjansson-dev=, =libtree-sitter-dev=
 
 These are outside the toolkit — each distro bundles them differently.
+
+For building /many/ Emacs versions on the online machine, see =Emacs-vanilla/scripts/build-emacs-versions.sh=, which =create-install.sh= invokes automatically if the requested version isn't already installed.
 
 * Troubleshooting
 
 ** Package X skipped at startup
 
-Look in =*Messages*= for lines like:
+Look in =*Messages*= for:
 
 #+begin_example
 my/ensure-package: skipping ef-themes ((error . "..."))
 #+end_example
 
-Reasons this normally happens offline:
+Reasons:
 - Package requires a newer Emacs than the target (=ef-themes= needs 28.1+).
-- Package wasn't in the online machine's =package-alist= when the mirror was built — rebuild the mirror with the package installed first.
+- Package wasn't in =packages/emacs-<VER>.el= when the mirror was built — add it and re-run =create-install.sh=.
 
 ** my/offline-packages-dir=<none found>
 
@@ -216,22 +279,21 @@ The ELPA mirror didn't get extracted into =$HOME=. Run:
 ls -d ~/elpa-mirror-emacs-*
 #+end_src
 
-If there's no match, re-run =setup.sh= from inside the extracted toolkit directory, or extract the mirror manually:
+If nothing matches, re-run =setup.sh= from inside the extracted toolkit or extract the mirror manually:
 
 #+begin_src sh
 tar -xzf ~/.../elpa-mirror-emacs-*.tar.gz -C "$HOME"
 #+end_src
 
-** Theme file not found
-
-The toolkit bundles whatever was on the online machine at mirror-build time.  If a theme isn't present the =load-theme= calls log a message and init continues. Either pick a different theme, or rebuild the mirror after installing the theme.
-
 ** Mixed Emacs versions
 
-Mirrors are version-locked (the name encodes the Emacs version and the packages' =:defined-in= metadata may reference version-specific files). Do /not/ build a mirror on Emacs 30 and deploy it to Emacs 27.2 — some packages (e.g. =transient=) will be rejected by =package-install=.
+Mirrors are version-locked. Don't build a mirror on Emacs 30 and deploy it to Emacs 27 — some packages (e.g. =transient=) will be rejected by =package-install=. =create-install.sh= enforces this by running the install under a specifically named =emacs-<VER>= binary.
 
 * See also
 
-- =build-mirror.sh= — per-target ELPA mirror builder
+- =create-install.sh= — orchestrator
+- =build-mirror.sh= — per-version ELPA mirror builder
 - =build-toolkit.sh= — deployable toolkit assembler
-- =init.el= — the shared init itself (online/offline toggle lives here)
+- =init.el.in= — init template (=@@PACKAGES@@=, =@@EMACS_VERSION@@=)
+- =packages/emacs-<VER>.el= — per-version package list
+- =Emacs-vanilla/scripts/build-emacs-versions.sh= — builds GNU Emacs from source
