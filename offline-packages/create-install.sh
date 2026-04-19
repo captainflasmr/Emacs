@@ -18,6 +18,7 @@
 #   <VER>                  Emacs version to target (e.g. 27.2, 30.2)
 #       --mirror-only      Stop after the mirror; skip build-toolkit.sh chain
 #       --out-dir DIR      Passed through to build-toolkit.sh
+#       --gzip             Passed through: .tar.gz instead of .tar.xz (faster)
 #   -l, --list             List available packages/emacs-<VER>.el configs
 #   -h, --help             This help
 
@@ -44,10 +45,12 @@ usage() {
 VER=""
 CHAIN_TOOLKIT=1
 TOOLKIT_OUT_DIR=""
+USE_GZIP=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --mirror-only) CHAIN_TOOLKIT=0; shift ;;
     --out-dir)     TOOLKIT_OUT_DIR="$2"; shift 2 ;;
+    --gzip)        USE_GZIP=1; shift ;;
     -l|--list)     list_configs; exit 0 ;;
     -h|--help)     usage; exit 0 ;;
     -*) echo "Unknown option: $1" >&2; usage; exit 1 ;;
@@ -178,6 +181,7 @@ if [[ "$CHAIN_TOOLKIT" -eq 1 ]]; then
     || { echo "build-toolkit.sh not found/executable: $TOOLKIT_SCRIPT" >&2; exit 1; }
   toolkit_args=(--target "emacs-${VER}" --with-source auto)
   [[ -n "$TOOLKIT_OUT_DIR" ]] && toolkit_args+=(--out-dir "$TOOLKIT_OUT_DIR")
+  [[ "$USE_GZIP" -eq 1 ]] && toolkit_args+=(--gzip)
   echo
   echo ">> Chaining into build-toolkit.sh ${toolkit_args[*]}..."
   "$TOOLKIT_SCRIPT" "${toolkit_args[@]}"

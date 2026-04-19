@@ -18,6 +18,8 @@
 #                           Pass --with-source none to skip.
 #       --local-configs     Copy Emacs-vanilla/DIYer from ~/.emacs.d/<d>/
 #                           instead of pulling fresh from GitHub.
+#       --gzip              Use gzip (.tar.gz) instead of xz -9e (.tar.xz).
+#                           Faster compress/decompress, less RAM, larger output.
 #   -l, --list              List available targets and exit
 #   -h, --help              This help
 
@@ -31,6 +33,7 @@ WITH_SOURCE=0
 EMACS_SOURCE_VERSION=""
 TARGET=""
 LOCAL_CONFIGS=0
+USE_GZIP=0
 
 # Literate config sources — fetched from GitHub main by default.
 VANILLA_REPO="captainflasmr/Emacs-vanilla"
@@ -86,6 +89,7 @@ while [[ $# -gt 0 ]]; do
     -o|--out-dir)     OUT_DIR="$2"; shift 2 ;;
     -s|--with-source) WITH_SOURCE=1; EMACS_SOURCE_VERSION="$2"; shift 2 ;;
     --local-configs)  LOCAL_CONFIGS=1; shift ;;
+    --gzip)           USE_GZIP=1; shift ;;
     -l|--list)        list_targets; exit 0 ;;
     -h|--help)        usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage; exit 1 ;;
@@ -301,15 +305,24 @@ chmod +x "${STAGING}/setup.sh"
      | sed 's|\./||' | sort)
 } > "${STAGING}/MANIFEST.txt"
 
-# --- Package: tar + xz -9e for maximum compression of text content ---
+# --- Package: tar + xz -9e (default) or gzip (--gzip) ---
 FINAL="${OUT_DIR}/${TOOLKIT_NAME}"
 mv "$STAGING" "$FINAL"
 trap 'rm -rf "$FINAL"' EXIT
 
-OUT_TAR="${OUT_DIR}/${TOOLKIT_NAME}.tar.xz"
-echo ">> Compressing to ${OUT_TAR} (xz -9e)..."
-# --sort=name for deterministic ordering; XZ_OPT=-9e for extreme compression.
-XZ_OPT='-9e -T1' tar -C "$OUT_DIR" --sort=name -cJf "$OUT_TAR" "$TOOLKIT_NAME"
+if [[ "$USE_GZIP" -eq 1 ]]; then
+  OUT_TAR="${OUT_DIR}/${TOOLKIT_NAME}.tar.gz"
+  TAR_CAT_FLAG=-xzOf
+  TAR_LIST_FLAG=-xzf
+  echo ">> Compressing to ${OUT_TAR} (gzip)..."
+  tar -C "$OUT_DIR" --sort=name -czf "$OUT_TAR" "$TOOLKIT_NAME"
+else
+  OUT_TAR="${OUT_DIR}/${TOOLKIT_NAME}.tar.xz"
+  TAR_CAT_FLAG=-xJOf
+  TAR_LIST_FLAG=-xJf
+  echo ">> Compressing to ${OUT_TAR} (xz -9e)..."
+  XZ_OPT='-9e -T1' tar -C "$OUT_DIR" --sort=name -cJf "$OUT_TAR" "$TOOLKIT_NAME"
+fi
 
 rm -rf "$FINAL"
 trap - EXIT
@@ -320,10 +333,10 @@ cat <<EOF
 Built: ${OUT_TAR}  (${SIZE})
 
 --- MANIFEST.txt ---
-$(tar -xJOf "$OUT_TAR" "${TOOLKIT_NAME}/MANIFEST.txt")
+$(tar "$TAR_CAT_FLAG" "$OUT_TAR" "${TOOLKIT_NAME}/MANIFEST.txt")
 
 On the offline machine:
-  tar -xJf $(basename "$OUT_TAR")
+  tar ${TAR_LIST_FLAG} $(basename "$OUT_TAR")
   cd ${TOOLKIT_NAME}
   ./setup.sh
 EOF

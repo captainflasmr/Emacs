@@ -141,6 +141,7 @@ Flags:
 | =-t=, =--target SPEC=      | =emacs-VER= spec; skip picker                    |
 | =-o=, =--out-dir DIR=      | Output directory (default: =$HOME=)              |
 | =-s=, =--with-source VER=  | Bundle =emacs-VER.tar.xz=; =auto= reads LATEST_STABLE |
+| =--gzip=                   | Use gzip (.tar.gz) instead of xz -9e (.tar.xz)   |
 | =-l=, =--list=             | List available targets and exit                  |
 | =-h=, =--help=             | Show help                                        |
 
@@ -169,7 +170,7 @@ Excluded from =Emacs-vanilla/= and =Emacs-DIYer/= to keep the toolkit small:
 
 ** Size
 
-Compression is =xz -9e= (extreme preset). Typical sizes:
+Default compression is =xz -9e= (extreme preset). Pass =--gzip= for faster compress/decompress at the cost of a larger tarball — useful during iteration. Typical sizes with xz:
 
 | Target               | Mirror | Configs | Total (no source) | Total (+source) |
 |----------------------+--------+---------+-------------------+-----------------|
