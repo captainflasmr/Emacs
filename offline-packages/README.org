@@ -5,7 +5,7 @@
 
 A self-contained toolkit for bringing up my Emacs configuration on machines with no network access. The package set is keyed purely on Emacs version — architecture is not tracked separately. Three scripts do the work:
 
-- =create-install.sh= — on an /online/ machine: render an init.el from a per-version package list, download every package into an isolated =$HOME=, and tar it up as an ELPA mirror.
+- =create-install.sh= — on an /online/ machine: render an init.el from a per-version package list, download every package into an isolated =$HOME=, tar it up as an ELPA mirror, and (by default) chain into =build-toolkit.sh= to produce the deployable tarball.
 - =build-toolkit.sh= — on any /online/ machine with this repo: bundle a chosen version's mirror with =init.el=, the =Emacs-vanilla= + =Emacs-DIYer= literate configs, an installer, and (optionally) the GNU Emacs source tarball.
 - =setup.sh= — lives inside each built toolkit, run on the /offline/ target to drop everything into =~/.emacs.d/=.
 
@@ -26,8 +26,7 @@ offline-packages/
 ├── mirrors/
 │   ├── emacs-27.2/
 │   │   ├── elpa-mirror-*.tar.gz ← produced by build-mirror.sh
-│   │   ├── init.el              ← rendered from init.el.in
-│   │   └── source-version       ← "27.2" (used by --with-source auto)
+│   │   └── init.el              ← rendered from init.el.in
 │   └── emacs-30.2/…
 ├── sources/                     ← GNU Emacs source tarballs (gitignored)
 │   ├── LATEST_STABLE            ← single line, e.g. "30.1"
@@ -43,11 +42,9 @@ Current targets:
 
 * Package configuration format
 
-Each =packages/emacs-<VER>.el= is a plain list — one package symbol per line, blank lines and =;= comments ignored. The first =;; SOURCE_VERSION: <v>= header line tells =build-toolkit.sh --with-source auto= which GNU Emacs source tarball to bundle.
+Each =packages/emacs-<VER>.el= is a plain list — one package symbol per line, blank lines and =;= comments ignored.
 
 #+begin_src text
-;; SOURCE_VERSION: 27.2
-
 async
 use-package
 yaml-mode
@@ -57,23 +54,29 @@ doom-themes
 
 Edit this file to change the package set — nothing else needs editing. Missing/incompatible packages log to =*Messages*= rather than aborting, so leaving =ef-themes= in an Emacs 27.2 list is harmless (it just won't install).
 
+The GNU Emacs source tarball bundled with the toolkit is decoupled from the mirror version: =build-toolkit.sh --with-source auto= reads =sources/LATEST_STABLE= (a single canonical version used for /every/ target). See "Pre-fetching GNU Emacs source" below.
+
 * Building a mirror (step 1)
 
 Run on the online machine:
 
 #+begin_src sh
 cd ~/.emacs.d/offline-packages
-./create-install.sh 27.2            # or 30.2
+./create-install.sh 27.2               # mirror + deployable toolkit (default)
+./create-install.sh 27.2 --mirror-only # stop after the mirror
+./create-install.sh 27.2 --out-dir /tmp # toolkit tarball goes to /tmp
 #+end_src
+
+By default, once the mirror is built =create-install.sh= invokes =build-toolkit.sh --target emacs-<VER> --with-source auto=, producing =$HOME/emacs-offline-toolkit-<VER>-*.tar.xz=. Pass =--mirror-only= if you only want the ELPA mirror under =mirrors/=.
 
 =create-install.sh= will:
 
 1. Look for an =emacs-<VER>= binary under =$HOME/emacs-versions/=, =$HOME/bin/=, or =$PATH=. If none is found, it offers to invoke =Emacs-vanilla/scripts/build-emacs-versions.sh <VER>= to build it.
-2. Read =packages/emacs-<VER>.el= (package list + =SOURCE_VERSION=).
+2. Read =packages/emacs-<VER>.el= (package list).
 3. Render =init.el.in= → a staged init.el with packages injected.
 4. Run =HOME=<staging> emacs-<VER> --batch -l <rendered-init.el>= so packages land in an isolated ELPA directory, independent of your real =~/.emacs.d/=.
-5. Call =build-mirror.sh= (with =EMACS= and =HOME= pointing at the staged Emacs/ELPA) to tar up the mirror into =mirrors/emacs-<VER>/=.
-6. Copy the rendered =init.el= and write a =source-version= file alongside the tarball.
+5. Call =build-mirror.sh= (with =EMACS= and =HOME= pointing at the staged Emacs/ELPA) to tar up the mirror into =mirrors/emacs-<VER>/=, and copy the rendered =init.el= alongside the tarball.
+6. Unless =--mirror-only= was passed, chain into =build-toolkit.sh --target emacs-<VER> --with-source auto=.
 
 Mirror tarball name:
 
@@ -119,7 +122,7 @@ Non-interactive:
 ./build-toolkit.sh --target emacs-30.2 --out-dir /tmp
 #+end_src
 
-With a bundled GNU Emacs source tarball (read from =mirrors/emacs-<VER>/source-version=):
+With a bundled GNU Emacs source tarball (version read from =sources/LATEST_STABLE=):
 
 #+begin_src sh
 ./build-toolkit.sh -t emacs-27.2 --with-source auto
@@ -137,7 +140,7 @@ Flags:
 |----------------------------+--------------------------------------------------|
 | =-t=, =--target SPEC=      | =emacs-VER= spec; skip picker                    |
 | =-o=, =--out-dir DIR=      | Output directory (default: =$HOME=)              |
-| =-s=, =--with-source VER=  | Bundle =emacs-VER.tar.xz=; =auto= reads the file |
+| =-s=, =--with-source VER=  | Bundle =emacs-VER.tar.xz=; =auto= reads LATEST_STABLE |
 | =-l=, =--list=             | List available targets and exit                  |
 | =-h=, =--help=             | Show help                                        |
 
@@ -233,6 +236,8 @@ All per-package =require= calls are wrapped =(require 'foo nil t)= so a missing 
 The download is idempotent — if =sources/emacs-<VER>.tar.xz= already exists the script is a no-op. Tarballs are gitignored.
 
 =build-emacs-versions.sh= picks them up automatically when =create-install.sh= invokes it: the orchestrator exports =SOURCES_DIR="$SCRIPT_DIR/sources"=, and the build script prefers a tarball there over a fresh =wget= from =ftp.gnu.org=. Pre-fetch once on the online machine and subsequent builds (online or offline-then-online) reuse the cached source.
+
+=build-toolkit.sh --with-source auto= (the default when =create-install.sh= chains into it) reads the version from =sources/LATEST_STABLE= and bundles =sources/emacs-<LATEST_STABLE>.tar.xz=. If the tarball isn't cached it downloads once from =ftpmirror.gnu.org= into =sources/=. One canonical source version is bundled across /all/ target mirrors.
 
 * Rebuilding Emacs from the bundled source (optional)
 

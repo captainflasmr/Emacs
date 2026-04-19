@@ -1,4 +1,3 @@
-;; SOURCE_VERSION: 27.2
 ;; One package name per line. Comments start with ';'. Blank lines ignored.
 ;; Packages that fail to install (e.g. require a newer Emacs) are logged
 ;; and skipped, not fatal.

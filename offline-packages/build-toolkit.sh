@@ -14,7 +14,7 @@
 #   -t, --target SPEC       Target "emacs-VER" (skip interactive pick)
 #   -o, --out-dir DIR       Output directory (default: $HOME)
 #   -s, --with-source VER   Bundle GNU Emacs source tarball for VER.
-#                           Defaults to mirrors/emacs-<VER>/source-version.
+#                           Use "auto" to read sources/LATEST_STABLE.
 #                           Pass --with-source none to skip.
 #       --local-configs     Copy Emacs-vanilla/DIYer from ~/.emacs.d/<d>/
 #                           instead of pulling fresh from GitHub.
@@ -114,9 +114,10 @@ _mtail="${_mtail%-*-*pkgs}"      # strip -<STAMP>-<N>pkgs
 ARCH="${_mtail##*-}"
 OS_SLUG="${_mtail%-${ARCH}}"
 
-# --with-source auto: read the per-version source-version file.
+# --with-source auto: read sources/LATEST_STABLE (single canonical version
+# bundled regardless of the target mirror version).
 if [[ "$WITH_SOURCE" -eq 1 && "$EMACS_SOURCE_VERSION" == "auto" ]]; then
-  _srcfile="${TARGET_DIR}/source-version"
+  _srcfile="${SCRIPT_DIR}/sources/LATEST_STABLE"
   if [[ -f "$_srcfile" ]]; then
     EMACS_SOURCE_VERSION="$(head -n1 "$_srcfile" | tr -d '[:space:]')"
     echo ">> Auto source version from ${_srcfile}: ${EMACS_SOURCE_VERSION}"

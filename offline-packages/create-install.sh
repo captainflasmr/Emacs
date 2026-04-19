@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
-# create-install.sh — orchestrate building an offline ELPA mirror for a given
-# Emacs version. Wraps build-mirror.sh.
+# create-install.sh — build an offline ELPA mirror and (by default) chain into
+# build-toolkit.sh to produce a deployable toolkit tarball. Wraps
+# build-mirror.sh + build-toolkit.sh.
 #
 # Flow:
-#   1. Detect emacs-<VER> binary; if missing, offer a picker of installed
-#      versions or fall through to build-emacs-versions.sh.
-#   2. Read packages/emacs-<VER>.el for the package list + SOURCE_VERSION.
+#   1. Detect emacs-<VER> binary; if missing, offer to build via
+#      build-emacs-versions.sh.
+#   2. Read packages/emacs-<VER>.el for the package list.
 #   3. Render init.el.in -> $STAGE/.emacs.d/init.el (packages injected).
 #   4. Run emacs-<VER> under an isolated HOME to download every package.
-#   5. Run build-mirror.sh to tar the resulting ELPA into mirrors/emacs-<VER>/.
-#   6. Also drop the rendered init.el + source-version into mirrors/emacs-<VER>/
-#      so build-toolkit.sh can pick them up.
+#   5. Run build-mirror.sh to tar the resulting ELPA into mirrors/emacs-<VER>/
+#      and copy the rendered init.el alongside it.
+#   6. Chain into build-toolkit.sh --target emacs-<VER> --with-source auto
+#      (unless --mirror-only). Source version comes from sources/LATEST_STABLE.
 #
 # Usage: ./create-install.sh <VER> [options]
 #   <VER>                  Emacs version to target (e.g. 27.2, 30.2)
+#       --mirror-only      Stop after the mirror; skip build-toolkit.sh chain
+#       --out-dir DIR      Passed through to build-toolkit.sh
 #   -l, --list             List available packages/emacs-<VER>.el configs
 #   -h, --help             This help
 
@@ -38,10 +42,14 @@ usage() {
 
 # --- args ---
 VER=""
+CHAIN_TOOLKIT=1
+TOOLKIT_OUT_DIR=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -l|--list) list_configs; exit 0 ;;
-    -h|--help) usage; exit 0 ;;
+    --mirror-only) CHAIN_TOOLKIT=0; shift ;;
+    --out-dir)     TOOLKIT_OUT_DIR="$2"; shift 2 ;;
+    -l|--list)     list_configs; exit 0 ;;
+    -h|--help)     usage; exit 0 ;;
     -*) echo "Unknown option: $1" >&2; usage; exit 1 ;;
     *) VER="${1#emacs-}"; shift ;;
   esac
@@ -113,17 +121,12 @@ echo ">> Using Emacs binary: ${EMACS_BIN}"
 "$EMACS_BIN" --version | head -n1
 
 # --- parse packages/emacs-<VER>.el ---
-SOURCE_VERSION="$(grep -oE ';; SOURCE_VERSION:[[:space:]]*\S+' "$PKG_FILE" \
-                  | awk '{print $NF}' | head -n1)"
-SOURCE_VERSION="${SOURCE_VERSION:-${VER}}"
-
 # Package list: every non-comment, non-blank line is one symbol.
 PACKAGES="$(grep -vE '^\s*(;|$)' "$PKG_FILE" | tr '\n' ' ' | sed 's/[[:space:]]\+$//')"
 [[ -n "$PACKAGES" ]] \
   || { echo "No packages found in $PKG_FILE" >&2; exit 1; }
 PKG_COUNT_CFG="$(wc -w <<< "$PACKAGES")"
 echo ">> Packages (${PKG_COUNT_CFG}): ${PACKAGES}"
-echo ">> Source version: ${SOURCE_VERSION}"
 
 # --- render init.el from template ---
 TEMPLATE="${SCRIPT_DIR}/init.el.in"
@@ -159,12 +162,23 @@ echo ">> Invoking build-mirror.sh (OUT_DIR=${MIRRORS_DIR})..."
 HOME="$STAGE" EMACS="$EMACS_BIN" "${SCRIPT_DIR}/build-mirror.sh" "$MIRRORS_DIR" 2>&1 \
   | sed 's/^/   /'
 
-# --- drop the rendered init.el + source-version alongside the tarball ---
+# --- drop the rendered init.el alongside the tarball ---
 OUT_VER_DIR="${MIRRORS_DIR}/emacs-${VER}"
 mkdir -p "$OUT_VER_DIR"
 cp "$RENDERED" "${OUT_VER_DIR}/init.el"
-echo "${SOURCE_VERSION}" > "${OUT_VER_DIR}/source-version"
 
 echo
 echo "Done. Artefacts in: ${OUT_VER_DIR}"
 ls -lh "$OUT_VER_DIR"
+
+# --- optional: chain into build-toolkit.sh ---
+if [[ "$CHAIN_TOOLKIT" -eq 1 ]]; then
+  TOOLKIT_SCRIPT="${SCRIPT_DIR}/build-toolkit.sh"
+  [[ -x "$TOOLKIT_SCRIPT" ]] \
+    || { echo "build-toolkit.sh not found/executable: $TOOLKIT_SCRIPT" >&2; exit 1; }
+  toolkit_args=(--target "emacs-${VER}" --with-source auto)
+  [[ -n "$TOOLKIT_OUT_DIR" ]] && toolkit_args+=(--out-dir "$TOOLKIT_OUT_DIR")
+  echo
+  echo ">> Chaining into build-toolkit.sh ${toolkit_args[*]}..."
+  "$TOOLKIT_SCRIPT" "${toolkit_args[@]}"
+fi
