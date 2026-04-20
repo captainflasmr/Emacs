@@ -192,6 +192,20 @@ else
   done
 fi
 
+# --- Local packages ---
+# Drop user-created or locally-modified packages into offline-packages/local-packages/.
+# Either foo.el at the top level, or foo/foo.el (+ siblings) in a subdirectory.
+# Installed on the target at ~/.emacs.d/local-packages/ and wired onto load-path
+# by init.el; not compiled (done on first load, version-agnostic).
+LOCAL_PKG_SRC="${SCRIPT_DIR}/local-packages"
+if [[ -d "$LOCAL_PKG_SRC" ]] \
+   && find "$LOCAL_PKG_SRC" -mindepth 1 ! -name '.gitkeep' -print -quit | grep -q .; then
+  echo ">> Copying local-packages from ${LOCAL_PKG_SRC}..."
+  mkdir -p "${STAGING}/local-packages"
+  tar -C "$LOCAL_PKG_SRC" "${_tar_excludes[@]}" --exclude='.gitkeep' -cf - . \
+    | tar -C "${STAGING}/local-packages" -xf -
+fi
+
 # --- Optional GNU Emacs source tarball ---
 # Pulled from / cached in sources/ (shared with fetch-source.sh). A download
 # failure (offline machine, corporate TLS interception, etc.) is non-fatal —
@@ -261,6 +275,18 @@ for d in Emacs-vanilla Emacs-DIYer; do
   fi
 done
 
+# Install local-packages if bundled. Source only, no byte-compilation — the
+# target Emacs will compile on first load if it wants to.
+if [[ -d "${HERE}/local-packages" ]]; then
+  if [[ -d "${EMACS_D}/local-packages" ]]; then
+    echo "   backing up existing local-packages/ -> local-packages${BACKUP_SUFFIX}/"
+    mv "${EMACS_D}/local-packages" "${EMACS_D}/local-packages${BACKUP_SUFFIX}"
+  fi
+  echo ">> Installing local-packages to ${EMACS_D}/local-packages"
+  mkdir -p "${EMACS_D}/local-packages"
+  cp -a "${HERE}/local-packages/." "${EMACS_D}/local-packages/"
+fi
+
 # Install init.el and (optional) early-init.el.
 cp "${HERE}/init.el" "${EMACS_D}/init.el"
 [[ -f "${HERE}/early-init.el" ]] && cp "${HERE}/early-init.el" "${EMACS_D}/early-init.el"
@@ -294,6 +320,11 @@ chmod +x "${STAGING}/setup.sh"
   echo "OS slug:       ${OS_SLUG}"
   echo "Architecture:  ${ARCH}"
   echo "Mirror:        $(basename "$MIRROR_TARBALL") ($(du -h "$MIRROR_TARBALL" | cut -f1))"
+  if [[ -d "${STAGING}/local-packages" ]]; then
+    _lp_count="$(find "${STAGING}/local-packages" -maxdepth 1 -mindepth 1 \
+                  \( -type d -o -name '*.el' \) | wc -l)"
+    echo "Local pkgs:    ${_lp_count} entries under local-packages/"
+  fi
   if [[ "$WITH_SOURCE" -eq 1 ]]; then
     echo "Emacs src:     emacs-${EMACS_SOURCE_VERSION}.tar.xz"
   elif [[ -n "$SOURCE_SKIP_REASON" ]]; then

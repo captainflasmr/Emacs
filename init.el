@@ -495,7 +495,7 @@
   (setq org-social-my-public-url "https://host.org-social.org/captainflasmr/social.org"))
 
 (use-package dired-video-thumbnail
-  :load-path "~/source/repos/dired-video-thumbnail"
+  :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/dired-video-thumbnail"
   :bind (:map dired-mode-map
               ("C-t v" . dired-video-thumbnail))
   :custom
@@ -719,7 +719,7 @@ ORIG-FUN is the original command and ARGS are its arguments."
 ;;   (setq dape-repl-echo-shell-output t))
 
 (use-package dired-image-thumbnail
-  :load-path "/home/jdyer/source/repos/dired-image-thumbnail"
+  :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/dired-image-thumbnail"
   :demand t
   :config
   (setq dired-image-thumbnail-auto-accept t)
@@ -739,7 +739,13 @@ ORIG-FUN is the original command and ARGS are its arguments."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages nil)
+ '(custom-enabled-themes '(misterioso))
+ '(package-selected-packages
+   '(agent-shell async csv-mode dape doom-themes ef-themes elpa-mirror
+                 gruvbox-theme i3wm-config-mode org-social ox-hugo
+                 package-lint ready-player timu-caribbean-theme
+                 timu-rouge-theme timu-spacegrey-theme web-mode
+                 yaml-mode ztree))
  '(warning-suppress-log-types '((frameset)))
  '(warning-suppress-types '((frameset))))
 
@@ -787,7 +793,7 @@ ORIG-FUN is the original command and ARGS are its arguments."
 ;; -> qvm
 ;;
 (use-package qemu-manager
-  :load-path "~/source/repos/qemu-manager"
+  :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/qemu-manager"
   :bind ("C-c q" . qemu-manager-list))
 
 (use-package eglot
@@ -975,6 +981,6 @@ ORIG-FUN is the original command and ARGS are its arguments."
 (load-theme 'doom-old-hope t)
 
 (use-package dwell-map
-  :load-path "~/source/repos/dwell-map")
+  :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/dwell-map")
 
  (dwell-map-mode 1)

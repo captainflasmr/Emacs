@@ -1,3 +1,7 @@
 # GNU Emacs source tarballs — large, downloadable on demand via fetch-source.sh
 sources/*.tar.xz
 sources/*.tar.gz
+
+# Local/vendored packages — contents vary per machine, may be their own repos
+local-packages/*
+!local-packages/.gitkeep

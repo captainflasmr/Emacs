@@ -23,6 +23,9 @@ offline-packages/
 ├── packages/
 │   ├── emacs-27.2.el            ← one package symbol per line + SOURCE_VERSION header
 │   └── emacs-30.2.el
+├── local-packages/              ← drop zone for self-written / locally-patched packages
+│   ├── foo.el                   ← single-file package, OR
+│   └── bar/bar.el               ← multi-file package in its own subdir
 ├── mirrors/
 │   ├── emacs-27.2/
 │   │   ├── elpa-mirror-*.tar.gz ← produced by build-mirror.sh
@@ -55,6 +58,23 @@ doom-themes
 Edit this file to change the package set — nothing else needs editing. Missing/incompatible packages log to =*Messages*= rather than aborting, so leaving =ef-themes= in an Emacs 27.2 list is harmless (it just won't install).
 
 The GNU Emacs source tarball bundled with the toolkit is decoupled from the mirror version: =build-toolkit.sh --with-source auto= reads =sources/LATEST_STABLE= (a single canonical version used for /every/ target). See "Pre-fetching GNU Emacs source" below.
+
+* Local packages (self-written / locally-patched)
+
+Anything dropped under =offline-packages/local-packages/= is bundled into every toolkit regardless of target version — these are packages you've written yourself or pulled from GitHub and tweaked, i.e. things that don't live in an ELPA archive.
+
+Two supported shapes:
+
+#+begin_example
+local-packages/
+├── my-thing.el          ← single-file package
+└── dape/
+    └── dape.el          ← multi-file package; the subdir joins load-path
+#+end_example
+
+=build-toolkit.sh= copies this directory into the toolkit tarball; =setup.sh= installs it to =~/.emacs.d/local-packages/= on the offline target (backing up any existing one with the usual =.pre-toolkit-<STAMP>= suffix). No byte-compilation is done at install time — sources are dropped verbatim and the target Emacs compiles on first load.
+
+The rendered =init.el= puts =~/.emacs.d/local-packages/= plus every immediate subdirectory onto =load-path= before =package-initialize=, so a =(require 'foo)= or =use-package foo= (without =:ensure=) just works. Nothing is auto-=require=d — you still declare usage from your own init.
 
 * Building a mirror (step 1)
 
@@ -157,6 +177,7 @@ emacs-offline-toolkit-<VER>-<OS>-<ARCH>-<STAMP>/
 ├── elpa-mirror-*.tar.gz    ← the selected ELPA mirror
 ├── Emacs-vanilla/          ← literate config (READMEs, init.el, scripts)
 ├── Emacs-DIYer/            ← literate config (READMEs, init.el, dictionary)
+├── local-packages/         ← self-written / locally-patched packages (if any)
 └── emacs-<VER>.tar.xz      ← optional GNU Emacs source
 #+end_example
 

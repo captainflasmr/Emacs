@@ -40,6 +40,18 @@
 (package-initialize)
 (setq load-prefer-newer t)
 
+;;
+;; -> local-packages
+;; Top-level dir + every immediate subdirectory under ~/.emacs.d/local-packages
+;; joins load-path, so `foo.el' or `foo/foo.el' can be `require'd directly.
+;;
+(let ((dir (expand-file-name "~/.emacs.d/local-packages")))
+  (when (file-directory-p dir)
+    (add-to-list 'load-path dir)
+    (dolist (sub (directory-files dir t "^[^.]"))
+      (when (file-directory-p sub)
+        (add-to-list 'load-path sub)))))
+
 (defun my/ensure-package (pkg)
   "Install PKG from configured archives if it is not already present.
 Failures (e.g. package requires a newer Emacs) are logged, not fatal."
