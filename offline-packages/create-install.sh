@@ -11,13 +11,16 @@
 #   4. Run emacs-<VER> under an isolated HOME to download every package.
 #   5. Run build-mirror.sh to tar the resulting ELPA into mirrors/emacs-<VER>/
 #      and copy the rendered init.el alongside it.
-#   6. Chain into build-toolkit.sh --target emacs-<VER> --with-source auto
-#      (unless --mirror-only). Source version comes from sources/LATEST_STABLE.
+#   6. Chain into build-toolkit.sh --target emacs-<VER> (unless --mirror-only).
+#      Source tarball is NOT bundled by default — pass --with-source [VER|auto]
+#      to opt in. "auto" reads sources/LATEST_STABLE.
 #
 # Usage: ./create-install.sh <VER> [options]
 #   <VER>                  Emacs version to target (e.g. 27.2, 30.2)
 #       --mirror-only      Stop after the mirror; skip build-toolkit.sh chain
 #       --out-dir DIR      Passed through to build-toolkit.sh
+#       --with-source VER  Bundle GNU Emacs source tarball; "auto" reads
+#                          sources/LATEST_STABLE. Default: no source bundled.
 #       --gzip             Passed through: .tar.gz instead of .tar.xz (faster)
 #   -l, --list             List available packages/emacs-<VER>.el configs
 #   -h, --help             This help
@@ -46,13 +49,15 @@ VER=""
 CHAIN_TOOLKIT=1
 TOOLKIT_OUT_DIR=""
 USE_GZIP=0
+WITH_SOURCE_VER=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --mirror-only) CHAIN_TOOLKIT=0; shift ;;
-    --out-dir)     TOOLKIT_OUT_DIR="$2"; shift 2 ;;
-    --gzip)        USE_GZIP=1; shift ;;
-    -l|--list)     list_configs; exit 0 ;;
-    -h|--help)     usage; exit 0 ;;
+    --mirror-only)   CHAIN_TOOLKIT=0; shift ;;
+    --out-dir)       TOOLKIT_OUT_DIR="$2"; shift 2 ;;
+    --with-source)   WITH_SOURCE_VER="$2"; shift 2 ;;
+    --gzip)          USE_GZIP=1; shift ;;
+    -l|--list)       list_configs; exit 0 ;;
+    -h|--help)       usage; exit 0 ;;
     -*) echo "Unknown option: $1" >&2; usage; exit 1 ;;
     *) VER="${1#emacs-}"; shift ;;
   esac
@@ -179,7 +184,8 @@ if [[ "$CHAIN_TOOLKIT" -eq 1 ]]; then
   TOOLKIT_SCRIPT="${SCRIPT_DIR}/build-toolkit.sh"
   [[ -x "$TOOLKIT_SCRIPT" ]] \
     || { echo "build-toolkit.sh not found/executable: $TOOLKIT_SCRIPT" >&2; exit 1; }
-  toolkit_args=(--target "emacs-${VER}" --with-source auto)
+  toolkit_args=(--target "emacs-${VER}")
+  [[ -n "$WITH_SOURCE_VER" ]] && toolkit_args+=(--with-source "$WITH_SOURCE_VER")
   [[ -n "$TOOLKIT_OUT_DIR" ]] && toolkit_args+=(--out-dir "$TOOLKIT_OUT_DIR")
   [[ "$USE_GZIP" -eq 1 ]] && toolkit_args+=(--gzip)
   echo

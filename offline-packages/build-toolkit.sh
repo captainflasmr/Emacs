@@ -12,7 +12,7 @@
 #
 # Usage: ./build-toolkit.sh [options]
 #   -t, --target SPEC       Target "emacs-VER" (skip interactive pick)
-#   -o, --out-dir DIR       Output directory (default: $HOME)
+#   -o, --out-dir DIR       Output directory (default: $HOME/.emacs.d)
 #   -s, --with-source VER   Bundle GNU Emacs source tarball for VER.
 #                           Use "auto" to read sources/LATEST_STABLE.
 #                           Pass --with-source none to skip.
@@ -28,7 +28,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EMACS_D_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 MIRRORS_DIR="${SCRIPT_DIR}/mirrors"
-OUT_DIR="${HOME}"
+OUT_DIR="${HOME}/.emacs.d"
 WITH_SOURCE=0
 EMACS_SOURCE_VERSION=""
 TARGET=""
@@ -192,6 +192,18 @@ else
   done
 fi
 
+# --- Starter init snippet (optional) ---
+# starters/emacs-<VER>.el is an example init snippet, distilled from the
+# author's live init.el. Installed on the target as
+# ~/.emacs.d/init-starter.el and left unloaded. The user opts in by adding
+#   (load (expand-file-name "init-starter" user-emacs-directory) t t)
+# to their init.el, or by cherry-picking blocks from it.
+STARTER_SRC="${SCRIPT_DIR}/starters/emacs-${EMACS_VERSION}.el"
+if [[ -f "$STARTER_SRC" ]]; then
+  echo ">> Copying starter from $(basename "$STARTER_SRC")..."
+  cp "$STARTER_SRC" "${STAGING}/init-starter.el"
+fi
+
 # --- Local packages ---
 # Drop user-created or locally-modified packages into offline-packages/local-packages/.
 # Either foo.el at the top level, or foo/foo.el (+ siblings) in a subdirectory.
@@ -291,6 +303,17 @@ fi
 cp "${HERE}/init.el" "${EMACS_D}/init.el"
 [[ -f "${HERE}/early-init.el" ]] && cp "${HERE}/early-init.el" "${EMACS_D}/early-init.el"
 
+# Install starter snippet if bundled. Does NOT auto-load — opt in from init.el
+# with: (load (expand-file-name "init-starter" user-emacs-directory) t t)
+if [[ -f "${HERE}/init-starter.el" ]]; then
+  if [[ -e "${EMACS_D}/init-starter.el" && ! -L "${EMACS_D}/init-starter.el" ]]; then
+    echo "   backing up existing init-starter.el -> init-starter.el${BACKUP_SUFFIX}"
+    mv "${EMACS_D}/init-starter.el" "${EMACS_D}/init-starter.el${BACKUP_SUFFIX}"
+  fi
+  cp "${HERE}/init-starter.el" "${EMACS_D}/init-starter.el"
+  echo ">> Starter snippet installed at ${EMACS_D}/init-starter.el (not auto-loaded)"
+fi
+
 # Report on optional Emacs source.
 SRC="$(ls "${HERE}"/emacs-*.tar.xz 2>/dev/null | head -n1 || true)"
 if [[ -n "$SRC" && -f "$SRC" ]]; then
@@ -320,6 +343,9 @@ chmod +x "${STAGING}/setup.sh"
   echo "OS slug:       ${OS_SLUG}"
   echo "Architecture:  ${ARCH}"
   echo "Mirror:        $(basename "$MIRROR_TARBALL") ($(du -h "$MIRROR_TARBALL" | cut -f1))"
+  if [[ -f "${STAGING}/init-starter.el" ]]; then
+    echo "Starter:       init-starter.el (optional, not auto-loaded)"
+  fi
   if [[ -d "${STAGING}/local-packages" ]]; then
     _lp_count="$(find "${STAGING}/local-packages" -maxdepth 1 -mindepth 1 \
                   \( -type d -o -name '*.el' \) | wc -l)"

@@ -495,7 +495,7 @@
   (setq org-social-my-public-url "https://host.org-social.org/captainflasmr/social.org"))
 
 (use-package dired-video-thumbnail
-  :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/dired-video-thumbnail"
+  :load-path "/home/jdyer/source/repos/dired-video-thumbnail"
   :bind (:map dired-mode-map
               ("C-t v" . dired-video-thumbnail))
   :custom
@@ -741,11 +741,11 @@ ORIG-FUN is the original command and ARGS are its arguments."
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(misterioso))
  '(package-selected-packages
-   '(agent-shell async csv-mode dape doom-themes ef-themes elpa-mirror
-                 gruvbox-theme i3wm-config-mode org-social ox-hugo
-                 package-lint ready-player timu-caribbean-theme
-                 timu-rouge-theme timu-spacegrey-theme web-mode
-                 yaml-mode ztree))
+   '(agent-shell async csv-mode dape diff-hl diff-hl-mode doom-themes
+                 ef-themes elpa-mirror gruvbox-theme i3wm-config-mode
+                 org-social ox-hugo package-lint ready-player
+                 timu-caribbean-theme timu-rouge-theme
+                 timu-spacegrey-theme web-mode yaml-mode ztree))
  '(warning-suppress-log-types '((frameset)))
  '(warning-suppress-types '((frameset))))
 
@@ -984,3 +984,14 @@ ORIG-FUN is the original command and ARGS are its arguments."
   :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/dwell-map")
 
  (dwell-map-mode 1)
+
+(use-package diff-hl
+  :ensure t
+  :hook (dired-mode . diff-hl-dired-mode)
+  :config
+  (global-diff-hl-mode 1)
+  (diff-hl-flydiff-mode 1)
+  (unless (display-graphic-p)
+    (diff-hl-margin-mode 1)))
+
+(repeat-mode 1)
