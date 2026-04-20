@@ -131,3 +131,6 @@
 (setq recentf-max-menu-items 40
       recentf-max-saved-items 40
       max-mini-window-height 6)
+
+;; `repeat-mode' was added in Emacs 28.1 — C-x o o o… to cycle windows, etc.
+(when (fboundp 'repeat-mode) (repeat-mode 1))
