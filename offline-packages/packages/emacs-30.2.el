@@ -5,6 +5,7 @@
 async
 csv-mode
 dape
+diff-hl
 doom-themes
 ef-themes
 gruvbox-theme
@@ -18,7 +19,6 @@ simply-annotate
 timu-caribbean-theme
 timu-rouge-theme
 timu-spacegrey-theme
-use-package
 web-mode
 yaml-mode
 ztree

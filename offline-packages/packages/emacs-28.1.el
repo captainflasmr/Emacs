@@ -12,6 +12,7 @@ timu-caribbean-theme
 timu-spacegrey-theme
 timu-rouge-theme
 csv-mode
+diff-hl
 selected-window-accent-mode
 simply-annotate
 ztree
