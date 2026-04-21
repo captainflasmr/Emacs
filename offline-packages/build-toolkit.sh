@@ -2,8 +2,9 @@
 # Build a deployable offline Emacs toolkit tarball.
 # Run on the ONLINE build machine.
 #
-# Picks one of the per-version ELPA mirrors under mirrors/emacs-<VER>/ (built
-# by create-install.sh), bundles it alongside the rendered init.el, the
+# Picks one of the per-version ELPA mirrors under the cache
+# ($OFFLINE_MIRRORS_DIR, default ~/.cache/emacs-offline-toolkit/mirrors/), built
+# by create-install.sh, and bundles it alongside the rendered init.el, the
 # Emacs-vanilla and Emacs-DIYer literate configs, an early-init.el if present,
 # and an installer (setup.sh). Optional GNU Emacs source tarball for rebuild
 # on the target.
@@ -20,6 +21,12 @@
 #                           instead of pulling fresh from GitHub.
 #       --gzip              Use gzip (.tar.gz) instead of xz -9e (.tar.xz).
 #                           Faster compress/decompress, less RAM, larger output.
+#       --no-tools          Skip the tools/ drop-zone (language servers, debug
+#                           adapters). Produces a much smaller "update" tarball
+#                           after the initial big install; target keeps whatever
+#                           it already has under ~/.emacs.d/bin. Filename gets
+#                           a "-notools" suffix.
+#       --no-smoke-test     Skip the post-staging "boot rendered init.el" check.
 #   -l, --list              List available targets and exit
 #   -h, --help              This help
 
@@ -27,13 +34,17 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EMACS_D_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-MIRRORS_DIR="${SCRIPT_DIR}/mirrors"
+# Mirrors live outside the repo by default (build artefacts, not source).
+# Override with $OFFLINE_MIRRORS_DIR if you want them elsewhere.
+MIRRORS_DIR="${OFFLINE_MIRRORS_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/emacs-offline-toolkit/mirrors}"
 OUT_DIR="${HOME}/.emacs.d"
 WITH_SOURCE=0
 EMACS_SOURCE_VERSION=""
 TARGET=""
 LOCAL_CONFIGS=0
 USE_GZIP=0
+SMOKE_TEST=1
+INCLUDE_TOOLS=1
 
 # Literate config sources — fetched from GitHub main by default.
 VANILLA_REPO="captainflasmr/Emacs-vanilla"
@@ -90,6 +101,8 @@ while [[ $# -gt 0 ]]; do
     -s|--with-source) WITH_SOURCE=1; EMACS_SOURCE_VERSION="$2"; shift 2 ;;
     --local-configs)  LOCAL_CONFIGS=1; shift ;;
     --gzip)           USE_GZIP=1; shift ;;
+    --no-tools)       INCLUDE_TOOLS=0; shift ;;
+    --no-smoke-test)  SMOKE_TEST=0; shift ;;
     -l|--list)        list_targets; exit 0 ;;
     -h|--help)        usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage; exit 1 ;;
@@ -131,7 +144,9 @@ if [[ "$WITH_SOURCE" -eq 1 && "$EMACS_SOURCE_VERSION" == "auto" ]]; then
   fi
 fi
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-TOOLKIT_NAME="emacs-offline-toolkit-${EMACS_VERSION}-${OS_SLUG}-${ARCH}-${STAMP}"
+_NOTOOLS_SUFFIX=""
+[[ "$INCLUDE_TOOLS" -eq 0 ]] && _NOTOOLS_SUFFIX="-notools"
+TOOLKIT_NAME="emacs-offline-toolkit-${EMACS_VERSION}-${OS_SLUG}-${ARCH}-${STAMP}${_NOTOOLS_SUFFIX}"
 STAGING="${OUT_DIR}/.${TOOLKIT_NAME}-staging-$$"
 mkdir -p "$STAGING"
 trap 'rm -rf "$STAGING"' EXIT
@@ -150,6 +165,17 @@ fi
 cp "${MIRROR_TARBALL}" "${STAGING}/"
 [[ -f "${EMACS_D_DIR}/early-init.el" ]] && cp "${EMACS_D_DIR}/early-init.el" "${STAGING}/"
 [[ -f "${SCRIPT_DIR}/README.org" ]] && cp "${SCRIPT_DIR}/README.org" "${STAGING}/"
+
+# Surface PACKAGES.txt at the toolkit root so users can inspect the bundled
+# package list without having to extract the nested mirror tarball twice.
+MIRROR_STEM="$(basename "$MIRROR_TARBALL" .tar.gz)"
+if tar -xzOf "$MIRROR_TARBALL" "${MIRROR_STEM}/PACKAGES.txt" \
+     > "${STAGING}/PACKAGES.txt" 2>/dev/null; then
+  echo ">> Extracted PACKAGES.txt ($(wc -l < "${STAGING}/PACKAGES.txt" | tr -d ' ') packages)"
+else
+  rm -f "${STAGING}/PACKAGES.txt"
+  echo "!! Mirror tarball has no PACKAGES.txt — skipping surface copy" >&2
+fi
 
 # --- Literate configs: Emacs-vanilla + Emacs-DIYer ---
 # By default pulled fresh from GitHub; pass --local-configs to copy from
@@ -204,6 +230,18 @@ if [[ -f "$STARTER_SRC" ]]; then
   cp "$STARTER_SRC" "${STAGING}/init-starter.el"
 fi
 
+# --- Coding companion starter (optional) ---
+# starters/coding.el is a language-agnostic snippet (eglot hooks, flymake
+# M-n/M-p, eldoc, corfu, dape F5-F11, cmake/typescript mode associations).
+# Installed on the target as ~/.emacs.d/coding-starter.el, not auto-loaded.
+# Opt in by adding to init.el (on top of, or instead of, init-starter.el):
+#   (load (expand-file-name "coding-starter" user-emacs-directory) t t)
+CODING_SRC="${SCRIPT_DIR}/starters/coding.el"
+if [[ -f "$CODING_SRC" ]]; then
+  echo ">> Copying coding companion starter from $(basename "$CODING_SRC")..."
+  cp "$CODING_SRC" "${STAGING}/coding-starter.el"
+fi
+
 # --- Local packages ---
 # Drop user-created or locally-modified packages into offline-packages/local-packages/.
 # Either foo.el at the top level, or foo/foo.el (+ siblings) in a subdirectory.
@@ -216,6 +254,35 @@ if [[ -d "$LOCAL_PKG_SRC" ]] \
   mkdir -p "${STAGING}/local-packages"
   tar -C "$LOCAL_PKG_SRC" "${_tar_excludes[@]}" --exclude='.gitkeep' -cf - . \
     | tar -C "${STAGING}/local-packages" -xf -
+fi
+
+# --- Tools drop-zone ---
+# Non-Emacs binaries (language servers, debug adapters, formatters) dropped
+# into offline-packages/tools/. Installed on the target at ~/.emacs.d/bin/.
+# `cp -a' preserves executable bits. The coding starter expects JDTLS at
+# ~/.emacs.d/bin/jdtls/bin/jdtls if present.
+TOOLS_SRC="${SCRIPT_DIR}/tools"
+if [[ "$INCLUDE_TOOLS" -eq 0 ]]; then
+  echo ">> --no-tools: skipping tools/ drop-zone (update-only tarball)."
+elif [[ -d "$TOOLS_SRC" ]] \
+     && find "$TOOLS_SRC" -mindepth 1 ! -name '.gitkeep' ! -name 'README.md' \
+          -print -quit | grep -q .; then
+  echo ">> Copying tools/ drop-zone from ${TOOLS_SRC}..."
+  mkdir -p "${STAGING}/tools"
+  tar -C "$TOOLS_SRC" --exclude='.gitkeep' --exclude='README.md' -cf - . \
+    | tar -C "${STAGING}/tools" -xf -
+fi
+
+# --- Docs drop-zone ---
+# Reference material (coding guide, cheat sheets). Shipped as-is so the
+# target user has the same docs offline. Installed at ~/.emacs.d/docs/.
+DOCS_SRC="${SCRIPT_DIR}/docs"
+if [[ -d "$DOCS_SRC" ]] \
+   && find "$DOCS_SRC" -mindepth 1 ! -name '.gitkeep' -print -quit | grep -q .; then
+  echo ">> Copying docs/ drop-zone from ${DOCS_SRC}..."
+  mkdir -p "${STAGING}/docs"
+  tar -C "$DOCS_SRC" "${_tar_excludes[@]}" --exclude='.gitkeep' -cf - . \
+    | tar -C "${STAGING}/docs" -xf -
 fi
 
 # --- Optional GNU Emacs source tarball ---
@@ -267,6 +334,22 @@ for f in init.el early-init.el; do
   fi
 done
 
+# Move any existing ~/.emacs.d/elpa/ aside so `my/ensure-package' sees every
+# package as not-installed on next launch and reinstalls from the freshly
+# extracted mirror. Without this, stale .elc/.eln from the old mirror stay put.
+if [[ -d "${EMACS_D}/elpa" ]]; then
+  echo "   backing up existing elpa/ -> elpa${BACKUP_SUFFIX}/"
+  mv "${EMACS_D}/elpa" "${EMACS_D}/elpa${BACKUP_SUFFIX}"
+fi
+
+# Move any pre-existing mirror extractions aside too — same reason, and avoids
+# the init.el's `string>' sort silently picking up stale mirrors after upgrades.
+for old in "${HOME}"/elpa-mirror-emacs-*; do
+  [[ -d "$old" ]] || continue
+  echo "   backing up existing $(basename "$old")/ -> $(basename "$old")${BACKUP_SUFFIX}/"
+  mv "$old" "${old}${BACKUP_SUFFIX}"
+done
+
 # Extract ELPA mirror into $HOME (init.el auto-detects ~/elpa-mirror-emacs-*).
 for m in "$HERE"/elpa-mirror-*.tar.gz; do
   [[ -f "$m" ]] || continue
@@ -314,6 +397,41 @@ if [[ -f "${HERE}/init-starter.el" ]]; then
   echo ">> Starter snippet installed at ${EMACS_D}/init-starter.el (not auto-loaded)"
 fi
 
+# Install coding companion starter if bundled. Also NOT auto-loaded — opt in
+# with: (load (expand-file-name "coding-starter" user-emacs-directory) t t)
+if [[ -f "${HERE}/coding-starter.el" ]]; then
+  if [[ -e "${EMACS_D}/coding-starter.el" && ! -L "${EMACS_D}/coding-starter.el" ]]; then
+    echo "   backing up existing coding-starter.el -> coding-starter.el${BACKUP_SUFFIX}"
+    mv "${EMACS_D}/coding-starter.el" "${EMACS_D}/coding-starter.el${BACKUP_SUFFIX}"
+  fi
+  cp "${HERE}/coding-starter.el" "${EMACS_D}/coding-starter.el"
+  echo ">> Coding companion installed at ${EMACS_D}/coding-starter.el (not auto-loaded)"
+fi
+
+# Install tools/ drop-zone (language servers, debug adapters) to ~/.emacs.d/bin/.
+# `cp -a' keeps the executable bits. Users can either add ~/.emacs.d/bin to PATH
+# or reference binaries by absolute path from their eglot-server-programs.
+if [[ -d "${HERE}/tools" ]]; then
+  if [[ -d "${EMACS_D}/bin" ]]; then
+    echo "   backing up existing bin/ -> bin${BACKUP_SUFFIX}/"
+    mv "${EMACS_D}/bin" "${EMACS_D}/bin${BACKUP_SUFFIX}"
+  fi
+  echo ">> Installing tools/ to ${EMACS_D}/bin"
+  mkdir -p "${EMACS_D}/bin"
+  cp -a "${HERE}/tools/." "${EMACS_D}/bin/"
+fi
+
+# Install docs/ drop-zone (coding guide, reference material).
+if [[ -d "${HERE}/docs" ]]; then
+  if [[ -d "${EMACS_D}/docs" ]]; then
+    echo "   backing up existing docs/ -> docs${BACKUP_SUFFIX}/"
+    mv "${EMACS_D}/docs" "${EMACS_D}/docs${BACKUP_SUFFIX}"
+  fi
+  echo ">> Installing docs/ to ${EMACS_D}/docs"
+  mkdir -p "${EMACS_D}/docs"
+  cp -a "${HERE}/docs/." "${EMACS_D}/docs/"
+fi
+
 # Report on optional Emacs source.
 SRC="$(ls "${HERE}"/emacs-*.tar.xz 2>/dev/null | head -n1 || true)"
 if [[ -n "$SRC" && -f "$SRC" ]]; then
@@ -331,6 +449,108 @@ echo "  my/offline-packages=t  dir=/home/you/elpa-mirror-emacs-..."
 SETUPEOF
 chmod +x "${STAGING}/setup.sh"
 
+# --- Installer: rollback.sh ---
+# Reverses the most recent setup.sh install by swapping `.pre-toolkit-<STAMP>'
+# entries back into place. Run on the offline target from ~/.emacs.d/ (or from
+# anywhere — it operates on $HOME and $HOME/.emacs.d directly).
+cat > "${STAGING}/rollback.sh" <<'ROLLBACKEOF'
+#!/usr/bin/env bash
+# rollback.sh — restore the most recent `.pre-toolkit-<STAMP>' backup created
+# by setup.sh. Scans ~/.emacs.d/ and ~/ for backup entries, picks the newest
+# stamp, and swaps everything under that stamp back to its original name. The
+# current (post-install) state is not discarded — it's archived with a
+# `.rolled-back-<STAMP>' suffix so a re-rollforward is still possible.
+set -euo pipefail
+
+EMACS_D="${HOME}/.emacs.d"
+NOW="$(date +%Y%m%dT%H%M%S)"
+
+collect_stamps() {
+  {
+    find "$EMACS_D" -maxdepth 1 -mindepth 1 -name '*.pre-toolkit-*' 2>/dev/null
+    find "$HOME"    -maxdepth 1 -mindepth 1 -name '*.pre-toolkit-*' 2>/dev/null
+  } | sed -E 's/.*\.pre-toolkit-([0-9TZ]+).*/\1/' | sort -u
+}
+
+mapfile -t STAMPS < <(collect_stamps)
+if [[ "${#STAMPS[@]}" -eq 0 ]]; then
+  echo "No .pre-toolkit-* backups found under $HOME or $EMACS_D." >&2
+  exit 1
+fi
+
+# Newest first — lexical sort works because stamps are YYYYmmddTHHMMSS.
+LATEST="$(printf '%s\n' "${STAMPS[@]}" | sort -r | head -n1)"
+
+echo "Backup stamps available (newest first):"
+printf '%s\n' "${STAMPS[@]}" | sort -r | sed 's/^/  /'
+echo
+read -r -p "Roll back to ${LATEST}? [y/N] " ans </dev/tty
+[[ "$ans" =~ ^[yY] ]] || { echo "Aborted."; exit 0; }
+
+rollback_in() {
+  local dir="$1"
+  shopt -s nullglob
+  for bak in "$dir"/*.pre-toolkit-"$LATEST"; do
+    [[ -e "$bak" ]] || continue
+    local orig="${bak%.pre-toolkit-$LATEST}"
+    if [[ -e "$orig" ]]; then
+      echo "   archiving current $(basename "$orig") -> $(basename "$orig").rolled-back-${NOW}"
+      mv "$orig" "${orig}.rolled-back-${NOW}"
+    fi
+    echo "   restoring $(basename "$bak") -> $(basename "$orig")"
+    mv "$bak" "$orig"
+  done
+}
+
+rollback_in "$EMACS_D"
+rollback_in "$HOME"
+
+echo
+echo "Rollback complete. Post-install state preserved under *.rolled-back-${NOW}."
+ROLLBACKEOF
+chmod +x "${STAGING}/rollback.sh"
+
+# --- Smoke test: boot the rendered init.el under the target Emacs ---
+# Before compressing, launch emacs-<VER> in batch mode against the staged
+# init.el with HOME set to a throwaway dir containing the extracted mirror.
+# Catches: bad template renders, packages listed but missing from the mirror,
+# syntax errors in starters, etc. Skipped with --no-smoke-test.
+if [[ "$SMOKE_TEST" -eq 1 ]]; then
+  # Prefer the same per-version binary create-install.sh uses.
+  SMOKE_EMACS=""
+  for cand in "${HOME}/emacs-versions/emacs-${EMACS_VERSION}/bin/emacs" \
+              "${HOME}/bin/emacs-${EMACS_VERSION}"; do
+    [[ -x "$cand" ]] && { SMOKE_EMACS="$cand"; break; }
+  done
+  [[ -z "$SMOKE_EMACS" ]] && SMOKE_EMACS="$(command -v "emacs-${EMACS_VERSION}" 2>/dev/null || true)"
+
+  if [[ -z "$SMOKE_EMACS" ]]; then
+    echo "!! Smoke test skipped: no emacs-${EMACS_VERSION} binary on this machine." >&2
+  else
+    SMOKE_HOME="$(mktemp -d "${TMPDIR:-/tmp}/toolkit-smoke-${EMACS_VERSION}-XXXXXX")"
+    _cleanup_smoke() { rm -rf "$SMOKE_HOME"; }
+    echo ">> Smoke test: booting ${SMOKE_EMACS} against staged init.el..."
+    # Extract mirror so init.el's `my/offline-packages-dir' glob finds it.
+    tar -xzf "${STAGING}"/elpa-mirror-*.tar.gz -C "$SMOKE_HOME"
+    # Give the smoke-test HOME a minimal .emacs.d so init.el's `load-file' of
+    # Emacs-vanilla (if missing) doesn't matter — it's guarded by file-exists-p.
+    mkdir -p "${SMOKE_HOME}/.emacs.d"
+    if HOME="$SMOKE_HOME" "$SMOKE_EMACS" --batch \
+         --eval '(setq byte-compile-warnings nil)' \
+         --eval '(setq warning-minimum-log-level :error)' \
+         -l "${STAGING}/init.el" \
+         --eval '(kill-emacs 0)' 2>&1 | sed 's/^/     /'; then
+      echo ">> Smoke test passed."
+    else
+      _cleanup_smoke
+      echo "!! Smoke test FAILED — init.el does not load cleanly." >&2
+      echo "   Re-run with --no-smoke-test to bypass, or fix the init/package list." >&2
+      exit 1
+    fi
+    _cleanup_smoke
+  fi
+fi
+
 # --- MANIFEST.txt ---
 {
   echo "Built:         $(date -Iseconds)"
@@ -343,13 +563,30 @@ chmod +x "${STAGING}/setup.sh"
   echo "OS slug:       ${OS_SLUG}"
   echo "Architecture:  ${ARCH}"
   echo "Mirror:        $(basename "$MIRROR_TARBALL") ($(du -h "$MIRROR_TARBALL" | cut -f1))"
+  if [[ -f "${STAGING}/PACKAGES.txt" ]]; then
+    echo "Packages:      $(wc -l < "${STAGING}/PACKAGES.txt" | tr -d ' ') (see PACKAGES.txt)"
+  fi
   if [[ -f "${STAGING}/init-starter.el" ]]; then
     echo "Starter:       init-starter.el (optional, not auto-loaded)"
+  fi
+  if [[ -f "${STAGING}/coding-starter.el" ]]; then
+    echo "Coding starter: coding-starter.el (optional, not auto-loaded)"
   fi
   if [[ -d "${STAGING}/local-packages" ]]; then
     _lp_count="$(find "${STAGING}/local-packages" -maxdepth 1 -mindepth 1 \
                   \( -type d -o -name '*.el' \) | wc -l)"
     echo "Local pkgs:    ${_lp_count} entries under local-packages/"
+  fi
+  if [[ -d "${STAGING}/tools" ]]; then
+    _t_count="$(find "${STAGING}/tools" -maxdepth 1 -mindepth 1 | wc -l)"
+    _t_size="$(du -sh "${STAGING}/tools" | cut -f1)"
+    echo "Tools:         ${_t_count} entries under tools/ (${_t_size})"
+  elif [[ "$INCLUDE_TOOLS" -eq 0 ]]; then
+    echo "Tools:         (skipped — --no-tools; update-only tarball)"
+  fi
+  if [[ -d "${STAGING}/docs" ]]; then
+    _d_count="$(find "${STAGING}/docs" -maxdepth 1 -mindepth 1 | wc -l)"
+    echo "Docs:          ${_d_count} entries under docs/"
   fi
   if [[ "$WITH_SOURCE" -eq 1 ]]; then
     echo "Emacs src:     emacs-${EMACS_SOURCE_VERSION}.tar.xz"

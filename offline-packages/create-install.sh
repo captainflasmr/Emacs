@@ -9,8 +9,10 @@
 #   2. Read packages/emacs-<VER>.el for the package list.
 #   3. Render init.el.in -> $STAGE/.emacs.d/init.el (packages injected).
 #   4. Run emacs-<VER> under an isolated HOME to download every package.
-#   5. Run build-mirror.sh to tar the resulting ELPA into mirrors/emacs-<VER>/
-#      and copy the rendered init.el alongside it.
+#   5. Run build-mirror.sh to tar the resulting ELPA into
+#      $OFFLINE_MIRRORS_DIR/emacs-<VER>/ (default:
+#      ~/.cache/emacs-offline-toolkit/mirrors/emacs-<VER>/) and copy the
+#      rendered init.el alongside it.
 #   6. Chain into build-toolkit.sh --target emacs-<VER> (unless --mirror-only).
 #      Source tarball is NOT bundled by default — pass --with-source [VER|auto]
 #      to opt in. "auto" reads sources/LATEST_STABLE.
@@ -22,6 +24,8 @@
 #       --with-source VER  Bundle GNU Emacs source tarball; "auto" reads
 #                          sources/LATEST_STABLE. Default: no source bundled.
 #       --gzip             Passed through: .tar.gz instead of .tar.xz (faster)
+#       --no-tools         Passed through: skip the tools/ drop-zone for a much
+#                          smaller "update" tarball (after initial big install)
 #   -l, --list             List available packages/emacs-<VER>.el configs
 #   -h, --help             This help
 
@@ -29,7 +33,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PKG_DIR="${SCRIPT_DIR}/packages"
-MIRRORS_DIR="${SCRIPT_DIR}/mirrors"
+# Mirrors live outside the repo by default (build artefacts, not source).
+# Override with $OFFLINE_MIRRORS_DIR if you want them elsewhere.
+MIRRORS_DIR="${OFFLINE_MIRRORS_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/emacs-offline-toolkit/mirrors}"
 BUILD_EMACS_SCRIPT="${HOME}/.emacs.d/Emacs-vanilla/scripts/build-emacs-versions.sh"
 
 list_configs() {
@@ -50,12 +56,14 @@ CHAIN_TOOLKIT=1
 TOOLKIT_OUT_DIR=""
 USE_GZIP=0
 WITH_SOURCE_VER=""
+NO_TOOLS=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --mirror-only)   CHAIN_TOOLKIT=0; shift ;;
     --out-dir)       TOOLKIT_OUT_DIR="$2"; shift 2 ;;
     --with-source)   WITH_SOURCE_VER="$2"; shift 2 ;;
     --gzip)          USE_GZIP=1; shift ;;
+    --no-tools)      NO_TOOLS=1; shift ;;
     -l|--list)       list_configs; exit 0 ;;
     -h|--help)       usage; exit 0 ;;
     -*) echo "Unknown option: $1" >&2; usage; exit 1 ;;
@@ -164,7 +172,7 @@ HOME="$STAGE" "$EMACS_BIN" --batch \
   -l "$RENDERED" 2>&1 \
   | sed 's/^/   /'
 
-# --- run build-mirror.sh against the isolated HOME -> mirrors/emacs-<VER>/ ---
+# --- run build-mirror.sh against the isolated HOME -> $MIRRORS_DIR/emacs-<VER>/ ---
 mkdir -p "$MIRRORS_DIR"
 echo ">> Invoking build-mirror.sh (OUT_DIR=${MIRRORS_DIR})..."
 HOME="$STAGE" EMACS="$EMACS_BIN" "${SCRIPT_DIR}/build-mirror.sh" "$MIRRORS_DIR" 2>&1 \
@@ -188,6 +196,7 @@ if [[ "$CHAIN_TOOLKIT" -eq 1 ]]; then
   [[ -n "$WITH_SOURCE_VER" ]] && toolkit_args+=(--with-source "$WITH_SOURCE_VER")
   [[ -n "$TOOLKIT_OUT_DIR" ]] && toolkit_args+=(--out-dir "$TOOLKIT_OUT_DIR")
   [[ "$USE_GZIP" -eq 1 ]] && toolkit_args+=(--gzip)
+  [[ "$NO_TOOLS" -eq 1 ]] && toolkit_args+=(--no-tools)
   echo
   echo ">> Chaining into build-toolkit.sh ${toolkit_args[*]}..."
   "$TOOLKIT_SCRIPT" "${toolkit_args[@]}"

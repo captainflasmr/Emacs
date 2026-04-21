@@ -741,11 +741,13 @@ ORIG-FUN is the original command and ARGS are its arguments."
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(misterioso))
  '(package-selected-packages
-   '(agent-shell async csv-mode dape diff-hl diff-hl-mode doom-themes
-                 ef-themes elpa-mirror gruvbox-theme i3wm-config-mode
-                 org-social ox-hugo package-lint ready-player
+   '(agent-shell async csv-mode dape diff-hl diff-hl-mode dired-sidebar
+                 doom-themes ef-themes elpa-mirror gruvbox-theme
+                 i3wm-config-mode kotlin-mode org-social ox-hugo
+                 package-lint protobuf-mode ready-player
                  timu-caribbean-theme timu-rouge-theme
-                 timu-spacegrey-theme web-mode yaml-mode ztree))
+                 timu-spacegrey-theme treemacs web-mode yaml-mode
+                 ztree))
  '(warning-suppress-log-types '((frameset)))
  '(warning-suppress-types '((frameset))))
 
@@ -995,3 +997,70 @@ ORIG-FUN is the original command and ARGS are its arguments."
     (diff-hl-margin-mode 1)))
 
 (repeat-mode 1)
+
+(use-package protobuf-mode
+  :mode "\\.proto\\'")
+
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs
+               '(protobuf-mode . ("buf" "lsp" "serve"))))
+
+(use-package eglot
+  :ensure nil ; Built-in
+  :config
+  (add-to-list 'eglot-server-programs
+               '(kotlin-mode . ("kotlin-language-server"))))
+
+(use-package kotlin-mode
+  :mode "\\.kts\\'")
+
+(use-package treemacs
+  :ensure t
+  :config
+  (treemacs-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-fringe-indicator-mode 'always))
+
+(defvar-local my/treemacs-current-overlay nil)
+
+(defun my/treemacs-update-current-line ()
+  "Paint a persistent, high-priority region-face overlay on point's line."
+  (unless (overlayp my/treemacs-current-overlay)
+    (setq my/treemacs-current-overlay (make-overlay 1 1))
+    (overlay-put my/treemacs-current-overlay 'face 'region)
+    (overlay-put my/treemacs-current-overlay 'priority 1000))
+  (move-overlay my/treemacs-current-overlay
+                (line-beginning-position)
+                (1+ (line-end-position))))
+
+(defun my/treemacs-update-current-line-after-follow (&rest _)
+  "Run `my/treemacs-update-current-line' in the treemacs buffer."
+  (let ((buf (ignore-errors (treemacs-get-local-buffer))))
+    (when (buffer-live-p buf)
+      (with-current-buffer buf
+        (my/treemacs-update-current-line)))))
+
+(advice-add 'treemacs--follow :after #'my/treemacs-update-current-line-after-follow)
+
+(add-hook 'treemacs-mode-hook
+          (lambda ()
+            (hl-line-mode -1)
+            (add-hook 'post-command-hook
+                      #'my/treemacs-update-current-line nil t)
+            (my/treemacs-update-current-line)))
+
+(setq treemacs-pulse-on-success t)
+(setq treemacs-follow-after-init t)
+(setq treemacs-show-cursor nil)
+
+(defun my/treemacs-toggle-current-project ()
+  "Show treemacs with the current project only, or hide it if visible.
+On open, keep focus in the original window."
+  (interactive)
+  (let ((win (treemacs-get-local-window)))
+    (if (and win (window-live-p win))
+        (delete-window win)
+      (save-selected-window
+        (treemacs-display-current-project-exclusively)))))
+
+(global-set-key (kbd "C-x m") #'my/treemacs-toggle-current-project)

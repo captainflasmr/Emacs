@@ -5,3 +5,12 @@ sources/*.tar.gz
 # Local/vendored packages — contents vary per machine, may be their own repos
 local-packages/*
 !local-packages/.gitkeep
+
+# Docs drop-zone — e.g. cloned reference repos like setting-up-emacs-for-coding
+docs/*
+!docs/.gitkeep
+
+# Non-Emacs tools drop-zone — language-server / debugger binaries per platform
+tools/*
+!tools/.gitkeep
+!tools/README.md

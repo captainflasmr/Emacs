@@ -3,12 +3,15 @@
 ;; and skipped, not fatal.
 
 async
+cmake-mode
+corfu
 csv-mode
 dape
 diff-hl
 doom-themes
 ef-themes
 gruvbox-theme
+highlight-indent-guides
 i3wm-config-mode
 modus-themes
 ollama-buddy
@@ -19,6 +22,9 @@ simply-annotate
 timu-caribbean-theme
 timu-rouge-theme
 timu-spacegrey-theme
+typescript-mode
 web-mode
 yaml-mode
 ztree
+kotlin-mode
+treemacs

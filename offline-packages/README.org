@@ -28,17 +28,29 @@ offline-packages/
 │   └── bar/bar.el               ← multi-file package in its own subdir
 ├── starters/                    ← optional example init snippets
 │   ├── emacs-27.2.el            ← installed as init-starter.el on the target
-│   └── emacs-30.2.el
-├── mirrors/
-│   ├── emacs-27.2/
-│   │   ├── elpa-mirror-*.tar.gz ← produced by build-mirror.sh
-│   │   └── init.el              ← rendered from init.el.in
-│   └── emacs-30.2/…
+│   ├── emacs-30.2.el
+│   └── coding.el                ← language-agnostic coding companion
+├── tools/                       ← drop zone for non-Emacs binaries (gitignored)
+│   └── jdtls/…                  ← e.g. language servers, debug adapters
+├── docs/                        ← drop zone for reference docs (gitignored)
+│   └── setting-up-emacs-for-coding/
 ├── sources/                     ← GNU Emacs source tarballs (gitignored)
 │   ├── LATEST_STABLE            ← single line, e.g. "30.1"
 │   └── emacs-30.1.tar.xz        ← fetched by fetch-source.sh
 └── README.org                   ← this file
 #+end_example
+
+Mirrors are /build artefacts/, not source, so they're written outside the repo by default:
+
+#+begin_example
+$OFFLINE_MIRRORS_DIR/                                    ← default: ~/.cache/emacs-offline-toolkit/mirrors/
+├── emacs-27.2/
+│   ├── elpa-mirror-*.tar.gz                             ← produced by build-mirror.sh
+│   └── init.el                                          ← rendered from init.el.in
+└── emacs-30.2/…
+#+end_example
+
+Override the location by exporting =OFFLINE_MIRRORS_DIR= (e.g. to keep mirrors on a separate disk) — both =create-install.sh= and =build-toolkit.sh= honour it.
 
 Current targets:
 
@@ -95,6 +107,41 @@ To opt in on the target, append one line to =~/.emacs.d/init.el=:
 
 Adding a starter for a new version: drop =starters/emacs-<VER>.el= next to =init.el.in= — =build-toolkit.sh= picks it up automatically by filename match on =EMACS_VERSION=.
 
+** Coding companion (=starters/coding.el=)
+
+=starters/coding.el= is a version-agnostic snippet distilled from =docs/setting-up-emacs-for-coding/README.org= — eglot hooks for Java/C#/C++/TypeScript, flymake =M-n=/=M-p=, eldoc, corfu with =corfu-auto nil=, dape =F5=/=F9=/=F10=/=F11=, =cmake-mode=, =typescript-mode=, =highlight-indent-guides=. It's bundled as =coding-starter.el= at the toolkit root and installed to =~/.emacs.d/coding-starter.el= (not auto-loaded). Opt in alongside or instead of the per-version starter:
+
+#+begin_src emacs-lisp
+(load (expand-file-name "coding-starter" user-emacs-directory) t t)
+#+end_src
+
+Blocks that need Emacs 29+ (eglot, =global-corfu-mode=) are guarded by =fboundp= checks, so loading under 27.2/28.x is a no-op for those features rather than an error. The JDTLS entry looks for =~/.emacs.d/bin/jdtls/bin/jdtls= — populate =tools/= (see below) to wire it up.
+
+* Tools drop-zone (non-Emacs binaries)
+
+=offline-packages/tools/= is a drop zone for /non-Emacs/ binaries shipped alongside the toolkit: language servers (JDTLS, csharp-ls, clangd, ada_language_server), debug adapters (=netcoredbg=), formatters. The contents are not tracked in git (gitignored, with a =.gitkeep= for structure) because they're platform-specific and often large.
+
+Layout mirrors whatever you want under =~/.emacs.d/bin/= on the target:
+
+#+begin_example
+tools/
+├── jdtls/
+│   ├── bin/jdtls
+│   ├── plugins/…
+│   └── com.microsoft.java.debug.plugin-0.53.2.jar
+└── netcoredbg
+#+end_example
+
+=build-toolkit.sh= copies =tools/= into the toolkit (preserving executable bits); =setup.sh= installs it to =~/.emacs.d/bin/= on the target with the usual =.pre-toolkit-<STAMP>= backup. The coding companion starter looks for =~/.emacs.d/bin/jdtls/bin/jdtls= automatically.
+
+Add =~/.emacs.d/bin= to =PATH=, or reference binaries by absolute path from your own =eglot-server-programs=.
+
+* Docs drop-zone
+
+=offline-packages/docs/= ships reference material (cheat sheets, coding guides) so an offline target has the same docs the online machine has. Gitignored like =tools/= / =local-packages/=. =build-toolkit.sh= bundles it; =setup.sh= installs to =~/.emacs.d/docs/=. Nothing is loaded from it automatically — it's purely reading material.
+
+The upstream =setting-up-emacs-for-coding= guide lives here by convention; see =docs/setting-up-emacs-for-coding/README.org= for the stack the coding companion starter implements.
+
 * Building a mirror (step 1)
 
 Run on the online machine:
@@ -106,7 +153,7 @@ cd ~/.emacs.d/offline-packages
 ./create-install.sh 27.2 --out-dir /tmp # toolkit tarball goes to /tmp
 #+end_src
 
-By default, once the mirror is built =create-install.sh= invokes =build-toolkit.sh --target emacs-<VER>=, producing =$HOME/.emacs.d/emacs-offline-toolkit-<VER>-*.tar.xz= /without/ the GNU Emacs source tarball bundled. Pass =--with-source auto= (or an explicit version) to include the source, or =--mirror-only= to stop after the ELPA mirror under =mirrors/=.
+By default, once the mirror is built =create-install.sh= invokes =build-toolkit.sh --target emacs-<VER>=, producing =$HOME/.emacs.d/emacs-offline-toolkit-<VER>-*.tar.xz= /without/ the GNU Emacs source tarball bundled. Pass =--with-source auto= (or an explicit version) to include the source, or =--mirror-only= to stop after the ELPA mirror under =$OFFLINE_MIRRORS_DIR/= (default =~/.cache/emacs-offline-toolkit/mirrors/=).
 
 =create-install.sh= will:
 
@@ -114,16 +161,16 @@ By default, once the mirror is built =create-install.sh= invokes =build-toolkit.
 2. Read =packages/emacs-<VER>.el= (package list).
 3. Render =init.el.in= → a staged init.el with packages injected.
 4. Run =HOME=<staging> emacs-<VER> --batch -l <rendered-init.el>= so packages land in an isolated ELPA directory, independent of your real =~/.emacs.d/=.
-5. Call =build-mirror.sh= (with =EMACS= and =HOME= pointing at the staged Emacs/ELPA) to tar up the mirror into =mirrors/emacs-<VER>/=, and copy the rendered =init.el= alongside the tarball.
+5. Call =build-mirror.sh= (with =EMACS= and =HOME= pointing at the staged Emacs/ELPA) to tar up the mirror into =$OFFLINE_MIRRORS_DIR/emacs-<VER>/= (default =~/.cache/emacs-offline-toolkit/mirrors/emacs-<VER>/=), and copy the rendered =init.el= alongside the tarball.
 6. Unless =--mirror-only= was passed, chain into =build-toolkit.sh --target emacs-<VER>=. Add =--with-source auto= (or =--with-source VER=) to also bundle the GNU Emacs source tarball.
 
 Mirror tarball name:
 
 #+begin_example
-mirrors/emacs-<VER>/elpa-mirror-emacs-<VER>-<OS>-<ARCH>-<STAMP>-<N>pkgs.tar.gz
+$OFFLINE_MIRRORS_DIR/emacs-<VER>/elpa-mirror-emacs-<VER>-<OS>-<ARCH>-<STAMP>-<N>pkgs.tar.gz
 #+end_example
 
-OS/arch stay in the filename for provenance, but the directory is flat — you can build on different distros and all the tarballs coexist under =mirrors/emacs-<VER>/= (newest wins at toolkit-build time).
+OS/arch stay in the filename for provenance, but the directory is flat — you can build on different distros and all the tarballs coexist under =$OFFLINE_MIRRORS_DIR/emacs-<VER>/= (newest wins at toolkit-build time).
 
 Inside the tarball:
 
@@ -181,23 +228,33 @@ Flags:
 | =-o=, =--out-dir DIR=      | Output directory (default: =$HOME/.emacs.d=)     |
 | =-s=, =--with-source VER=  | Bundle =emacs-VER.tar.xz=; =auto= reads LATEST_STABLE |
 | =--gzip=                   | Use gzip (.tar.gz) instead of xz -9e (.tar.xz)   |
+| =--no-smoke-test=          | Skip the post-staging "boot init.el" check       |
 | =-l=, =--list=             | List available targets and exit                  |
 | =-h=, =--help=             | Show help                                        |
+
+** Smoke test
+
+Before compressing, =build-toolkit.sh= extracts the bundled mirror into a throwaway =$HOME=, locates =emacs-<VER>= (checking =$HOME/emacs-versions/emacs-<VER>/bin/emacs=, =$HOME/bin/emacs-<VER>=, =$PATH=), and runs it in =--batch= mode against the staged =init.el= with =(kill-emacs 0)=. If the Emacs binary can't be found for the target version the test is /skipped/ with a warning; if it runs and the init fails to load, the build aborts before the tarball is produced. Pass =--no-smoke-test= to bypass.
 
 ** What goes into the toolkit
 
 #+begin_example
 emacs-offline-toolkit-<VER>-<OS>-<ARCH>-<STAMP>/
 ├── MANIFEST.txt            ← build provenance + file inventory
+├── PACKAGES.txt            ← sorted name/version/summary of every bundled pkg
 ├── README.org              ← this document
 ├── init.el                 ← per-version rendered init
 ├── early-init.el           ← if present in ~/.emacs.d/
 ├── setup.sh                ← installer for the offline machine
+├── rollback.sh             ← reverse the most recent setup.sh install
 ├── elpa-mirror-*.tar.gz    ← the selected ELPA mirror
 ├── Emacs-vanilla/          ← literate config (READMEs, init.el, scripts)
 ├── Emacs-DIYer/            ← literate config (READMEs, init.el, dictionary)
 ├── local-packages/         ← self-written / locally-patched packages (if any)
+├── tools/                  ← non-Emacs binaries (language servers, debug adapters)
+├── docs/                   ← reference docs (coding guide, cheat sheets)
 ├── init-starter.el         ← optional starter snippet (not auto-loaded)
+├── coding-starter.el       ← optional coding companion (not auto-loaded)
 └── emacs-<VER>.tar.xz      ← optional GNU Emacs source
 #+end_example
 
@@ -218,6 +275,18 @@ Default compression is =xz -9e= (extreme preset). Pass =--gzip= for faster compr
 | Emacs 27.2 (14 pkgs) | ~600 KB | ~700 KB | ~1–2 MB          | ~55–65 MB       |
 | Emacs 30.2 (28 pkgs) | ~1.7 MB | ~700 KB | ~2–3 MB          | ~55–65 MB       |
 
+The =tools/= drop-zone (language servers, debug adapters) dominates the total — ~420 MB uncompressed, ~150 MB compressed. On a full bundle the tarball lands around ~150–200 MB.
+
+** --no-tools update tarballs
+
+Once the target has the big initial install, subsequent rebuilds rarely need to re-ship =tools/= — language servers and debug adapters move slowly. Pass =--no-tools= to =create-install.sh= or =build-toolkit.sh= to produce an "update" tarball that omits the drop-zone:
+
+#+begin_src sh
+./create-install.sh 30.2 --no-tools
+#+end_src
+
+The resulting filename gets a =-notools= suffix for disambiguation, and MANIFEST.txt notes the skip. On the target, =setup.sh= guards the tools install with =if [[ -d tools ]]=, so an absent =tools/= leaves the existing =~/.emacs.d/bin/= untouched — package churn ships, binaries stay put. Typical size drop: ~150 MB → ~3 MB (xz).
+
 * Deploying on the offline target (step 3)
 
 Copy the =.tar.xz= to the target by whatever means (USB, air-gapped transfer, …), then:
@@ -230,11 +299,13 @@ cd emacs-offline-toolkit-*/
 
 =setup.sh= will:
 
-1. Back up any existing =~/.emacs.d/init.el=, =early-init.el=, =Emacs-vanilla/=, =Emacs-DIYer/= with a timestamped =.pre-toolkit-<STAMP>= suffix.
+1. Back up any existing =~/.emacs.d/{init.el,early-init.el,Emacs-vanilla,Emacs-DIYer,local-packages,bin,docs,init-starter.el,coding-starter.el,elpa}= and any =~/elpa-mirror-emacs-*/= with a timestamped =.pre-toolkit-<STAMP>= suffix. The =elpa/= move forces the next launch to reinstall every package from the freshly extracted mirror (not from stale =.elc/.eln= left over from a previous toolkit).
 2. Extract the ELPA mirror tarball into =~/=, creating =~/elpa-mirror-emacs-<VER>-<OS>-<ARCH>-<STAMP>-<N>pkgs/=.
 3. Install the literate config directories under =~/.emacs.d/=.
-4. Install =init.el= (and =early-init.el= if bundled) under =~/.emacs.d/=.
+4. Install =init.el= plus any bundled =early-init.el= / =init-starter.el= / =coding-starter.el= / =local-packages/= / =tools/= (→ =~/.emacs.d/bin/=) / =docs/= (→ =~/.emacs.d/docs/=).
 5. Report instructions for building the bundled Emacs source, if present.
+
+To undo: run =./rollback.sh= from inside the same extracted toolkit dir (or from anywhere — it operates on =$HOME= / =$HOME/.emacs.d= directly). It finds the newest =.pre-toolkit-<STAMP>= set, archives the current post-install state as =.rolled-back-<NOW>=, and swaps the backups back into place. The backups remain on disk until you delete them; rollback is always reversible.
 
 Launch Emacs and check =*Messages*=:
 

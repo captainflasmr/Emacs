@@ -17,3 +17,10 @@ selected-window-accent-mode
 simply-annotate
 ztree
 web-mode
+cmake-mode
+corfu
+highlight-indent-guides
+typescript-mode
+protobuf-mode
+kotlin-mode
+treemacs
