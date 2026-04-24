@@ -24,3 +24,4 @@ typescript-mode
 protobuf-mode
 kotlin-mode
 treemacs
+dumb-jump

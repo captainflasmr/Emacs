@@ -475,7 +475,8 @@
   (setq simply-annotate-prompt-for-author 'threads-only)  ; Prompt only for replies
   (setq simply-annotate-database-strategy 'both)
   ;; (setq simply-annotate-display-style '(bracket))
-  (setq simply-annotate-inline-default t))
+  ;; (setq simply-annotate-inline-default t)
+  )
 
 (with-eval-after-load 'simply-annotate
   (add-hook 'dired-mode-hook #'simply-annotate-dired-mode))
@@ -740,14 +741,7 @@ ORIG-FUN is the original command and ARGS are its arguments."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(misterioso))
- '(package-selected-packages
-   '(agent-shell async csv-mode dape diff-hl diff-hl-mode dired-sidebar
-                 doom-themes ef-themes elpa-mirror gruvbox-theme
-                 i3wm-config-mode kotlin-mode org-social ox-hugo
-                 package-lint protobuf-mode ready-player
-                 timu-caribbean-theme timu-rouge-theme
-                 timu-spacegrey-theme treemacs web-mode yaml-mode
-                 ztree))
+ '(package-selected-packages nil)
  '(warning-suppress-log-types '((frameset)))
  '(warning-suppress-types '((frameset))))
 
@@ -832,6 +826,51 @@ ORIG-FUN is the original command and ARGS are its arguments."
           ;; :executeCommandProvider           ; Execute custom commands
           ;; :inlayHintProvider                ; Inlay hints
           )))
+
+(use-package dumb-jump
+  :ensure t
+  :after xref
+  :custom
+  (dumb-jump-force-searcher 'rg)
+  (dumb-jump-prefer-searcher 'rg)
+  (dumb-jump-selector 'completing-read)
+  :config
+  ;; Prepend globally so dumb-jump beats the default etags backend.
+  ;; Eglot (when active) registers buffer-locally and still runs first,
+  ;; since buffer-local hook functions precede global ones.
+  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
+
+;; Use the minibuffer picker for M-. when multiple definitions match,
+;; but keep the *xref* buffer for M-? / reference browsing.
+(setq xref-show-definitions-function #'xref-show-definitions-completing-read
+      xref-show-xrefs-function       #'xref-show-definitions-buffer)
+
+;; Ada support for dumb-jump (not built-in).
+;; Case-sensitive: works when the codebase is consistent about casing.
+(with-eval-after-load 'dumb-jump
+  (dolist (ext '("ads" "adb" "ada"))
+    (add-to-list 'dumb-jump-language-file-exts
+                 `(:language "ada" :ext ,ext :agtype nil :rgtype nil)))
+
+  (add-to-list 'dumb-jump-find-rules
+               '(:type "function" :supports ("rg" "ag" "grep" "git-grep")
+                 :language "ada"
+                 :regex "\\s*(procedure|function)\\s+JJJ\\b"))
+
+  (add-to-list 'dumb-jump-find-rules
+               '(:type "type" :supports ("rg" "ag" "grep" "git-grep")
+                 :language "ada"
+                 :regex "\\s*(type|subtype)\\s+JJJ\\b"))
+
+  (add-to-list 'dumb-jump-find-rules
+               '(:type "module" :supports ("rg" "ag" "grep" "git-grep")
+                 :language "ada"
+                 :regex "\\s*package(\\s+body)?\\s+JJJ\\b"))
+
+  (add-to-list 'dumb-jump-find-rules
+               '(:type "variable" :supports ("rg" "ag" "grep" "git-grep")
+                 :language "ada"
+                 :regex "\\s*JJJ\\s*:\\s*(constant\\s+)?[A-Za-z_][A-Za-z0-9_.]*")))
 
 ;; Configure Eglot to use the TypeScript server for web-mode buffers.
 ;; We add this to eglot-server-programs so Eglot knows what command to run.
@@ -985,7 +1024,7 @@ ORIG-FUN is the original command and ARGS are its arguments."
 (use-package dwell-map
   :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/dwell-map")
 
- (dwell-map-mode 1)
+(dwell-map-mode 1)
 
 (use-package diff-hl
   :ensure t
@@ -1064,3 +1103,40 @@ On open, keep focus in the original window."
         (treemacs-display-current-project-exclusively)))))
 
 (global-set-key (kbd "C-x m") #'my/treemacs-toggle-current-project)
+
+;; Define the function first
+(defun my/vc-git-reset-and-clean ()
+  "Discard all tracked changes and delete all unregistered files in the current project."
+  (interactive)
+  (let ((root (vc-git-root default-directory)))
+    (if (not root)
+        (error "Not in a Git repository")
+      (when (yes-or-no-p "Permanently discard ALL changes and delete UNTRACKED files? ")
+        (let ((default-directory root))
+          (shell-command "git reset --hard HEAD && git clean -fd")
+          (vc-resynch-buffer root t t)
+          (message "Project wiped clean."))))))
+
+;; Bind it safely after the VC libraries load
+(with-eval-after-load 'vc-dir
+  (define-key vc-dir-mode-map (kbd "K") #'my/vc-git-reset-and-clean))
+
+(with-eval-after-load 'vc-hooks
+  (define-key vc-prefix-map (kbd "K") #'my/vc-git-reset-and-clean))
+
+(add-to-list 'load-path "~/source/repos/org-bootstrap-publish")
+(require 'org-bootstrap-publish)
+
+(setq org-bootstrap-publish-source-file  "~/publish/hugo-unified/README.org"
+      org-bootstrap-publish-output-dir   "~/publish/obp-out/public"
+      org-bootstrap-publish-site-title   "Emacs Dwelling"
+      org-bootstrap-publish-site-tagline "Journeying through the Emacs rabbit hole"
+      org-bootstrap-publish-site-url     "https://emacs.dyerdwelling.family/"
+      org-bootstrap-publish-author       "James Dyer"
+      org-bootstrap-publish-menu-tags
+      '(
+        ("2026"         . "2026")
+        ("org"          . "org")
+        ("ollama-buddy" . "ollama_buddy")
+        ("dired"        . "dired"))
+      )

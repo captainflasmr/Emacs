@@ -9,6 +9,7 @@ csv-mode
 dape
 diff-hl
 doom-themes
+dumb-jump
 ef-themes
 gruvbox-theme
 highlight-indent-guides

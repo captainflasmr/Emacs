@@ -75,6 +75,55 @@
            (setq eglot-events-buffer-size 0)))))
 
 ;;
+;; -> dumb-jump — grep/ripgrep-based xref backend used as a fallback when
+;; eglot is not active (or still connecting). Eglot adds its backend buffer-
+;; locally and therefore still wins when a server is attached; dumb-jump is
+;; prepended globally so it beats the default etags backend (which otherwise
+;; hijacks `M-.' with a TAGS-table prompt).
+;;
+(use-package dumb-jump
+  :after xref
+  :custom
+  (dumb-jump-force-searcher 'rg)
+  (dumb-jump-prefer-searcher 'rg)
+  (dumb-jump-selector 'completing-read)
+  :config
+  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
+
+;; Minibuffer picker for M-. when multiple definitions match; keep the
+;; `*xref*' buffer for M-? / reference browsing (better for bulk review).
+(setq xref-show-definitions-function #'xref-show-definitions-completing-read
+      xref-show-xrefs-function       #'xref-show-definitions-buffer)
+
+;; Ada support for dumb-jump (not built-in). Case-sensitive: works when the
+;; codebase is consistent about casing. Covers subprograms, types, packages
+;; and variable/constant declarations in .ads / .adb / .ada files.
+(with-eval-after-load 'dumb-jump
+  (dolist (ext '("ads" "adb" "ada"))
+    (add-to-list 'dumb-jump-language-file-exts
+                 `(:language "ada" :ext ,ext :agtype nil :rgtype nil)))
+
+  (add-to-list 'dumb-jump-find-rules
+               '(:type "function" :supports ("rg" "ag" "grep" "git-grep")
+                 :language "ada"
+                 :regex "\\s*(procedure|function)\\s+JJJ\\b"))
+
+  (add-to-list 'dumb-jump-find-rules
+               '(:type "type" :supports ("rg" "ag" "grep" "git-grep")
+                 :language "ada"
+                 :regex "\\s*(type|subtype)\\s+JJJ\\b"))
+
+  (add-to-list 'dumb-jump-find-rules
+               '(:type "module" :supports ("rg" "ag" "grep" "git-grep")
+                 :language "ada"
+                 :regex "\\s*package(\\s+body)?\\s+JJJ\\b"))
+
+  (add-to-list 'dumb-jump-find-rules
+               '(:type "variable" :supports ("rg" "ag" "grep" "git-grep")
+                 :language "ada"
+                 :regex "\\s*JJJ\\s*:\\s*(constant\\s+)?[A-Za-z_][A-Za-z0-9_.]*")))
+
+;;
 ;; -> flymake — diagnostics, built-in. M-n/M-p to jump between errors.
 ;;
 (use-package flymake
