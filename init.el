@@ -1007,7 +1007,6 @@ ORIG-FUN is the original command and ARGS are its arguments."
 
 (use-package diff-hl
   :ensure t
-  :hook (dired-mode . diff-hl-dired-mode)
   :config
   (global-diff-hl-mode 1)
   (diff-hl-flydiff-mode 1)

@@ -73,7 +73,7 @@
 ;; -> diff-hl — inline VCS indicators in fringe (or margin in TTY)
 ;;
 (use-package diff-hl
-  :hook (dired-mode . diff-hl-dired-mode)
+  ;; :hook (dired-mode . diff-hl-dired-mode) ; conflicts with emacs-solo git status overlays
   :config
   (global-diff-hl-mode 1)
   (diff-hl-flydiff-mode 1)
