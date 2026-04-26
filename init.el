@@ -339,6 +339,12 @@
   ;; overall default model
   (setq ollama-buddy-default-model "deepseek-v3.1:671b-cloud")
 
+  (require 'ollama-buddy-opencode)
+  ;; ~/.authinfo:  machine ollama-buddy-opencode login apikey password <KEY>
+  (setq ollama-buddy-opencode-api-key
+        (auth-source-pick-first-password
+         :host "opencode-go" :user "apikey"))
+  
   (require 'ollama-buddy-annotate nil t)
   
   ;; acp2ollama tesitng
@@ -743,9 +749,12 @@ ORIG-FUN is the original command and ARGS are its arguments."
   (setq agent-shell-anthropic-claude-environment
         (agent-shell-make-environment-variables :inherit-env t))
 
-  ;; Make Claude Code the default agent
+  ;; Make OpenCode the default agent
+  (require 'agent-shell-opencode)
+  (setq agent-shell-opencode-authentication
+        (agent-shell-opencode-make-authentication :none t))
   (setq agent-shell-preferred-agent-config
-        (agent-shell-anthropic-make-claude-code-config))
+        (agent-shell-opencode-make-agent-config))
 
   ;; Show usage info at end of each turn
   (setq agent-shell-show-usage-at-turn-end t)
