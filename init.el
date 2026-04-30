@@ -727,7 +727,14 @@ ORIG-FUN is the original command and ARGS are its arguments."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(misterioso))
- '(package-selected-packages nil)
+ '(package-selected-packages
+   '(agent-shell async csv-mode dape diff-hl dired-sidebar doom-themes
+                 dumb-jump ef-themes elpa-mirror gruvbox-theme htmlize
+                 i3wm-config-mode kotlin-mode org-social ox-hugo
+                 package-lint protobuf-mode ready-player
+                 timu-caribbean-theme timu-rouge-theme
+                 timu-spacegrey-theme treemacs web-mode yaml-mode
+                 ztree))
  '(warning-suppress-log-types '((frameset)))
  '(warning-suppress-types '((frameset))))
 
@@ -1094,3 +1101,5 @@ On open, keep focus in the original window."
 (load "~/publish/hugo-unified/obp-sites.el")
 (my/obp-use-site 'emacs)
 
+(use-package htmlize
+  :demand t)
