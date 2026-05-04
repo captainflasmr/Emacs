@@ -1541,7 +1541,7 @@ Demonstrates "Do What I Mean" functionalities custom to Emacs, streamlining oper
                                              my/dwim-convert-commands)))
         (my/dwim-convert-generic chosen-command)))
 
-    (global-set-key (kbd "C-c v") 'my/dwim-convert-with-selection)))
+    (global-set-key (kbd "C-c >") 'my/dwim-convert-with-selection)))
 
 #+end_src
 

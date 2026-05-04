@@ -73,7 +73,7 @@
       '(
         ("b" "Blog" plain
          (file+function
-          "~/publish/hugo-unified/blog.org"
+          "~/DCIM/content/blog.org"
           my-capture-top-level)
          "* TODO %^{title} :%(format-time-string \"%Y\"):
 :PROPERTIES:
@@ -87,7 +87,7 @@
 
         ("e" "Emacs" plain
          (file+function
-          "~/publish//hugo-unified/README.org"
+          "~/DCIM/content/emacs.org"
           my-capture-top-level)
          "* TODO %^{title} :emacs:%(format-time-string \"%Y\"):
 :PROPERTIES:
@@ -101,7 +101,7 @@
 
         ("l" "Linux" plain
          (file+function
-          "/publish/hugo-unified/linux.org"
+          "~/DCIM/content/linux.org"
           my-capture-top-level)
          "* TODO %^{title} :%(format-time-string \"%Y\"):
 :PROPERTIES:
@@ -117,7 +117,7 @@
 
         ("av" "Art Videos" plain
          (file+function
-          "~/publish/hugo-unified/art.org"
+          "~/DCIM/content/art.org"
           my-capture-top-level)
          "* TODO %^{title} :videos:painter:krita:artrage:%(format-time-string \"%Y\"):
 :PROPERTIES:
@@ -135,7 +135,7 @@
 
         ("aa" "Art" plain
          (file+function
-          "~/publish/hugo-unified/art.org"
+          "~/DCIM/content/art.org"
           my-capture-top-level)
          "* TODO %^{title} :painter:krita:artrage:%(format-time-string \"%Y\"):
 :PROPERTIES:
@@ -185,11 +185,11 @@
 (defun my/gallery-after-finalize ()
   "Copy gallery images to Hugo static dir and run PictureCrush."
   (unless org-note-abort
-    (let* ((target-dir (concat "~/publish/hugo-unified/static/" my/gallery-hugo-section))
+    (let* ((target-dir (concat "~/DCIM/content/static/" my/gallery-hugo-section))
            (thumb (nth (random (length my/org-dired-marked-files)) my/org-dired-marked-files))
            (copied-files '()))
       (make-directory target-dir t)
-      (copy-file thumb (concat "~/publish/hugo-unified/static/" my/gallery-hugo-section ".jpg"))
+      (copy-file thumb (concat "~/DCIM/content/static/" my/gallery-hugo-section ".jpg"))
       (dolist (file my/org-dired-marked-files)
         (let ((target-file (expand-file-name (file-name-nondirectory file) target-dir)))
           (copy-file file target-file)
@@ -201,7 +201,7 @@
 (add-to-list 'org-capture-templates
              '("g" "Gallery" plain
                (file+function
-                "~/publish/hugo-unified/blog.org"
+                "~/DCIM/content/blog.org"
                 my-capture-top-level)
                (function my/org-hugo-new-subtree-post-capture-template)
                :prepend t :jump-to-captured t :after-finalize my/gallery-after-finalize))
@@ -249,7 +249,7 @@
               (find-file (concat user-emacs-directory "README.org"))))
 (define-key my-jump-keymap (kbd "a")
             (lambda () (interactive)
-              (find-file "~/publish/hugo-unified/README.org")))
+              (find-file "~/DCIM/content/emacs.org")))
 
 ;;
 ;; -> linux specific
@@ -339,11 +339,18 @@
   ;; overall default model
   (setq ollama-buddy-default-model "deepseek-v3.1:671b-cloud")
 
+  ;;
+  ;; Opencode
+  ;;
   (require 'ollama-buddy-opencode)
   ;; ~/.authinfo:  machine ollama-buddy-opencode login apikey password <KEY>
   (setq ollama-buddy-opencode-api-key
         (auth-source-pick-first-password
          :host "opencode-go" :user "apikey"))
+  (setq ollama-buddy-opencode-usage-url 
+        "https://opencode.ai/workspace/wrk_01KQ0AFJ2GSES8D7J3CRMAW8B8/go")
+  (setq ollama-buddy-opencode-session-token 
+        "Fe26.2**314c635ffa48dbd4f81553efa5605ac419b102dbfe621e5902efd5bbda9ea426*jdixt0qMDKLPrmLzKTrEnA*ZB9JeXsxqujAs2NJlp52zshH-0BFZZx-eGuvC5dceCKDI77bMItxiyug9gyuOdFuKF44AvyYyJwYLYRybD1eXZXsCDWHmI_nNz0pV0Bdtbay0YWryinJUZSvmUastDNe-t15b8xLBnVzpb-g3ugkyz1vIqTM9-YonQ9r6mV0BgwRLeCcJvHrdc0XkJ1sEqjWYTPIEvGRAfub0o0XUDkwUm0NoF_oAewYGOm02m4y9-g_ZAaxpug_8IIqOKLVoyaTaXx3eKsIyNjrRzkjFUeWX7DUZF25mtuwglJ-ZthyId50bFb0BiVI75LE6W3OS1kPQ6VlMqxYmI6_gJ93hla4Qw*1808589715821*7f39437238687e955f9eb5a1922dff7d499de599ae629d53608c8d45c555379c*6ymCS_3rePNS61-jiI3cJ4BCUKhGNNQYbv75Z697v4k")
   
   (require 'ollama-buddy-annotate nil t)
   
@@ -356,7 +363,7 @@
         (auth-source-pick-first-password :host "ollama-buddy-cloud" :user "apikey"))
   (setq ollama-buddy-web-search-api-key
         (auth-source-pick-first-password :host "ollama-buddy-web-search" :user "apikey"))
-  (setq ollama-buddy-cloud-session-token "YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0-IFgyNTUxOSBnVXZ6cFN5NFREWE5jOTgwenNnRlNpTzRKZkR0MVdkTkJRRnA5LytCVVJRCmt2NXpOcVkxSEVZMFloUitGdFNlcmN6Tmg2eVlhNUE1cHQ1cFk3SWRjMG8KLS0tIDhxSmJHR293ci9hMWJRUHZQRlpETmgxS1QySFdQK3JLNWVQUGVqRjY5WmcKStpAGR0Zb4FGLsfhJFv_4Ud_jcuWyJsUdaiMr6Cq-RGokYe4U_EvJjwJEDbuM3kRiIpJYv3cwms-FGvwhhPsnckty5SBuAE4FDWN1Wx0ngFmk9ynTXPjmYVMYfaZjurlDL52zFuzAz_O5CvMd_CFcdPgSc07RgVwXiru4dre7-CSFuaAajB6OobXVQ==")
+  (setq ollama-buddy-cloud-session-token "YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0-IFgyNTUxOSBqcS9mTW45SEtVS050KzAwNHpxMWFWL0tWR1F1RVc3Q1QrekgrcmQvN2c0ClA3bWhhMER1MXlXYVVrb2trQnJOTUNQZkdWYTAxd1dvZTN1bGlWQXBBVUUKLS0tIGRNTDNQSGVxWUdJZXlmMjE0UHAwVVdGRnJCRzNzeHZFMUtKd05lSEN3VzgKnQ2wx2bYbVHYNrtHMs_3U2WRtYdWOsgpg8-cblC4qwaNgzlJnwPpQ7LRyD92HX9JtH7cQIOCeHwu43y38X17busj8g5JHnGjOVczzNeR65w6VBRsDf_ol65GO_K2UTzZqNh0Bpgxv0RtuhW7mSUMXTOsmPqg2YtuyiZjfdC_tTtfG7Oli__1Av9r4A==")
 
   (setq ollama-buddy-max-history-length 999)
   
@@ -437,6 +444,89 @@
   ;; dired integration
   (with-eval-after-load 'dired
     (define-key dired-mode-map (kbd "C-c C-a") #'ollama-buddy-dired-attach-marked-files)))
+
+;; ;;
+;; ;; -> dashboard
+;; ;;
+;; (use-package dashboard
+;;   :ensure t
+;;   :init
+;;   (setq dashboard-set-heading-icons nil)
+;;   (setq dashboard-set-file-icons nil)
+;;   (setq dashboard-set-navigator-icons nil)
+
+;;   (dashboard-setup-startup-hook)
+;;   (setq dashboard-banner-logo-title nil)
+;;   (setq dashboard-startup-banner 'ascii)
+;;   (setq dashboard-center-content nil)
+;;   (setq dashboard-show-shortcuts t)
+
+;;   ;; Ensure agenda picks up the todo file
+;;   (setq dashboard-match-agenda-entry "TODO=\"TODO\"|TODO=\"NEXT\"")
+;;   ;; (setq org-agenda-files '("~/DCIM/content/aaa--todo.org")) ; Use global setting instead
+
+
+;;   (setq dashboard-footer-messages '("Ready to hack." "The world is your terminal." "Emacs is the way."))
+
+;;   (defun dashboard-insert-my-jumps (list-size)
+;;     (dashboard-insert-section
+;;      "QUICK JUMPS:"
+;;      '("TODO List" "Content Hub" "Screenshots" "Camera")
+;;      list-size
+;;      'my-jumps
+;;      "l"
+;;      (lambda (w &rest _)
+;;        (let ((el (widget-get w :tag)))
+;;          (cond
+;;           ((string= el "TODO List") (find-file "~/DCIM/content/aaa--todo.org"))
+;;           ((string= el "Content Hub") (find-file "~/DCIM/content/"))
+;;           ((string= el "Screenshots") (find-file "~/DCIM/Screenshots"))
+;;           ((string= el "Camera") (find-file "~/DCIM/Camera")))))
+;;      el))
+  
+;;   ;; Define custom sections for your tools
+;;   (defun dashboard-insert-my-tools (list-size)
+;;     (dashboard-insert-section
+;;      "CUSTOM TOOLS:"
+;;      '("Launch AI Agents" "Simply Annotate")
+;;      list-size
+;;      'my-tools
+;;      "o"
+;;      (lambda (w &rest _)
+;;        (let ((el (widget-get w :tag)))
+;;          (cond
+;;           ((string= el "Launch AI Agents") (ollama-buddy-transient-menu))
+;;           ((string= el "Simply Annotate") (simply-annotate-list-projects)))))
+;;      el))
+
+;;   (add-to-list 'dashboard-item-generators '(my-tools . dashboard-insert-my-tools))
+;;   (add-to-list 'dashboard-item-generators '(my-jumps . dashboard-insert-my-jumps))
+
+;;   ;; Advise dashboard--current-section to recognize custom headings
+;;   (defun my/dashboard-current-section ()
+;;     "Try to detect custom dashboard sections before falling back to original."
+;;     (save-excursion
+;;       (let ((sep (dashboard--separator)))
+;;         (when (and (search-backward sep nil t)
+;;                    (search-forward sep nil t))
+;;           (let ((ln (thing-at-point 'line t)))
+;;             (cond ((string-match-p "QUICK JUMPS:" ln) 'my-jumps)
+;;                   ((string-match-p "CUSTOM TOOLS:" ln) 'my-tools)
+;;                   (t nil)))))))
+
+;;   (advice-add 'dashboard--current-section :before-until #'my/dashboard-current-section)
+
+;;   (with-eval-after-load 'dashboard
+;;     (define-key dashboard-mode-map (kbd "C-j") #'dashboard-return)
+;;     (define-key dashboard-mode-map (kbd "f") #'dashboard-return))
+
+;;   (setq dashboard-items '((my-jumps . 5)
+;;                           (my-tools . 5)
+;;                           (recents  . 10)
+;;                           (bookmarks . 10)
+;;                           (projects . 5)))
+
+;;   (dashboard-refresh-buffer))
 
 ;;
 ;; -> other
@@ -1098,8 +1188,309 @@ On open, keep focus in the original window."
 
 (add-to-list 'load-path "~/source/repos/org-bootstrap-publish")
 (require 'org-bootstrap-publish)
-(load "~/publish/hugo-unified/obp-sites.el")
-(my/obp-use-site 'emacs)
+
+;; -> obp-site-profiles
+
+(defun my/obp-shortcode-horseprediction (_args)
+  (concat
+   "<form name=\"horselist\" id=\"horselist\">"
+   "<textarea name=\"thehorselist\" rows=\"10\"></textarea>"
+   "</form>"
+   "<input onclick=\"read_horse_lines();\" type=\"button\" value=\"Find Winner\" />"
+   "<input onclick=\"clear_horses();\" type=\"button\" value=\"Clear\" />"
+   "<script src=\"/static/assets/js/script.js\" defer></script>"))
+
+(defun my/obp-shortcode-crossword (args)
+  (let ((src (plist-get args :src)))
+    (concat
+     "<h2>" src "</h2>"
+     "<div style=\"margin:auto;display:flex;flex-direction:column;height:500px;max-width:500px\">"
+     "<iframe src=\"https://crosswordlabs.com/embed/" src
+     "\" style=\"flex:1;width:100%;padding:5px 0 0 5px;border:3px solid black\"></iframe>"
+     "<a target=\"_blank\" style=\"align-self:center;font-size:12px;color:black;padding-top:10px;text-decoration:none;text-align:center\" href=\"https://crosswordlabs.com\">Crossword Puzzle Maker</a>"
+     "</div>")))
+
+(defun my/obp-shortcode-foldergallery (args)
+  (let* ((src (plist-get args :src))
+         (root (file-name-directory
+                (or (and org-bootstrap-publish-source-files
+                         (car org-bootstrap-publish-source-files))
+                    org-bootstrap-publish-source-file)))
+         (dir  (and src root (expand-file-name (concat "static/" src "/") root)))
+         (files (and dir (file-directory-p dir)
+                     (sort (directory-files
+                            dir nil
+                            "\\.\\(?:gif\\|webp\\|jpe?g\\|tiff\\|png\\|bmp\\)\\'"
+                            t)
+                           #'string-greaterp))))
+    (if (not files) ""
+      (concat
+       "<div style=\"display:flex;flex-wrap:wrap;border:0\">"
+       (mapconcat
+        (lambda (f)
+          (let ((url (concat "/static/" src "/" f)))
+            (format "<a href=\"%s\" style=\"flex-grow:0;margin:1px;display:flex\"><img src=\"%s\" style=\"height:160px;object-fit:cover\"/></a>"
+                    url url)))
+        files "")
+       "</div>"))))
+
+(setq org-bootstrap-publish-sites
+      '((dyerdwelling
+         (org-bootstrap-publish-source-files
+          . ("~/DCIM/content/blog.org"
+             "~/DCIM/content/art.org"
+             "~/DCIM/content/linux.org"
+             "~/DCIM/content/kate.org"
+             "~/DCIM/content/dad-dictionary.org"
+"~/DCIM/content/emacs.org"))
+         (org-bootstrap-publish-output-dir   . "~/publish/obp-output")
+         (org-bootstrap-publish-layout       . topbar)
+         (org-bootstrap-publish-site-title   . "the DyerDwelling!")
+         (org-bootstrap-publish-site-tagline . "by James Dyer")
+         (org-bootstrap-publish-site-url     . "https://www.dyerdwelling.family/")
+         (org-bootstrap-publish-author       . "James Dyer")
+         (org-bootstrap-publish-cloudflare-project . "dyerdwelling")
+         (org-bootstrap-publish-static-dirs
+          . ("static/art--gallery" "static/art--other" "static/art--videos"
+             "static/assets" "static/bingo" "static/blog" "static/bookimages"
+             "static/bookthumbs" "static/dad--dictionary" "static/emacs"
+             "static/images" "static/kate" "static/linux" "static/music"
+             "static/photos" "static/scans" "static/ox-hugo"))
+         (org-bootstrap-publish-shortcodes
+          . ((horseprediction . my/obp-shortcode-horseprediction)
+             (crossword       . my/obp-shortcode-crossword)
+             (foldergallery   . my/obp-shortcode-foldergallery)))
+         (org-bootstrap-publish-background-image
+          . "/static/images/banner/pagefront.jpg")
+         (org-bootstrap-publish-background-blur . 8)
+         (org-bootstrap-publish-background-opacity . 0.6)
+         (org-bootstrap-publish-theme-overrides
+          . (("obp-sidebar-bg"    . "#401f33")
+             ("obp-sidebar-fg"    . "#e6ecf5")
+             ("obp-sidebar-muted" . "#8b9bb4")
+             ("obp-accent"        . "#ffb779")
+             ("obp-accent-rgb"    . "255, 138, 76")))
+         (org-bootstrap-publish-menu-links
+          . (("Evie"       . "/tags/evie/")
+             ("gallery"    . "/art--gallery/")
+             ("art"        . "/art--all/")
+             ("videos"     . "/tags/videos/")
+             ("photos"     . "/photos/")
+             ("blog"       . "/blog/")
+             ("scans"      . "/scans/")
+             ("emacs"      . "/tags/emacs/")
+             ("stables"    . "/blog/posts--the-stables/")
+             ("music"      . "/blog/posts--full-music-list/")
+             ("katieboo85" . "/kate/")
+             ("about"      . "/blog/posts--about-me/"))))
+        (art
+         (org-bootstrap-publish-source-files . ("~/DCIM/content/art.org"))
+         (org-bootstrap-publish-output-dir   . "~/publish/obp-output")
+         (org-bootstrap-publish-layout       . topbar)
+         (org-bootstrap-publish-site-title   . "DyerDwelling/art")
+         (org-bootstrap-publish-site-tagline . "Welcome to the home of James Dyer wearied traveller")
+         (org-bootstrap-publish-site-url     . "https://www.art.dyerdwelling.family/")
+         (org-bootstrap-publish-author       . "James Dyer")
+         (org-bootstrap-publish-cloudflare-project . "art-dyerdwelling")
+         (org-bootstrap-publish-static-dirs
+          . ("static/art--gallery" "static/art--videos" "static/art--other"
+             "static/images/banner"))
+         (org-bootstrap-publish-background-image
+          . "/static/images/banner/pagefront.jpg")
+         (org-bootstrap-publish-background-blur . 8)
+         (org-bootstrap-publish-background-opacity . 1.0)
+         (org-bootstrap-publish-theme-overrides
+          . (("obp-sidebar-bg"    . "#2a1830")
+             ("obp-sidebar-fg"    . "#f1e4ec")
+             ("obp-sidebar-muted" . "#a48aa0")
+             ("obp-accent"        . "#e7b04b")
+             ("obp-accent-rgb"    . "231, 176, 75")))
+         (org-bootstrap-publish-menu-links
+          . (("gallery" . "/tags/gallery/")
+             ("videos"  . "/tags/videos/")
+             ("doodles" . "/tags/doodle/")
+             ("artrage" . "/tags/artrage/")
+             ("2024"    . "/tags/2024/")
+             ("2023"    . "/tags/2023/")
+             ("2022"    . "/tags/2022/"))))
+        (katieboo85
+         (org-bootstrap-publish-source-files . ("~/DCIM/content/kate.org"))
+         (org-bootstrap-publish-output-dir   . "~/publish/obp-output")
+         (org-bootstrap-publish-layout       . topbar)
+         (org-bootstrap-publish-site-title   . "KatieBoo85")
+         (org-bootstrap-publish-site-tagline . "Kate's Recipe Collection")
+         (org-bootstrap-publish-site-url     . "https://katieboo85.pages.dev/")
+         (org-bootstrap-publish-author       . "Katherine Jeffs")
+         (org-bootstrap-publish-cloudflare-project . "katieboo85")
+         (org-bootstrap-publish-static-dirs  . ("static/kate" "static/assets" "static/images"))
+         (org-bootstrap-publish-background-image
+          . "/static/images/banner/navbar-katieboo85.jpg")
+         (org-bootstrap-publish-background-blur . 8)
+         (org-bootstrap-publish-background-opacity . 1.0)
+         (org-bootstrap-publish-theme-overrides
+          . (("obp-sidebar-bg"    . "#5a1e1e")
+             ("obp-sidebar-fg"    . "#fbe9d7")
+             ("obp-sidebar-muted" . "#caa18a")
+             ("obp-accent"        . "#f3a840")
+             ("obp-accent-rgb"    . "243, 168, 64")))
+         (org-bootstrap-publish-menu-links   . (("recipes" . "/kate/"))))
+        (emacs
+         (org-bootstrap-publish-source-files . ("~/DCIM/content/emacs.org"))
+         (org-bootstrap-publish-output-dir   . "~/publish/obp-output")
+         (org-bootstrap-publish-layout       . topbar)
+         (org-bootstrap-publish-site-title   . "Emacs Dwelling")
+         (org-bootstrap-publish-site-tagline . "Journeying through the Emacs rabbit hole")
+         (org-bootstrap-publish-site-url     . "https://emacs.dyerdwelling.family/")
+         (org-bootstrap-publish-author       . "James Dyer")
+         (org-bootstrap-publish-static-dirs  . ("static/emacs" "static/images/banner"))
+         (org-bootstrap-publish-disqus-shortname . "https-www-emacs-dyerdwelling-family")
+         (org-bootstrap-publish-cloudflare-project . "emacs-dyerdwelling")
+         (org-bootstrap-publish-background-image
+          . "/static/images/banner/emacs-ollama-buddy.jpg")
+         (org-bootstrap-publish-background-blur . 4)
+         (org-bootstrap-publish-background-opacity . 0.8)
+         (org-bootstrap-publish-theme-overrides
+          . (("obp-sidebar-bg"    . "#65506f")
+             ("obp-sidebar-fg"    . "#dcdcf2")
+             ("obp-sidebar-muted" . "#8a8ab5")
+             ("obp-accent"        . "#9b6ed1")
+             ("obp-accent-rgb"    . "155, 110, 209")))
+         (org-bootstrap-publish-menu-links
+          . (("2026"         . "/tags/2026/")
+             ("org"          . "/tags/org/")
+             ("ollama-buddy" . "/tags/ollama_buddy/")
+             ("dired"        . "/tags/dired/"))))))
+
+(dolist (entry org-bootstrap-publish-sites)
+  (let ((name (car entry)))
+    (defalias (intern (format "my/obp-serve-%s" name))
+      (lambda ()
+        (interactive)
+        (org-bootstrap-publish-serve-site name))
+      (format "Stop any running obp server, switch to the `%s' site, then serve it."
+              name))))
+
+(unless noninteractive
+  (require 'transient)
+
+  (transient-define-prefix my/obp-menu ()
+    "org-bootstrap-publish — site selector, serve, deploy."
+    [:description (lambda () (format "Active site: %s"
+                               (or org-bootstrap-publish-cloudflare-project
+                                   org-bootstrap-publish-site-title
+                                   "none")))
+     ("d" "dyerdwelling" my/obp-serve-dyerdwelling)
+     ("a" "art"          my/obp-serve-art)
+     ("k" "katieboo85"   my/obp-serve-katieboo85)
+     ("e" "emacs"        my/obp-serve-emacs)
+     ("S" "stop server"  org-bootstrap-publish-stop)]
+    ["Deploy"
+     ("P" "publish" org-bootstrap-publish-publish)
+     ("A" "publish all" org-bootstrap-publish-publish-all)
+     ("X" "abort publish" org-bootstrap-publish-publish-abort)]
+    ["Cloudflare"
+     ("c" "clean site…"  org-bootstrap-publish-clean-site)
+     ("f" "flush cache…" org-bootstrap-publish-flush-site)])
+
+  (global-set-key (kbd "C-c W") #'my/obp-menu))
+
+(org-bootstrap-publish-use-site 'emacs)
+
+;; -> obp-site-profiles-end
+
+;; -> media-management
+
+(defun my/media-run (command &optional dir)
+  "Run a shell COMMAND asynchronously in DIR (defaulting to ~/nas)."
+  (let ((default-directory (expand-file-name (or dir "~/nas"))))
+    (async-shell-command command (format "*media: %s*" command))))
+
+(defun my/media-tag-images ()
+  "Tag images in current directory using exiftool."
+  (interactive)
+  (my/media-run "tag_image_out.sh" default-directory))
+
+(defun my/media-tag-videos ()
+  "Tag videos in current directory using xmp sidecars."
+  (interactive)
+  (my/media-run "tag_video_out.sh" default-directory))
+
+(defun my/media-process-images ()
+  "Interactive image resizer (art, scans, photos)."
+  (interactive)
+  (my/media-run "images.sh"))
+
+(defun my/media-process-videos ()
+  "Resize videos from ~/nas/Photos to ~/DCIM/Videos."
+  (interactive)
+  (my/media-run "videos.sh"))
+
+(defun my/media-sync-nas ()
+  "Sync photos out to NAS."
+  (interactive)
+  (my/media-run "mysync --photos out"))
+
+(defun my/media-regenerate-thumbnails ()
+  "Regenerate missing tagged gallery thumbnails."
+  (interactive)
+  (my/media-run "tagged_thumbnail_update.sh" "~/DCIM/content/static/tagged"))
+
+(defun my/media-clean-images ()
+  "Remove resized jpg files from static image directories."
+  (interactive)
+  (my/media-run "rm -fr $(find ~/DCIM/content/static/art--gallery ~/DCIM/content/static/scans ~/DCIM/content/static/photos -mindepth 2 -name '*.jpg') 2>/dev/null; echo 'Image directories cleaned'"))
+
+(defun my/media-clean-tagged ()
+  "Remove resized jpg files from static/tagged directory."
+  (interactive)
+  (my/media-run "rm -fr $(find ~/DCIM/content/static/tagged -mindepth 2 -name '*.jpg') 2>/dev/null; echo 'Tagged directory cleaned'"))
+
+(defun my/media-clean-all ()
+  "Remove all resized images from static directories."
+  (interactive)
+  (my/media-run "rm -fr $(find ~/DCIM/content/static/art--gallery ~/DCIM/content/static/scans ~/DCIM/content/static/photos ~/DCIM/content/static/tagged -mindepth 2 -name '*.jpg') 2>/dev/null; echo 'All image directories cleaned'"))
+
+(defvar my/nas-source-dir "~/nas/Photos"
+  "Root directory for source photo/video collection.")
+
+(unless noninteractive
+  (require 'transient)
+
+  (transient-define-prefix my/media-menu ()
+    "Media — tagging, syncing, cleaning, and web publishing."
+    [:description "Tag (operates in dired or current dir)"
+     ("ti" "tag images"    my/media-tag-images)
+     ("tv" "tag videos"   my/media-tag-videos)]
+    [:description "Process & Sync"
+     ("p"  "process images"       my/media-process-images)
+     ("v"  "process videos"       my/media-process-videos)
+     ("s"  "sync to NAS"          my/media-sync-nas)]
+    [:description "Clean"
+     ("ci" "clean image dirs"     my/media-clean-images)
+     ("ct" "clean tagged dir"     my/media-clean-tagged)
+     ("ca" "clean all"            my/media-clean-all)]
+    [:description "Regenerate"
+     ("r"  "regenerate thumbnails" my/media-regenerate-thumbnails)]
+    [:description "Web — build & deploy"
+     ("wu" "web update site…"     (lambda (site)
+                                   (interactive (list (completing-read "Site: " '("dyerdwelling" "art" "katieboo85" "emacs") nil t)))
+                                   (my/media-run (format "web update %s" site))))
+     ("wp" "web publish site…"    (lambda (site)
+                                   (interactive (list (completing-read "Site: " '("dyerdwelling" "art" "katieboo85" "emacs") nil t)))
+                                   (my/media-run (format "web publish %s" site))))
+     ("wa" "web publish all"      (lambda () (interactive) (my/media-run "web publish all")))])
+
+  (global-set-key (kbd "C-c M") #'my/media-menu))
+
+;; -> media-management-end
 
 (use-package htmlize
   :demand t)
+
+(add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/transmute")
+(require 'transmute)
+(global-set-key (kbd "C-c I") #'transmute-menu)
+
+(with-eval-after-load 'image-dired
+  (require 'transmute)
+  (transmute-setup-thumbnail-keys))
