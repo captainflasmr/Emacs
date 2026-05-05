@@ -1249,7 +1249,8 @@ On open, keep focus in the original window."
          (org-bootstrap-publish-site-tagline . "by James Dyer")
          (org-bootstrap-publish-site-url     . "https://www.dyerdwelling.family/")
          (org-bootstrap-publish-author       . "James Dyer")
-         (org-bootstrap-publish-cloudflare-project . "dyerdwelling")
+          (org-bootstrap-publish-cloudflare-project . "dyerdwelling")
+          (org-bootstrap-publish-preview-limit . 10)
          (org-bootstrap-publish-static-dirs
           . ("static/art--gallery" "static/art--other" "static/art--videos"
              "static/assets" "static/bingo" "static/blog" "static/bookimages"
@@ -1291,7 +1292,8 @@ On open, keep focus in the original window."
          (org-bootstrap-publish-site-tagline . "Welcome to the home of James Dyer wearied traveller")
          (org-bootstrap-publish-site-url     . "https://www.art.dyerdwelling.family/")
          (org-bootstrap-publish-author       . "James Dyer")
-         (org-bootstrap-publish-cloudflare-project . "art-dyerdwelling")
+          (org-bootstrap-publish-cloudflare-project . "art-dyerdwelling")
+          (org-bootstrap-publish-preview-limit . 20)
          (org-bootstrap-publish-static-dirs
           . ("static/art--gallery" "static/art--videos" "static/art--other"
              "static/images/banner"))
@@ -1321,7 +1323,8 @@ On open, keep focus in the original window."
          (org-bootstrap-publish-site-tagline . "Kate's Recipe Collection")
          (org-bootstrap-publish-site-url     . "https://katieboo85.pages.dev/")
          (org-bootstrap-publish-author       . "Katherine Jeffs")
-         (org-bootstrap-publish-cloudflare-project . "katieboo85")
+          (org-bootstrap-publish-cloudflare-project . "katieboo85")
+          (org-bootstrap-publish-preview-limit . 20)
          (org-bootstrap-publish-static-dirs  . ("static/kate" "static/assets" "static/images"))
          (org-bootstrap-publish-background-image
           . "/static/images/banner/navbar-katieboo85.jpg")
@@ -1344,7 +1347,8 @@ On open, keep focus in the original window."
          (org-bootstrap-publish-author       . "James Dyer")
          (org-bootstrap-publish-static-dirs  . ("static/emacs" "static/images/banner"))
          (org-bootstrap-publish-disqus-shortname . "https-www-emacs-dyerdwelling-family")
-         (org-bootstrap-publish-cloudflare-project . "emacs-dyerdwelling")
+          (org-bootstrap-publish-cloudflare-project . "emacs-dyerdwelling")
+          (org-bootstrap-publish-preview-limit . 10)
          (org-bootstrap-publish-background-image
           . "/static/images/banner/emacs-ollama-buddy.jpg")
          (org-bootstrap-publish-background-blur . 4)
@@ -1368,29 +1372,40 @@ On open, keep focus in the original window."
         (interactive)
         (org-bootstrap-publish-serve-site name))
       (format "Stop any running obp server, switch to the `%s' site, then serve it."
+              name))
+    (defalias (intern (format "my/obp-preview-%s" name))
+      (lambda ()
+        (interactive)
+        (org-bootstrap-publish-serve-site-preview name))
+      (format "Stop any running obp server, switch to the `%s' site, then preview-serve it."
               name))))
 
 (unless noninteractive
   (require 'transient)
 
-  (transient-define-prefix my/obp-menu ()
-    "org-bootstrap-publish — site selector, serve, deploy."
-    [:description (lambda () (format "Active site: %s"
-                               (or org-bootstrap-publish-cloudflare-project
-                                   org-bootstrap-publish-site-title
-                                   "none")))
-     ("d" "dyerdwelling" my/obp-serve-dyerdwelling)
-     ("a" "art"          my/obp-serve-art)
-     ("k" "katieboo85"   my/obp-serve-katieboo85)
-     ("e" "emacs"        my/obp-serve-emacs)
-     ("S" "stop server"  org-bootstrap-publish-stop)]
-    ["Deploy"
-     ("P" "publish" org-bootstrap-publish-publish)
-     ("A" "publish all" org-bootstrap-publish-publish-all)
-     ("X" "abort publish" org-bootstrap-publish-publish-abort)]
-    ["Cloudflare"
-     ("c" "clean site…"  org-bootstrap-publish-clean-site)
-     ("f" "flush cache…" org-bootstrap-publish-flush-site)])
+   (transient-define-prefix my/obp-menu ()
+     "org-bootstrap-publish — site selector, serve, deploy."
+     [[:description (lambda () (format "Active site: %s"
+                                (or org-bootstrap-publish-cloudflare-project
+                                    org-bootstrap-publish-site-title
+                                    "none")))
+       ("d" "dyerdwelling" my/obp-serve-dyerdwelling)
+       ("a" "art"          my/obp-serve-art)
+       ("k" "katieboo85"   my/obp-serve-katieboo85)
+       ("e" "emacs"        my/obp-serve-emacs)
+       ("S" "stop server"  org-bootstrap-publish-stop)]
+      [:description "Preview"
+       ("M-d" "dyerdwelling" my/obp-preview-dyerdwelling)
+       ("M-a" "art"          my/obp-preview-art)
+       ("M-k" "katieboo85"   my/obp-preview-katieboo85)
+       ("M-e" "emacs"        my/obp-preview-emacs)]
+      [:description "Deploy"
+       ("P" "publish"      org-bootstrap-publish-publish)
+       ("A" "publish all"  org-bootstrap-publish-publish-all)
+       ("X" "abort"        org-bootstrap-publish-publish-abort)]
+      [:description "Cloudflare"
+       ("c" "clean site…"  org-bootstrap-publish-clean-site)
+       ("f" "flush cache…" org-bootstrap-publish-flush-site)]])
 
   (global-set-key (kbd "C-c W") #'my/obp-menu))
 
@@ -1490,7 +1505,7 @@ On open, keep focus in the original window."
 
 (add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/transmute")
 (require 'transmute)
-(global-set-key (kbd "C-c i") #'transmute-menu)
+(global-set-key (kbd "C-c I") #'transmute-menu)
 
 (with-eval-after-load 'image-dired
   (require 'transmute)
