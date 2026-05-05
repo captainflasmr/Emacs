@@ -1234,6 +1234,8 @@ On open, keep focus in the original window."
         files "")
        "</div>"))))
 
+(load "obp-shortcodes" t t)
+
 (setq org-bootstrap-publish-sites
       '((dyerdwelling
          (org-bootstrap-publish-source-files
@@ -1251,6 +1253,8 @@ On open, keep focus in the original window."
          (org-bootstrap-publish-author       . "James Dyer")
           (org-bootstrap-publish-cloudflare-project . "dyerdwelling")
           (org-bootstrap-publish-preview-limit . 10)
+          (org-bootstrap-publish-serve-browser . "firefox")
+          (org-bootstrap-publish-async-init-files . ("~/.emacs.d/obp-shortcodes.el"))
          (org-bootstrap-publish-static-dirs
           . ("static/art--gallery" "static/art--other" "static/art--videos"
              "static/assets" "static/bingo" "static/blog" "static/bookimages"
@@ -1271,17 +1275,18 @@ On open, keep focus in the original window."
              ("obp-sidebar-muted" . "#8b9bb4")
              ("obp-accent"        . "#ffb779")
              ("obp-accent-rgb"    . "255, 138, 76")))
-         (org-bootstrap-publish-menu-links
-          . (("Evie"       . "/tags/evie/")
-             ("gallery"    . "/art--gallery/")
-             ("art"        . "/art--all/")
-             ("videos"     . "/tags/videos/")
-             ("photos"     . "/photos/")
-             ("blog"       . "/blog/")
-             ("scans"      . "/scans/")
-             ("emacs"      . "/tags/emacs/")
-             ("stables"    . "/blog/posts--the-stables/")
-             ("music"      . "/blog/posts--full-music-list/")
+          (org-bootstrap-publish-menu-links
+           . (("Evie"       . "/tags/evie/")
+              ("gallery"    . "/art--gallery/")
+              ("art"        . "/art--all/")
+              ("videos"     . "/tags/videos/")
+              ("photos"     . "/photos/")
+              ("blog"       . "/blog/")
+              ("scans"      . "/scans/")
+              ("emacs"      . "/tags/emacs/")
+              ("stables"    . "/blog/posts--the-stables/")
+              ("crosswords" . "/blog/posts--crosswords/")
+              ("music"      . "/blog/posts--full-music-list/")
              ("katieboo85" . "/kate/")
              ("about"      . "/blog/posts--about-me/"))))
         (art
@@ -1294,6 +1299,7 @@ On open, keep focus in the original window."
          (org-bootstrap-publish-author       . "James Dyer")
           (org-bootstrap-publish-cloudflare-project . "art-dyerdwelling")
           (org-bootstrap-publish-preview-limit . 20)
+          (org-bootstrap-publish-serve-browser . "firefox")
          (org-bootstrap-publish-static-dirs
           . ("static/art--gallery" "static/art--videos" "static/art--other"
              "static/images/banner"))
@@ -1325,6 +1331,7 @@ On open, keep focus in the original window."
          (org-bootstrap-publish-author       . "Katherine Jeffs")
           (org-bootstrap-publish-cloudflare-project . "katieboo85")
           (org-bootstrap-publish-preview-limit . 20)
+          (org-bootstrap-publish-serve-browser . "firefox")
          (org-bootstrap-publish-static-dirs  . ("static/kate" "static/assets" "static/images"))
          (org-bootstrap-publish-background-image
           . "/static/images/banner/navbar-katieboo85.jpg")
@@ -1349,6 +1356,7 @@ On open, keep focus in the original window."
          (org-bootstrap-publish-disqus-shortname . "https-www-emacs-dyerdwelling-family")
           (org-bootstrap-publish-cloudflare-project . "emacs-dyerdwelling")
           (org-bootstrap-publish-preview-limit . 10)
+          (org-bootstrap-publish-serve-browser . "firefox")
          (org-bootstrap-publish-background-image
           . "/static/images/banner/emacs-ollama-buddy.jpg")
          (org-bootstrap-publish-background-blur . 4)
@@ -1362,7 +1370,7 @@ On open, keep focus in the original window."
          (org-bootstrap-publish-menu-links
           . (("2026"         . "/tags/2026/")
              ("org"          . "/tags/org/")
-             ("ollama-buddy" . "/tags/ollama_buddy/")
+              ("ollama-buddy" . "/tags/ollama-buddy/")
              ("dired"        . "/tags/dired/"))))))
 
 (dolist (entry org-bootstrap-publish-sites)
