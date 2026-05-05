@@ -1402,8 +1402,10 @@ On open, keep focus in the original window."
 
 (defun my/media-run (command &optional dir)
   "Run a shell COMMAND asynchronously in DIR (defaulting to ~/nas)."
-  (let ((default-directory (expand-file-name (or dir "~/nas"))))
-    (async-shell-command command (format "*media: %s*" command))))
+  (let* ((default-directory (expand-file-name (or dir "~/nas")))
+         (buf-name (format "*media: %s*" command)))
+    (async-shell-command command buf-name)
+    (pop-to-buffer buf-name)))
 
 (defun my/media-tag-images ()
   "Tag images in current directory using exiftool."
@@ -1458,27 +1460,26 @@ On open, keep focus in the original window."
 
   (transient-define-prefix my/media-menu ()
     "Media — tagging, syncing, cleaning, and web publishing."
-    [:description "Tag (operates in dired or current dir)"
-     ("ti" "tag images"    my/media-tag-images)
-     ("tv" "tag videos"   my/media-tag-videos)]
-    [:description "Process & Sync"
-     ("p"  "process images"       my/media-process-images)
-     ("v"  "process videos"       my/media-process-videos)
-     ("s"  "sync to NAS"          my/media-sync-nas)]
-    [:description "Clean"
-     ("ci" "clean image dirs"     my/media-clean-images)
-     ("ct" "clean tagged dir"     my/media-clean-tagged)
-     ("ca" "clean all"            my/media-clean-all)]
-    [:description "Regenerate"
-     ("r"  "regenerate thumbnails" my/media-regenerate-thumbnails)]
-    [:description "Web — build & deploy"
-     ("wu" "web update site…"     (lambda (site)
-                                   (interactive (list (completing-read "Site: " '("dyerdwelling" "art" "katieboo85" "emacs") nil t)))
-                                   (my/media-run (format "web update %s" site))))
-     ("wp" "web publish site…"    (lambda (site)
-                                   (interactive (list (completing-read "Site: " '("dyerdwelling" "art" "katieboo85" "emacs") nil t)))
-                                   (my/media-run (format "web publish %s" site))))
-     ("wa" "web publish all"      (lambda () (interactive) (my/media-run "web publish all")))])
+    [["Tag"
+      ("ti" "tag images"    my/media-tag-images)
+      ("tv" "tag videos"   my/media-tag-videos)]
+     ["Process & Sync"
+      ("p"  "process images"       my/media-process-images)
+      ("v"  "process videos"       my/media-process-videos)
+      ("s"  "sync to NAS"          my/media-sync-nas)]
+     ["Clean & Maint"
+      ("ci" "clean image dirs"     my/media-clean-images)
+      ("ct" "clean tagged dir"     my/media-clean-tagged)
+      ("ca" "clean all"            my/media-clean-all)
+      ("r"  "regenerate"           my/media-regenerate-thumbnails)]
+     ["Web Publishing"
+      ("wu" "web update site…"     (lambda (site)
+                                    (interactive (list (completing-read "Site: " '("dyerdwelling" "art" "katieboo85" "emacs") nil t)))
+                                    (my/media-run (format "web update %s" site))))
+      ("wp" "web publish site…"    (lambda (site)
+                                    (interactive (list (completing-read "Site: " '("dyerdwelling" "art" "katieboo85" "emacs") nil t)))
+                                    (my/media-run (format "web publish %s" site))))
+      ("wa" "web publish all"      (lambda () (interactive) (my/media-run "web publish all")))]])
 
   (global-set-key (kbd "C-c M") #'my/media-menu))
 
@@ -1489,7 +1490,7 @@ On open, keep focus in the original window."
 
 (add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/transmute")
 (require 'transmute)
-(global-set-key (kbd "C-c I") #'transmute-menu)
+(global-set-key (kbd "C-c i") #'transmute-menu)
 
 (with-eval-after-load 'image-dired
   (require 'transmute)
