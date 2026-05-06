@@ -228,18 +228,6 @@
   :config
   (setq org-hugo-front-matter-format "yaml"))
 
-(use-package ready-player
-  :init
-  (ready-player-mode 1)
-  :custom
-  (ready-player-thumbnail-max-pixel-height 200)
-  (ready-player-autoplay nil)
-  (ready-player-repeat t)
-  (ready-player-shuffle t)
-  (ready-player-open-playback-commands
-   '((ready-player-is-audio-p "mplayer")
-     (ready-player-is-video-p "mpv"))))
-
 ;;
 ;; -> keys-navigation
 ;;
@@ -483,7 +471,7 @@
 ;;           ((string= el "Screenshots") (find-file "~/DCIM/Screenshots"))
 ;;           ((string= el "Camera") (find-file "~/DCIM/Camera")))))
 ;;      el))
-  
+
 ;;   ;; Define custom sections for your tools
 ;;   (defun dashboard-insert-my-tools (list-size)
 ;;     (dashboard-insert-section
@@ -818,10 +806,10 @@ ORIG-FUN is the original command and ARGS are its arguments."
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(misterioso))
  '(package-selected-packages
-   '(agent-shell async csv-mode dape diff-hl dired-sidebar doom-themes
-                 dumb-jump ef-themes elpa-mirror gruvbox-theme htmlize
-                 i3wm-config-mode kotlin-mode org-social ox-hugo
-                 package-lint protobuf-mode ready-player
+   '(agent-shell async csv-mode dape demap diff-hl dired-sidebar
+                 doom-themes dumb-jump ef-themes elpa-mirror
+                 gruvbox-theme htmlize i3wm-config-mode kotlin-mode
+                 org-social ox-hugo package-lint protobuf-mode
                  timu-caribbean-theme timu-rouge-theme
                  timu-spacegrey-theme treemacs web-mode yaml-mode
                  ztree))
@@ -1065,45 +1053,6 @@ ORIG-FUN is the original command and ARGS are its arguments."
                  :hostName "localhost"
                  :port 5005)))
 
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:family "Monospace" :foundry "ADBO" :slant normal :weight regular :height 100 :width normal))))
- '(completions-common-part ((t (:foreground "#87ceeb"))))
- '(completions-first-difference ((t (:foreground "#ffb6c1"))))
- '(cursor ((t (:background "coral"))))
- '(eca-chat-context-cursor-face ((t (:foreground "gainsboro" :underline t :height 1.0))) t)
- '(ediff-current-diff-A ((t (:extend t :background "#b5daeb" :foreground "#000000"))))
- '(ediff-even-diff-A ((t (:background "#bafbba" :foreground "#000000" :extend t))))
- '(ediff-fine-diff-A ((t (:background "#f4bd92" :foreground "#000000" :extend t))))
- '(ediff-odd-diff-A ((t (:background "#b8fbb8" :foreground "#000000" :extend t))))
- '(fixed-pitch ((t (:family "Monospace" :height 110))))
- '(font-lock-warning-face ((t (:foreground "#930000" :inverse-video nil))))
- '(fringe ((t (:foreground "#2d3743" :background "#2d3743"))))
- '(hl-line ((t (:background "#3636424250b6"))))
- '(icomplete-first-match ((t (:foreground "#7c7c75" :background "#3a3a3a" :weight bold))))
- '(icomplete-selected-match ((t (:foreground "#ffffff" :background "#5f87af" :weight bold))))
- '(indent-guide-face ((t (:background "#282828" :foreground "#666666"))))
- '(mode-line ((t (:height 140 :underline nil :overline nil :box nil))))
- '(mode-line-inactive ((t (:height 140 :underline nil :overline nil :box nil))))
- '(org-level-1 ((t (:inherit default :weight regular :height 1.0))))
- '(org-level-2 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-3 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-4 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-5 ((t (:inherit default :weight light :height 1.0))))
- '(org-level-6 ((t (:inherit default :weight light :height 1.0))))
- '(org-link ((t (:underline nil))))
- '(org-tag ((t (:height 0.9))))
- '(tab-bar ((t (:inherit default :background "#2d3743" :foreground "#e1e1e0"))))
- '(tab-bar-tab ((t (:inherit 'highlight :background "coral" :foreground "#000000"))))
- '(tab-bar-tab-inactive ((t (:inherit default :background "#2d3743" :foreground "#e1e1e0" :box (:line-width 1 :color "#2d3743" :style flat-button)))))
- '(variable-pitch ((t (:family "DejaVu Sans" :height 120 :weight normal))))
- '(vertical-border ((t (:foreground "#000000"))))
- '(widget-button ((t (:inherit fixed-pitch :weight regular))))
- '(window-divider ((t (:foreground "black")))))
-
 (load-theme 'doom-old-hope t)
 
 (use-package dwell-map
@@ -1135,12 +1084,36 @@ ORIG-FUN is the original command and ARGS are its arguments."
 (use-package kotlin-mode
   :mode "\\.kts\\'")
 
+(defun my/treemacs-toggle-current-project ()
+  "Show treemacs with the current project only, or hide it if visible.
+On open, keep focus in the original window."
+  (interactive)
+  (let ((win (treemacs-get-local-window)))
+    (if (and win (window-live-p win))
+        (delete-window win)
+      (save-selected-window
+        (treemacs-display-current-project-exclusively)))))
+
 (use-package treemacs
-  :ensure t
+  :demand t
+  :bind ("C-x m" . my/treemacs-toggle-current-project)
   :config
   (treemacs-follow-mode t)
   (treemacs-filewatch-mode t)
-  (treemacs-fringe-indicator-mode 'always))
+  (treemacs-fringe-indicator-mode 'always)
+
+  (setq treemacs-pulse-on-success t
+        treemacs-follow-after-init t
+        treemacs-indentation 2
+        treemacs-no-png-images t
+        treemacs-text-scale -0.5
+        treemacs-show-cursor nil)
+
+  (set-face-attribute 'treemacs-root-face nil
+                      :inherit 'font-lock-constant-face
+                      :underline t
+                      :weight 'bold
+                      :height 1.0))
 
 (defvar-local my/treemacs-current-overlay nil)
 
@@ -1169,22 +1142,6 @@ ORIG-FUN is the original command and ARGS are its arguments."
             (add-hook 'post-command-hook
                       #'my/treemacs-update-current-line nil t)
             (my/treemacs-update-current-line)))
-
-(setq treemacs-pulse-on-success t)
-(setq treemacs-follow-after-init t)
-(setq treemacs-show-cursor nil)
-
-(defun my/treemacs-toggle-current-project ()
-  "Show treemacs with the current project only, or hide it if visible.
-On open, keep focus in the original window."
-  (interactive)
-  (let ((win (treemacs-get-local-window)))
-    (if (and win (window-live-p win))
-        (delete-window win)
-      (save-selected-window
-        (treemacs-display-current-project-exclusively)))))
-
-(global-set-key (kbd "C-x m") #'my/treemacs-toggle-current-project)
 
 (add-to-list 'load-path "~/source/repos/org-bootstrap-publish")
 (require 'org-bootstrap-publish)
@@ -1244,17 +1201,17 @@ On open, keep focus in the original window."
              "~/DCIM/content/linux.org"
              "~/DCIM/content/kate.org"
              "~/DCIM/content/dad-dictionary.org"
-"~/DCIM/content/emacs.org"))
+             "~/DCIM/content/emacs.org"))
          (org-bootstrap-publish-output-dir   . "~/publish/obp-output")
          (org-bootstrap-publish-layout       . topbar)
          (org-bootstrap-publish-site-title   . "the DyerDwelling!")
          (org-bootstrap-publish-site-tagline . "by James Dyer")
          (org-bootstrap-publish-site-url     . "https://www.dyerdwelling.family/")
          (org-bootstrap-publish-author       . "James Dyer")
-          (org-bootstrap-publish-cloudflare-project . "dyerdwelling")
-          (org-bootstrap-publish-preview-limit . 10)
-          (org-bootstrap-publish-serve-browser . "firefox")
-          (org-bootstrap-publish-async-init-files . ("~/.emacs.d/obp-shortcodes.el"))
+         (org-bootstrap-publish-cloudflare-project . "dyerdwelling")
+         (org-bootstrap-publish-preview-limit . 10)
+         (org-bootstrap-publish-serve-browser . "firefox")
+         (org-bootstrap-publish-async-init-files . ("~/.emacs.d/obp-shortcodes.el"))
          (org-bootstrap-publish-static-dirs
           . ("static/art--gallery" "static/art--other" "static/art--videos"
              "static/assets" "static/bingo" "static/blog" "static/bookimages"
@@ -1275,18 +1232,18 @@ On open, keep focus in the original window."
              ("obp-sidebar-muted" . "#8b9bb4")
              ("obp-accent"        . "#ffb779")
              ("obp-accent-rgb"    . "255, 138, 76")))
-          (org-bootstrap-publish-menu-links
-           . (("Evie"       . "/tags/evie/")
-              ("gallery"    . "/art--gallery/")
-              ("art"        . "/art--all/")
-              ("videos"     . "/tags/videos/")
-              ("photos"     . "/photos/")
-              ("blog"       . "/blog/")
-              ("scans"      . "/scans/")
-              ("emacs"      . "/tags/emacs/")
-              ("stables"    . "/blog/posts--the-stables/")
-              ("crosswords" . "/blog/posts--crosswords/")
-              ("music"      . "/blog/posts--full-music-list/")
+         (org-bootstrap-publish-menu-links
+          . (("Evie"       . "/tags/evie/")
+             ("gallery"    . "/art--gallery/")
+             ("art"        . "/art--all/")
+             ("videos"     . "/tags/videos/")
+             ("photos"     . "/photos/")
+             ("blog"       . "/blog/")
+             ("scans"      . "/scans/")
+             ("emacs"      . "/tags/emacs/")
+             ("stables"    . "/blog/posts--the-stables/")
+             ("crosswords" . "/blog/posts--crosswords/")
+             ("music"      . "/blog/posts--full-music-list/")
              ("katieboo85" . "/kate/")
              ("about"      . "/blog/posts--about-me/"))))
         (art
@@ -1297,9 +1254,9 @@ On open, keep focus in the original window."
          (org-bootstrap-publish-site-tagline . "Welcome to the home of James Dyer wearied traveller")
          (org-bootstrap-publish-site-url     . "https://www.art.dyerdwelling.family/")
          (org-bootstrap-publish-author       . "James Dyer")
-          (org-bootstrap-publish-cloudflare-project . "art-dyerdwelling")
-          (org-bootstrap-publish-preview-limit . 20)
-          (org-bootstrap-publish-serve-browser . "firefox")
+         (org-bootstrap-publish-cloudflare-project . "art-dyerdwelling")
+         (org-bootstrap-publish-preview-limit . 20)
+         (org-bootstrap-publish-serve-browser . "firefox")
          (org-bootstrap-publish-static-dirs
           . ("static/art--gallery" "static/art--videos" "static/art--other"
              "static/images/banner"))
@@ -1329,9 +1286,9 @@ On open, keep focus in the original window."
          (org-bootstrap-publish-site-tagline . "Kate's Recipe Collection")
          (org-bootstrap-publish-site-url     . "https://katieboo85.pages.dev/")
          (org-bootstrap-publish-author       . "Katherine Jeffs")
-          (org-bootstrap-publish-cloudflare-project . "katieboo85")
-          (org-bootstrap-publish-preview-limit . 20)
-          (org-bootstrap-publish-serve-browser . "firefox")
+         (org-bootstrap-publish-cloudflare-project . "katieboo85")
+         (org-bootstrap-publish-preview-limit . 20)
+         (org-bootstrap-publish-serve-browser . "firefox")
          (org-bootstrap-publish-static-dirs  . ("static/kate" "static/assets" "static/images"))
          (org-bootstrap-publish-background-image
           . "/static/images/banner/navbar-katieboo85.jpg")
@@ -1354,9 +1311,9 @@ On open, keep focus in the original window."
          (org-bootstrap-publish-author       . "James Dyer")
          (org-bootstrap-publish-static-dirs  . ("static/emacs" "static/images/banner"))
          (org-bootstrap-publish-disqus-shortname . "https-www-emacs-dyerdwelling-family")
-          (org-bootstrap-publish-cloudflare-project . "emacs-dyerdwelling")
-          (org-bootstrap-publish-preview-limit . 10)
-          (org-bootstrap-publish-serve-browser . "firefox")
+         (org-bootstrap-publish-cloudflare-project . "emacs-dyerdwelling")
+         (org-bootstrap-publish-preview-limit . 10)
+         (org-bootstrap-publish-serve-browser . "firefox")
          (org-bootstrap-publish-background-image
           . "/static/images/banner/emacs-ollama-buddy.jpg")
          (org-bootstrap-publish-background-blur . 4)
@@ -1370,7 +1327,7 @@ On open, keep focus in the original window."
          (org-bootstrap-publish-menu-links
           . (("2026"         . "/tags/2026/")
              ("org"          . "/tags/org/")
-              ("ollama-buddy" . "/tags/ollama-buddy/")
+             ("ollama-buddy" . "/tags/ollama-buddy/")
              ("dired"        . "/tags/dired/"))))))
 
 (dolist (entry org-bootstrap-publish-sites)
@@ -1391,29 +1348,29 @@ On open, keep focus in the original window."
 (unless noninteractive
   (require 'transient)
 
-   (transient-define-prefix my/obp-menu ()
-     "org-bootstrap-publish — site selector, serve, deploy."
-     [[:description (lambda () (format "Active site: %s"
-                                (or org-bootstrap-publish-cloudflare-project
-                                    org-bootstrap-publish-site-title
-                                    "none")))
-       ("d" "dyerdwelling" my/obp-serve-dyerdwelling)
-       ("a" "art"          my/obp-serve-art)
-       ("k" "katieboo85"   my/obp-serve-katieboo85)
-       ("e" "emacs"        my/obp-serve-emacs)
-       ("S" "stop server"  org-bootstrap-publish-stop)]
-      [:description "Preview"
-       ("M-d" "dyerdwelling" my/obp-preview-dyerdwelling)
-       ("M-a" "art"          my/obp-preview-art)
-       ("M-k" "katieboo85"   my/obp-preview-katieboo85)
-       ("M-e" "emacs"        my/obp-preview-emacs)]
-      [:description "Deploy"
-       ("P" "publish"      org-bootstrap-publish-publish)
-       ("A" "publish all"  org-bootstrap-publish-publish-all)
-       ("X" "abort"        org-bootstrap-publish-publish-abort)]
-      [:description "Cloudflare"
-       ("c" "clean site…"  org-bootstrap-publish-clean-site)
-       ("f" "flush cache…" org-bootstrap-publish-flush-site)]])
+  (transient-define-prefix my/obp-menu ()
+    "org-bootstrap-publish — site selector, serve, deploy."
+    [[:description (lambda () (format "Active site: %s"
+                                      (or org-bootstrap-publish-cloudflare-project
+                                          org-bootstrap-publish-site-title
+                                          "none")))
+                   ("d" "dyerdwelling" my/obp-serve-dyerdwelling)
+                   ("a" "art"          my/obp-serve-art)
+                   ("k" "katieboo85"   my/obp-serve-katieboo85)
+                   ("e" "emacs"        my/obp-serve-emacs)
+                   ("S" "stop server"  org-bootstrap-publish-stop)]
+     [:description "Preview"
+                   ("M-d" "dyerdwelling" my/obp-preview-dyerdwelling)
+                   ("M-a" "art"          my/obp-preview-art)
+                   ("M-k" "katieboo85"   my/obp-preview-katieboo85)
+                   ("M-e" "emacs"        my/obp-preview-emacs)]
+     [:description "Deploy"
+                   ("P" "publish"      org-bootstrap-publish-publish)
+                   ("A" "publish all"  org-bootstrap-publish-publish-all)
+                   ("X" "abort"        org-bootstrap-publish-publish-abort)]
+     [:description "Cloudflare"
+                   ("c" "clean site…"  org-bootstrap-publish-clean-site)
+                   ("f" "flush cache…" org-bootstrap-publish-flush-site)]])
 
   (global-set-key (kbd "C-c W") #'my/obp-menu))
 
@@ -1497,11 +1454,11 @@ On open, keep focus in the original window."
       ("r"  "regenerate"           my/media-regenerate-thumbnails)]
      ["Web Publishing"
       ("wu" "web update site…"     (lambda (site)
-                                    (interactive (list (completing-read "Site: " '("dyerdwelling" "art" "katieboo85" "emacs") nil t)))
-                                    (my/media-run (format "web update %s" site))))
+                                     (interactive (list (completing-read "Site: " '("dyerdwelling" "art" "katieboo85" "emacs") nil t)))
+                                     (my/media-run (format "web update %s" site))))
       ("wp" "web publish site…"    (lambda (site)
-                                    (interactive (list (completing-read "Site: " '("dyerdwelling" "art" "katieboo85" "emacs") nil t)))
-                                    (my/media-run (format "web publish %s" site))))
+                                     (interactive (list (completing-read "Site: " '("dyerdwelling" "art" "katieboo85" "emacs") nil t)))
+                                     (my/media-run (format "web publish %s" site))))
       ("wa" "web publish all"      (lambda () (interactive) (my/media-run "web publish all")))]])
 
   (global-set-key (kbd "C-c M") #'my/media-menu))
@@ -1518,3 +1475,73 @@ On open, keep focus in the original window."
 (with-eval-after-load 'image-dired
   (require 'transmute)
   (transmute-setup-thumbnail-keys))
+
+(use-package demap
+  :demand t
+  :config
+  (defface my/demap-diff-added
+    '((t :background "#335533" :extend t))
+    "Face for added lines in demap diff display.")
+  (defface my/demap-diff-modified
+    '((t :background "#555533" :extend t))
+    "Face for modified lines in demap diff display.")
+  (defface my/demap-diff-removed
+    '((t :background "#553333" :extend t))
+    "Face for deleted lines in demap diff display.")
+
+  (defun my/demap-diff-update (&optional minimap-or-name)
+    "Update diff overlays in MINIMAP from the source buffer's diff-hl data."
+    (let* ((minimap (demap-normalize-minimap
+                     (or minimap-or-name (demap-buffer-minimap))))
+           (minimap-buf (demap-minimap-buffer minimap))
+           (source-buf (demap-minimap-showing minimap)))
+      (when (and minimap-buf
+                 (buffer-live-p minimap-buf)
+                 source-buf
+                 (buffer-live-p source-buf))
+        (with-current-buffer minimap-buf
+          (dolist (ov (overlays-in (point-min) (point-max)))
+            (when (overlay-get ov 'my/demap-diff)
+              (delete-overlay ov)))
+          (with-current-buffer source-buf
+            (dolist (ov (overlays-in (point-min) (point-max)))
+              (let ((type (overlay-get ov 'diff-hl)))
+                (when type
+                  (let* ((beg (overlay-start ov))
+                         (end (overlay-end ov))
+                         (face (pcase type
+                                 ('insert 'my/demap-diff-added)
+                                 ('change 'my/demap-diff-modified)
+                                 ('delete 'my/demap-diff-removed)
+                                 (_ nil)))
+                         (new-ov (make-overlay beg end minimap-buf)))
+                    (when face
+                      (overlay-put new-ov 'face face)
+                      (overlay-put new-ov 'my/demap-diff t)
+                      (overlay-put new-ov 'priority 0)))))))))))
+
+  (defun my/demap-diff-clear ()
+    "Remove all diff overlays from the current minimap buffer."
+    (dolist (ov (overlays-in (point-min) (point-max)))
+      (when (overlay-get ov 'my/demap-diff)
+        (delete-overlay ov))))
+
+  (defun my/demap-diff-update-current ()
+    "Update diff overlays for the current minimap."
+    (when (demap-buffer-minimap)
+      (my/demap-diff-update (demap-buffer-minimap))))
+
+  (defun my/demap-diff-schedule-update ()
+    "Schedule a diff update for the minimap after diff-hl runs."
+    (run-with-idle-timer 0.1 nil #'my/demap-diff-update-current))
+
+  (with-eval-after-load 'diff-hl
+    (add-hook 'diff-hl-after-change-hook #'my/demap-diff-schedule-update)
+    (add-hook 'diff-hl-after-revert-hook #'my/demap-diff-schedule-update)
+    (add-hook 'diff-hl-after-checkout-hook #'my/demap-diff-schedule-update))
+
+  (add-hook 'demap-minimap-construct-hook
+            (lambda ()
+              (my/demap-diff-update-current)
+              (add-hook 'post-command-hook #'my/demap-diff-update-current nil t))
+            nil t))
