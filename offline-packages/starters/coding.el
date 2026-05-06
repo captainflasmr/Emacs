@@ -219,12 +219,21 @@
       (add-to-list 'auto-mode-alist (cons ext 'ada-mode)))))
 
 ;;
-;; -> treemacs — project sidebar that follows the current buffer (VSCode-like).
-;; C-x m toggles a current-project-only view; focus stays in the editing window.
-;; Current-line highlight is a dedicated high-priority overlay so it renders
-;; regardless of any local `hl-line' customization.
+;; -> treemacs — project sidebar with current-project toggle and enhanced config
 ;;
+(defun my/treemacs-toggle-current-project ()
+  "Show treemacs with the current project only, or hide it if visible.
+On open, keep focus in the original window."
+  (interactive)
+  (let ((win (and (fboundp 'treemacs-get-local-window)
+                  (treemacs-get-local-window))))
+    (if (and win (window-live-p win))
+        (delete-window win)
+      (save-selected-window
+        (treemacs-display-current-project-exclusively)))))
+
 (use-package treemacs
+  :demand t
   :bind ("C-x m" . my/treemacs-toggle-current-project)
   :config
   (treemacs-follow-mode t)
@@ -232,7 +241,15 @@
   (treemacs-fringe-indicator-mode 'always)
   (setq treemacs-pulse-on-success t
         treemacs-follow-after-init t
-        treemacs-show-cursor nil))
+        treemacs-indentation 2
+        treemacs-no-png-images t
+        treemacs-text-scale -1
+        treemacs-show-cursor nil)
+  (set-face-attribute 'treemacs-root-face nil
+                      :inherit 'font-lock-constant-face
+                      :underline t
+                      :weight 'bold
+                      :height 1.0))
 
 (defvar-local my/treemacs-current-overlay nil)
 
@@ -247,9 +264,7 @@
                 (1+ (line-end-position))))
 
 (defun my/treemacs-update-current-line-after-follow (&rest _)
-  "Run `my/treemacs-update-current-line' in the treemacs buffer.
-Follow-mode drives point from a timer, which does not fire
-`post-command-hook', so this advice closes that gap."
+  "Run `my/treemacs-update-current-line' in the treemacs buffer."
   (let ((buf (ignore-errors (treemacs-get-local-buffer))))
     (when (buffer-live-p buf)
       (with-current-buffer buf
@@ -265,14 +280,3 @@ Follow-mode drives point from a timer, which does not fire
             (add-hook 'post-command-hook
                       #'my/treemacs-update-current-line nil t)
             (my/treemacs-update-current-line)))
-
-(defun my/treemacs-toggle-current-project ()
-  "Show treemacs with the current project only, or hide it if visible.
-On open, keep focus in the original window."
-  (interactive)
-  (let ((win (and (fboundp 'treemacs-get-local-window)
-                  (treemacs-get-local-window))))
-    (if (and win (window-live-p win))
-        (delete-window win)
-      (save-selected-window
-        (treemacs-display-current-project-exclusively)))))

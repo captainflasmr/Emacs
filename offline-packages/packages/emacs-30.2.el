@@ -7,12 +7,14 @@ cmake-mode
 corfu
 csv-mode
 dape
+demap
 diff-hl
 doom-themes
 dumb-jump
 ef-themes
 gruvbox-theme
 highlight-indent-guides
+htmlize
 i3wm-config-mode
 modus-themes
 ollama-buddy

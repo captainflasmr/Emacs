@@ -1143,7 +1143,7 @@ On open, keep focus in the original window."
                       #'my/treemacs-update-current-line nil t)
             (my/treemacs-update-current-line)))
 
-(add-to-list 'load-path "~/source/repos/org-bootstrap-publish")
+(add-to-list 'load-path (expand-file-name "offline-packages/local-packages/org-bootstrap-publish" user-emacs-directory))
 (require 'org-bootstrap-publish)
 
 ;; -> obp-site-profiles
