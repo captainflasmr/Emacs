@@ -1,0 +1,100 @@
+#+title: Change log for offline-packages
+#+author: James Dyer
+#+email: captainflasmr@gmail.com
+#+language: en
+#+options: ':t toc:nil author:nil email:nil num:nil title:nil
+#+todo: TODO DOING | DONE
+#+startup: showall
+
+This document contains the release notes for offline-packages
+
+* Versions
+
+** <2026-05-06>
+
+Add demap, htmlize, and org-bootstrap-publish; enhance starter configs
+
+- Added =demap= and =htmlize= to all package lists (=packages/emacs-*.el=)
+- Added =org-bootstrap-publish= to =local-packages/=, replacing the =~/source/repos/= load-path dependency
+- Updated =init.el= to load =org-bootstrap-publish= from =local-packages= via =user-emacs-directory= instead of hardcoded =~/source/repos/= path
+- Enhanced =treemacs= config in starters with =:demand t=, full =setq= customisation, root face attribute, current-line overlay, and project-only toggle
+- Added =demap= config with diff-hl integration and custom diff faces to =emacs-30.1.el= and =emacs-30.2.el= starters
+- Added =windmove-repeat-map= with h/j/k/l repeat navigation to =emacs-30.1.el= and =emacs-30.2.el= starters
+- Alphabetized all package lists and fixed duplicate =dumb-jump= entry in =emacs-28.1.el=
+
+** <2026-05-05>
+
+Remove full Emacs config; refine toolkit build
+
+- Removed the full Emacs configuration from the repo (now lives in separate layers)
+- Improved media menu and build scripts
+- Fixed various issues in the toolkit build process
+
+** <2026-04-30>
+
+Move image-mode dimensions to Emacs-vanilla layer
+
+- Moved =my/image-mode-show-dimensions= function to the Emacs-vanilla layer
+
+** <2026-04-29>
+
+Add web publishing support
+
+- Added website deployment configurations
+- Added more web site deployment options
+
+** <2026-04-26>
+
+Improve diff-hl and Emacs-solo configuration
+
+- Better =diff-hl= integration with Emacs-solo overlays
+- Switched to opencode go tooling
+
+** <2026-04-25>
+
+Enhance dumb-jump and modularise layers
+
+- Made =dumb-jump= more useful with additional configuration
+- Moved common configuration bits into separate layers (Emacs-vanilla, Emacs-DIYer)
+
+** <2026-04-24>
+
+Add dumb-jump package
+
+- Added =dumb-jump= to package lists for ripgrep-based code navigation
+
+** <2026-04-21>
+
+Add coding starter and additional packages
+
+- Added =coding.el= starter for version-agnostic LSP/coding setup
+- Added tools for language servers (JDTLS, ada_language_server, buf, csharp-ls, kotlin-language-server, netcoredbg)
+- Added =repeat-mode= to starters (Emacs 28+)
+
+** <2026-04-20>
+
+Add starter configs, local-packages, and Ada mode
+
+- Added per-version starter configs (=starters/emacs-27.2.el= through =emacs-30.2.el=)
+- Added =local-packages/= directory with =use-package=, =dwell-map=, =dired-image-thumbnail=, =qemu-manager=, =transmute=, =html-to-org=, =jira-to-org=
+- Added =old-ada-mode= to local-packages
+- Tweaked Emacs package lists
+
+** <2026-04-19>
+
+Add Emacs 30.2 support and build improvements
+
+- Added =emacs-30.2.el= package list
+- Added gzip compression option
+- Added defensive programming to build scripts
+- Various build script refinements
+
+** <2026-04-18>
+
+Initial offline-packages infrastructure
+
+- Created the offline mirror and toolkit build system (=build-mirror.sh=, =build-toolkit.sh=, =create-install.sh=)
+- Added =README.org= documentation
+- Added =init.el.in= template for rendering per-version init files
+- Added =fetch-source.sh= for downloading GNU Emacs source tarballs
+- Added =docs/= and =tools/= drop-zones
