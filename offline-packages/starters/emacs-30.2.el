@@ -252,20 +252,20 @@ On open, keep focus in the original window."
               (delete-overlay ov)))
           (with-current-buffer source-buf
             (dolist (ov (overlays-in (point-min) (point-max)))
-              (let ((type (overlay-get ov 'diff-hl)))
-                (when type
-                  (let* ((beg (overlay-start ov))
-                         (end (overlay-end ov))
-                         (face (pcase type
-                                 ('insert 'my/demap-diff-added)
-                                 ('change 'my/demap-diff-modified)
-                                 ('delete 'my/demap-diff-removed)
-                                 (_ nil)))
-                         (new-ov (make-overlay beg end minimap-buf)))
-                    (when face
-                      (overlay-put new-ov 'face face)
-                      (overlay-put new-ov 'my/demap-diff t)
-                      (overlay-put new-ov 'priority 0)))))))))))
+              (when (overlay-get ov 'diff-hl-hunk)
+                (let* ((beg (overlay-start ov))
+                       (end (overlay-end ov))
+                       (type (overlay-get ov 'diff-hl-hunk-type))
+                       (face (pcase type
+                               ('insert 'my/demap-diff-added)
+                               ('change 'my/demap-diff-modified)
+                               ('delete 'my/demap-diff-removed)
+                               (_ nil)))
+                       (new-ov (make-overlay beg end minimap-buf)))
+                  (when face
+                    (overlay-put new-ov 'face face)
+                    (overlay-put new-ov 'my/demap-diff t)
+                    (overlay-put new-ov 'priority 0))))))))))
 
   (defun my/demap-diff-clear ()
     "Remove all diff overlays from the current minimap buffer."
@@ -274,18 +274,31 @@ On open, keep focus in the original window."
         (delete-overlay ov))))
 
   (defun my/demap-diff-update-current ()
-    "Update diff overlays for the current minimap."
-    (when (demap-buffer-minimap)
-      (my/demap-diff-update (demap-buffer-minimap))))
+    "Update diff overlays for any minimap showing the current buffer."
+    (when-let* ((minimap-buf (get-buffer demap-minimap-default-name))
+                (minimap (demap-buffer-minimap minimap-buf))
+                (source-buf (demap-minimap-showing minimap))
+                ((buffer-live-p source-buf)))
+      (when (eq source-buf (current-buffer))
+        (my/demap-diff-update minimap))))
 
   (defun my/demap-diff-schedule-update ()
     "Schedule a diff update for the minimap after diff-hl runs."
     (run-with-idle-timer 0.1 nil #'my/demap-diff-update-current))
 
-  (with-eval-after-load 'diff-hl
-    (add-hook 'diff-hl-after-change-hook #'my/demap-diff-schedule-update)
-    (add-hook 'diff-hl-after-revert-hook #'my/demap-diff-schedule-update)
-    (add-hook 'diff-hl-after-checkout-hook #'my/demap-diff-schedule-update))
+  (defun my/demap-diff-after-save ()
+    "Update demap diff overlays after saving a buffer with diff-hl active."
+    (when (bound-and-true-p diff-hl-mode)
+      (my/demap-diff-schedule-update)))
+
+  (add-hook 'after-save-hook #'my/demap-diff-after-save)
+  (add-hook 'window-state-change-hook
+            (lambda ()
+              (run-with-idle-timer 0.05 nil #'my/demap-diff-update-current)))
+
+  (add-hook 'demap-minimap-construct-hook
+            (lambda ()
+              (my/demap-diff-update-current)))
 
   (add-hook 'demap-minimap-construct-hook
             (lambda ()
