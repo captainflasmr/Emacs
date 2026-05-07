@@ -1553,4 +1553,9 @@ On open, keep focus in the original window."
             (lambda ()
               (my/demap-diff-update-current))))
 
+;;
+;; -> visuals
+;;
 (set-frame-parameter nil 'alpha-background 60)
+(add-to-list 'default-frame-alist '(alpha-background . 60))
+
