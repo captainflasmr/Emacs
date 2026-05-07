@@ -10,6 +10,10 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
+** TODO better backup on install to keep tidy
+
+** TODO starter scripts to be renamed  init-starter-* so they are grouped
+
 ** TODO add automated smoke tests for starter configs
 
 The =build-toolkit.sh= smoke test only validates the rendered =init.el=. The starter configs (=starters/emacs-*.el=, =starters/coding.el=) are never loaded during the test. A basic batch load of each starter under the corresponding Emacs version would catch =void-function= / =wrong-type-argument= regressions before deployment.
