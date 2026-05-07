@@ -10,9 +10,17 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO better backup on install to keep tidy
+** DONE better backup on install to keep tidy
 
-** TODO starter scripts to be renamed  init-starter-* so they are grouped
+Closed 2026-05-07. Backups now go into =~/.emacs.d/.backups/<STAMP>/= instead of
+littering sibling =.pre-toolkit-<STAMP>= entries at the top level. Rollback
+supports both the new directory layout and the legacy flat format.
+
+** DONE starter scripts to be renamed  init-starter-* so they are grouped
+
+Closed 2026-05-07. =coding-starter.el= renamed to =init-starter-coding.el= so
+all starters share the =init-starter-= prefix and group together in directory
+listings on the target machine.
 
 ** TODO add automated smoke tests for starter configs
 

@@ -87,7 +87,7 @@ local-packages/
     └── dape.el          ← multi-file package; the subdir joins load-path
 #+end_example
 
-=build-toolkit.sh= copies this directory into the toolkit tarball; =setup.sh= installs it to =~/.emacs.d/local-packages/= on the offline target (backing up any existing one with the usual =.pre-toolkit-<STAMP>= suffix). No byte-compilation is done at install time — sources are dropped verbatim and the target Emacs compiles on first load.
+=build-toolkit.sh= copies this directory into the toolkit tarball; =setup.sh= installs it to =~/.emacs.d/local-packages/= on the offline target (backing up any existing one into =~/.emacs.d/.backups/<STAMP>/=). No byte-compilation is done at install time — sources are dropped verbatim and the target Emacs compiles on first load.
 
 The rendered =init.el= puts =~/.emacs.d/local-packages/= plus every immediate subdirectory onto =load-path= before =package-initialize=, so a =(require 'foo)= or =use-package foo= (without =:ensure=) just works. Nothing is auto-=require=d — you still declare usage from your own init.
 
@@ -109,10 +109,10 @@ Adding a starter for a new version: drop =starters/emacs-<VER>.el= next to =init
 
 ** Coding companion (=starters/coding.el=)
 
-=starters/coding.el= is a version-agnostic snippet distilled from =docs/setting-up-emacs-for-coding/README.org= — eglot hooks for Java/C#/C++/TypeScript, flymake =M-n=/=M-p=, eldoc, corfu with =corfu-auto nil=, dape =F5=/=F9=/=F10=/=F11=, =cmake-mode=, =typescript-mode=, =highlight-indent-guides=. It's bundled as =coding-starter.el= at the toolkit root and installed to =~/.emacs.d/coding-starter.el= (not auto-loaded). Opt in alongside or instead of the per-version starter:
+=starters/coding.el= is a version-agnostic snippet distilled from =docs/setting-up-emacs-for-coding/README.org= — eglot hooks for Java/C#/C++/TypeScript, flymake =M-n=/=M-p=, eldoc, corfu with =corfu-auto nil=, dape =F5=/=F9=/=F10=/=F11=, =cmake-mode=, =typescript-mode=, =highlight-indent-guides=. It's bundled as =init-starter-coding.el= at the toolkit root and installed to =~/.emacs.d/init-starter-coding.el= (not auto-loaded). All starter files share the =init-starter-= prefix so they group together in directory listings. Opt in alongside or instead of the per-version starter:
 
 #+begin_src emacs-lisp
-(load (expand-file-name "coding-starter" user-emacs-directory) t t)
+(load (expand-file-name "init-starter-coding" user-emacs-directory) t t)
 #+end_src
 
 Blocks that need Emacs 29+ (eglot, =global-corfu-mode=) are guarded by =fboundp= checks, so loading under 27.2/28.x is a no-op for those features rather than an error. The JDTLS entry looks for =~/.emacs.d/bin/jdtls/bin/jdtls= — populate =tools/= (see below) to wire it up.
@@ -132,7 +132,7 @@ tools/
 └── netcoredbg
 #+end_example
 
-=build-toolkit.sh= copies =tools/= into the toolkit (preserving executable bits); =setup.sh= installs it to =~/.emacs.d/bin/= on the target with the usual =.pre-toolkit-<STAMP>= backup. The coding companion starter looks for =~/.emacs.d/bin/jdtls/bin/jdtls= automatically.
+=build-toolkit.sh= copies =tools/= into the toolkit (preserving executable bits); =setup.sh= installs it to =~/.emacs.d/bin/= on the target, backing up any existing =bin/= into =~/.emacs.d/.backups/<STAMP>/=. The coding companion starter looks for =~/.emacs.d/bin/jdtls/bin/jdtls= automatically.
 
 Add =~/.emacs.d/bin= to =PATH=, or reference binaries by absolute path from your own =eglot-server-programs=.
 
@@ -254,7 +254,7 @@ emacs-offline-toolkit-<VER>-<OS>-<ARCH>-<STAMP>/
 ├── tools/                  ← non-Emacs binaries (language servers, debug adapters)
 ├── docs/                   ← reference docs (coding guide, cheat sheets)
 ├── init-starter.el         ← optional starter snippet (not auto-loaded)
-├── coding-starter.el       ← optional coding companion (not auto-loaded)
+├── init-starter-coding.el  ← optional coding companion (not auto-loaded)
 └── emacs-<VER>.tar.xz      ← optional GNU Emacs source
 #+end_example
 
@@ -299,13 +299,13 @@ cd emacs-offline-toolkit-*/
 
 =setup.sh= will:
 
-1. Back up any existing =~/.emacs.d/{init.el,early-init.el,Emacs-vanilla,Emacs-DIYer,local-packages,bin,docs,init-starter.el,coding-starter.el,elpa}= and any =~/elpa-mirror-emacs-*/= with a timestamped =.pre-toolkit-<STAMP>= suffix. The =elpa/= move forces the next launch to reinstall every package from the freshly extracted mirror (not from stale =.elc/.eln= left over from a previous toolkit).
+1. Back up any existing =~/.emacs.d/{init.el,early-init.el,Emacs-vanilla,Emacs-DIYer,local-packages,bin,docs,init-starter.el,init-starter-coding.el,elpa}= and any =~/elpa-mirror-emacs-*/= into a single timestamped directory: =~/.emacs.d/.backups/<STAMP>=. Mirror extractions from =$HOME= go into a =home-mirrors/= subfolder. This keeps the main directories clean — all backups for each install are grouped together, and old installs can be removed by deleting a single directory. (An older setup.sh created =.pre-toolkit-*== suffixes at the top level; rollback.sh still recognises those.)
 2. Extract the ELPA mirror tarball into =~/=, creating =~/elpa-mirror-emacs-<VER>-<OS>-<ARCH>-<STAMP>-<N>pkgs/=.
 3. Install the literate config directories under =~/.emacs.d/=.
-4. Install =init.el= plus any bundled =early-init.el= / =init-starter.el= / =coding-starter.el= / =local-packages/= / =tools/= (→ =~/.emacs.d/bin/=) / =docs/= (→ =~/.emacs.d/docs/=).
+4. Install =init.el= plus any bundled =early-init.el= / =init-starter.el= / =init-starter-coding.el= / =local-packages/= / =tools/= (→ =~/.emacs.d/bin/=) / =docs/= (→ =~/.emacs.d/docs/=).
 5. Report instructions for building the bundled Emacs source, if present.
 
-To undo: run =./rollback.sh= from inside the same extracted toolkit dir (or from anywhere — it operates on =$HOME= / =$HOME/.emacs.d= directly). It finds the newest =.pre-toolkit-<STAMP>= set, archives the current post-install state as =.rolled-back-<NOW>=, and swaps the backups back into place. The backups remain on disk until you delete them; rollback is always reversible.
+To undo: run =./rollback.sh= from inside the same extracted toolkit dir (or from anywhere — it operates on =$HOME= / =$HOME/.emacs.d= directly). It finds the newest backup under =~/.emacs.d/.backups/= (or legacy =.pre-toolkit-*= suffixes), archives the current post-install state as =~/.emacs.d/.backups/<NOW>-rolledback/=, and swaps the backup back into place. Old backups can be pruned by deleting their directory under =~/.emacs.d/.backups/=.
 
 Launch Emacs and check =*Messages*=:
 

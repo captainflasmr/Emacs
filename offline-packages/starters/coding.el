@@ -4,11 +4,11 @@
 ;;
 ;; Distilled from docs/setting-up-emacs-for-coding/README.org (Part 15).
 ;; Optional, not auto-loaded. To try it, append to ~/.emacs.d/init.el:
-;;   (load (expand-file-name "coding-starter" user-emacs-directory) t t)
+;;   (load (expand-file-name "init-starter-coding" user-emacs-directory) t t)
 ;;
 ;; Built-in stack targeted: eglot (29+), flymake, eldoc, xref, project.el.
-;; External packages from the mirror: corfu, dape, cmake-mode, typescript-mode,
-;; highlight-indent-guides, protobuf-mode, kotlin-mode, treemacs.
+;; External packages from the mirror: corfu, dape, diff-hl, demap, cmake-mode,
+;; typescript-mode, highlight-indent-guides, protobuf-mode, kotlin-mode, treemacs.
 ;;
 ;; Version-gated: blocks that need Emacs >= 29 are guarded by `fboundp'
 ;; checks so loading under 27.x/28.x degrades to no-ops rather than erroring.
@@ -133,6 +133,16 @@
               ("M-p" . flymake-goto-prev-error)))
 
 ;;
+;; -> diff-hl — inline VCS indicators in fringe (or margin in TTY)
+;;
+(use-package diff-hl
+  :config
+  (global-diff-hl-mode 1)
+  (diff-hl-flydiff-mode 1)
+  (unless (display-graphic-p)
+    (diff-hl-margin-mode 1)))
+
+;;
 ;; -> eldoc — signature hints in echo area, built-in.
 ;;
 (use-package eldoc
@@ -150,6 +160,92 @@
   (corfu-preselect 'first)
   :init
   (when (fboundp 'global-corfu-mode) (global-corfu-mode 1)))
+
+;;
+;; -> demap — minimap sidebar with diff-hl integration
+;;
+(use-package demap
+  :demand t
+  :config
+  (defface my/demap-diff-added
+    '((t :background "#335533" :extend t))
+    "Face for added lines in demap diff display.")
+  (defface my/demap-diff-modified
+    '((t :background "#555533" :extend t))
+    "Face for modified lines in demap diff display.")
+  (defface my/demap-diff-removed
+    '((t :background "#553333" :extend t))
+    "Face for deleted lines in demap diff display.")
+
+  (defun my/demap-diff-update (&optional minimap-or-name)
+    "Update diff overlays in MINIMAP from the source buffer's diff-hl data."
+    (let* ((minimap (demap-normalize-minimap
+                     (or minimap-or-name (demap-buffer-minimap))))
+           (minimap-buf (demap-minimap-buffer minimap))
+           (source-buf (demap-minimap-showing minimap)))
+      (when (and minimap-buf
+                 (buffer-live-p minimap-buf)
+                 source-buf
+                 (buffer-live-p source-buf))
+        (with-current-buffer minimap-buf
+          (dolist (ov (overlays-in (point-min) (point-max)))
+            (when (overlay-get ov 'my/demap-diff)
+              (delete-overlay ov)))
+          (with-current-buffer source-buf
+            (dolist (ov (overlays-in (point-min) (point-max)))
+              (when (overlay-get ov 'diff-hl-hunk)
+                (let* ((beg (overlay-start ov))
+                       (end (overlay-end ov))
+                       (type (overlay-get ov 'diff-hl-hunk-type))
+                       (face (pcase type
+                               ('insert 'my/demap-diff-added)
+                               ('change 'my/demap-diff-modified)
+                               ('delete 'my/demap-diff-removed)
+                               (_ nil)))
+                       (new-ov (make-overlay beg end minimap-buf)))
+                  (when face
+                    (overlay-put new-ov 'face face)
+                    (overlay-put new-ov 'my/demap-diff t)
+                    (overlay-put new-ov 'priority 0))))))))))
+
+  (defun my/demap-diff-clear ()
+    "Remove all diff overlays from the current minimap buffer."
+    (dolist (ov (overlays-in (point-min) (point-max)))
+      (when (overlay-get ov 'my/demap-diff)
+        (delete-overlay ov))))
+
+  (defun my/demap-diff-update-current ()
+    "Update diff overlays for any minimap showing the current buffer."
+    (when-let* ((minimap-buf (get-buffer demap-minimap-default-name))
+                (minimap (demap-buffer-minimap minimap-buf))
+                (source-buf (demap-minimap-showing minimap))
+                ((buffer-live-p source-buf)))
+      (when (eq source-buf (current-buffer))
+        (my/demap-diff-update minimap))))
+
+  (defun my/demap-diff-schedule-update ()
+    "Schedule a diff update for the minimap after diff-hl runs."
+    (run-with-idle-timer 0.1 nil #'my/demap-diff-update-current))
+
+  (defun my/demap-diff-after-save ()
+    "Update demap diff overlays after saving a buffer with diff-hl active."
+    (when (bound-and-true-p diff-hl-mode)
+      (my/demap-diff-schedule-update)))
+
+  (add-hook 'after-save-hook #'my/demap-diff-after-save)
+  (add-hook 'window-state-change-hook
+            (lambda ()
+              (run-with-idle-timer 0.05 nil #'my/demap-diff-update-current)))
+
+  (add-hook 'demap-minimap-construct-hook
+            (lambda ()
+              (my/demap-diff-update-current)))
+
+  (add-hook 'demap-minimap-construct-hook
+            (lambda ()
+              (my/demap-diff-update-current)
+              (add-hook 'post-command-hook #'my/demap-diff-update-current nil t))
+            nil t))
 
 ;;
 ;; -> dape — Debug Adapter Protocol client (gdb, lldb, netcoredbg, jdtls...).

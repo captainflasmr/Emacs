@@ -233,13 +233,14 @@ fi
 # --- Coding companion starter (optional) ---
 # starters/coding.el is a language-agnostic snippet (eglot hooks, flymake
 # M-n/M-p, eldoc, corfu, dape F5-F11, cmake/typescript mode associations).
-# Installed on the target as ~/.emacs.d/coding-starter.el, not auto-loaded.
+# Installed on the target as ~/.emacs.d/init-starter-coding.el, not auto-loaded.
+# All starter files share the init-starter- prefix so they group in listings.
 # Opt in by adding to init.el (on top of, or instead of, init-starter.el):
-#   (load (expand-file-name "coding-starter" user-emacs-directory) t t)
+#   (load (expand-file-name "init-starter-coding" user-emacs-directory) t t)
 CODING_SRC="${SCRIPT_DIR}/starters/coding.el"
 if [[ -f "$CODING_SRC" ]]; then
   echo ">> Copying coding companion starter from $(basename "$CODING_SRC")..."
-  cp "$CODING_SRC" "${STAGING}/coding-starter.el"
+  cp "$CODING_SRC" "${STAGING}/init-starter-coding.el"
 fi
 
 # --- Local packages ---
@@ -313,6 +314,13 @@ if [[ "$WITH_SOURCE" -eq 1 ]]; then
 fi
 
 # --- Installer: setup.sh ---
+# Instead of littering the target directory with sibling .pre-toolkit-<STAMP>
+# entries, all backups for each install now go into a single timestamped
+# directory:  ~/.emacs.d/.backups/<STAMP>/
+# That keeps the main areas clean and makes rollback a single directory swap.
+# Mirror extractions under $HOME are stashed under
+#  ~/.emacs.d/.backups/<STAMP>/home-mirrors/
+#   so they are grouped with the rest of the install's backups.
 cat > "${STAGING}/setup.sh" <<'SETUPEOF'
 #!/usr/bin/env bash
 # setup.sh — install the bundled Emacs toolkit on an offline machine.
@@ -321,16 +329,31 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EMACS_D="${HOME}/.emacs.d"
-BACKUP_SUFFIX=".pre-toolkit-$(date +%Y%m%dT%H%M%S)"
+STAMP="$(date +%Y%m%dT%H%M%S)"
+BACKUP_DIR="${EMACS_D}/.backups/${STAMP}"
 
 echo ">> Target: ${EMACS_D}"
 mkdir -p "$EMACS_D"
 
+# Back up existing files/directories into a single timestamped directory.
+# This keeps ~/.emacs.d and ~/ clean — all backups for this install live
+# under ~/.emacs.d/.backups/<STAMP>/, and rollback just swaps that set back.
+backup_item() {
+  local src="$1" dest_base="$2"
+  if [[ ! -e "$src" ]]; then
+    return 0
+  fi
+  mkdir -p "$(dirname "$dest_base")"
+  echo "   backing up $(basename "$src") -> .backups/${STAMP}/$(basename "$dest_base")"
+  mv "$src" "$dest_base"
+}
+
+mkdir -p "$BACKUP_DIR"
+
 # Back up existing init files so we don't silently clobber an existing setup.
-for f in init.el early-init.el; do
+for f in init.el early-init.el init-starter.el init-starter-coding.el; do
   if [[ -e "${EMACS_D}/${f}" && ! -L "${EMACS_D}/${f}" ]]; then
-    echo "   backing up existing ${f} -> ${f}${BACKUP_SUFFIX}"
-    mv "${EMACS_D}/${f}" "${EMACS_D}/${f}${BACKUP_SUFFIX}"
+    backup_item "${EMACS_D}/${f}" "${BACKUP_DIR}/${f}"
   fi
 done
 
@@ -338,16 +361,17 @@ done
 # package as not-installed on next launch and reinstalls from the freshly
 # extracted mirror. Without this, stale .elc/.eln from the old mirror stay put.
 if [[ -d "${EMACS_D}/elpa" ]]; then
-  echo "   backing up existing elpa/ -> elpa${BACKUP_SUFFIX}/"
-  mv "${EMACS_D}/elpa" "${EMACS_D}/elpa${BACKUP_SUFFIX}"
+  backup_item "${EMACS_D}/elpa" "${BACKUP_DIR}/elpa"
 fi
 
 # Move any pre-existing mirror extractions aside too — same reason, and avoids
 # the init.el's `string>' sort silently picking up stale mirrors after upgrades.
+# They go into a subdirectory so they don't collide with .emacs.d items.
+_mirror_count=0
 for old in "${HOME}"/elpa-mirror-emacs-*; do
   [[ -d "$old" ]] || continue
-  echo "   backing up existing $(basename "$old")/ -> $(basename "$old")${BACKUP_SUFFIX}/"
-  mv "$old" "${old}${BACKUP_SUFFIX}"
+  _mirror_count=$(( _mirror_count + 1 ))
+  backup_item "$old" "${BACKUP_DIR}/home-mirrors/$(basename "$old")"
 done
 
 # Extract ELPA mirror into $HOME (init.el auto-detects ~/elpa-mirror-emacs-*).
@@ -361,8 +385,7 @@ done
 for d in Emacs-vanilla Emacs-DIYer; do
   if [[ -d "${HERE}/${d}" ]]; then
     if [[ -d "${EMACS_D}/${d}" ]]; then
-      echo "   backing up existing ${d}/ -> ${d}${BACKUP_SUFFIX}/"
-      mv "${EMACS_D}/${d}" "${EMACS_D}/${d}${BACKUP_SUFFIX}"
+      backup_item "${EMACS_D}/${d}" "${BACKUP_DIR}/${d}"
     fi
     echo ">> Installing ${d} to ${EMACS_D}/${d}"
     mkdir -p "${EMACS_D}/${d}"
@@ -374,8 +397,7 @@ done
 # target Emacs will compile on first load if it wants to.
 if [[ -d "${HERE}/local-packages" ]]; then
   if [[ -d "${EMACS_D}/local-packages" ]]; then
-    echo "   backing up existing local-packages/ -> local-packages${BACKUP_SUFFIX}/"
-    mv "${EMACS_D}/local-packages" "${EMACS_D}/local-packages${BACKUP_SUFFIX}"
+    backup_item "${EMACS_D}/local-packages" "${BACKUP_DIR}/local-packages"
   fi
   echo ">> Installing local-packages to ${EMACS_D}/local-packages"
   mkdir -p "${EMACS_D}/local-packages"
@@ -389,23 +411,15 @@ cp "${HERE}/init.el" "${EMACS_D}/init.el"
 # Install starter snippet if bundled. Does NOT auto-load — opt in from init.el
 # with: (load (expand-file-name "init-starter" user-emacs-directory) t t)
 if [[ -f "${HERE}/init-starter.el" ]]; then
-  if [[ -e "${EMACS_D}/init-starter.el" && ! -L "${EMACS_D}/init-starter.el" ]]; then
-    echo "   backing up existing init-starter.el -> init-starter.el${BACKUP_SUFFIX}"
-    mv "${EMACS_D}/init-starter.el" "${EMACS_D}/init-starter.el${BACKUP_SUFFIX}"
-  fi
   cp "${HERE}/init-starter.el" "${EMACS_D}/init-starter.el"
   echo ">> Starter snippet installed at ${EMACS_D}/init-starter.el (not auto-loaded)"
 fi
 
 # Install coding companion starter if bundled. Also NOT auto-loaded — opt in
-# with: (load (expand-file-name "coding-starter" user-emacs-directory) t t)
-if [[ -f "${HERE}/coding-starter.el" ]]; then
-  if [[ -e "${EMACS_D}/coding-starter.el" && ! -L "${EMACS_D}/coding-starter.el" ]]; then
-    echo "   backing up existing coding-starter.el -> coding-starter.el${BACKUP_SUFFIX}"
-    mv "${EMACS_D}/coding-starter.el" "${EMACS_D}/coding-starter.el${BACKUP_SUFFIX}"
-  fi
-  cp "${HERE}/coding-starter.el" "${EMACS_D}/coding-starter.el"
-  echo ">> Coding companion installed at ${EMACS_D}/coding-starter.el (not auto-loaded)"
+# with: (load (expand-file-name "init-starter-coding" user-emacs-directory) t t)
+if [[ -f "${HERE}/init-starter-coding.el" ]]; then
+  cp "${HERE}/init-starter-coding.el" "${EMACS_D}/init-starter-coding.el"
+  echo ">> Coding companion installed at ${EMACS_D}/init-starter-coding.el (not auto-loaded)"
 fi
 
 # Install tools/ drop-zone (language servers, debug adapters) to ~/.emacs.d/bin/.
@@ -413,8 +427,7 @@ fi
 # or reference binaries by absolute path from their eglot-server-programs.
 if [[ -d "${HERE}/tools" ]]; then
   if [[ -d "${EMACS_D}/bin" ]]; then
-    echo "   backing up existing bin/ -> bin${BACKUP_SUFFIX}/"
-    mv "${EMACS_D}/bin" "${EMACS_D}/bin${BACKUP_SUFFIX}"
+    backup_item "${EMACS_D}/bin" "${BACKUP_DIR}/bin"
   fi
   echo ">> Installing tools/ to ${EMACS_D}/bin"
   mkdir -p "${EMACS_D}/bin"
@@ -424,8 +437,7 @@ fi
 # Install docs/ drop-zone (coding guide, reference material).
 if [[ -d "${HERE}/docs" ]]; then
   if [[ -d "${EMACS_D}/docs" ]]; then
-    echo "   backing up existing docs/ -> docs${BACKUP_SUFFIX}/"
-    mv "${EMACS_D}/docs" "${EMACS_D}/docs${BACKUP_SUFFIX}"
+    backup_item "${EMACS_D}/docs" "${BACKUP_DIR}/docs"
   fi
   echo ">> Installing docs/ to ${EMACS_D}/docs"
   mkdir -p "${EMACS_D}/docs"
@@ -443,6 +455,27 @@ if [[ -n "$SRC" && -f "$SRC" ]]; then
   echo "     ./configure --prefix=\"\$HOME/.local\" && make -j\$(nproc) && make install"
 fi
 
+# Summarise backups so the user knows where to look.
+_items="$(find "$BACKUP_DIR" -maxdepth 1 -mindepth 1 | wc -l)"
+if [[ "$_items" -gt 0 ]]; then
+  echo ">> Previous state backed up to ${EMACS_D}/.backups/${STAMP}/"
+fi
+# Old flat backups (pre-toolkit-<STAMP> suffix) are still present if setup
+# was run with an older version of this script. List them as a reminder.
+_old_count=0
+for _old in "${EMACS_D}"/*.pre-toolkit-*; do
+  [[ -e "$_old" ]] || continue
+  _old_count=$(( _old_count + 1 ))
+done
+for _old in "${HOME}"/elpa-mirror-emacs-*.pre-toolkit-*; do
+  [[ -e "$_old" ]] || continue
+  _old_count=$(( _old_count + 1 ))
+done
+if [[ "$_old_count" -gt 0 ]]; then
+  echo "!! ${_old_count} old .pre-toolkit-* backup(s) found under ${EMACS_D} and ${HOME}."
+  echo "   To clean up: rm -rf ${EMACS_D}/*.pre-toolkit-* ${HOME}/elpa-mirror-emacs-*.pre-toolkit-*"
+fi
+
 echo
 echo "Done. Launch Emacs; *Messages* should report:"
 echo "  my/offline-packages=t  dir=/home/you/elpa-mirror-emacs-..."
@@ -450,63 +483,143 @@ SETUPEOF
 chmod +x "${STAGING}/setup.sh"
 
 # --- Installer: rollback.sh ---
-# Reverses the most recent setup.sh install by swapping `.pre-toolkit-<STAMP>'
-# entries back into place. Run on the offline target from ~/.emacs.d/ (or from
-# anywhere — it operates on $HOME and $HOME/.emacs.d directly).
+# Reverses a setup.sh install by swapping the contents of a
+# ~/.emacs.d/.backups/<STAMP>/ directory back into place. Supports both the
+# new directory-based layout and the legacy flat .pre-toolkit-<STAMP> suffixes
+# (so a rollback script from a newer toolkit can still undo older installs).
 cat > "${STAGING}/rollback.sh" <<'ROLLBACKEOF'
 #!/usr/bin/env bash
-# rollback.sh — restore the most recent `.pre-toolkit-<STAMP>' backup created
-# by setup.sh. Scans ~/.emacs.d/ and ~/ for backup entries, picks the newest
-# stamp, and swaps everything under that stamp back to its original name. The
-# current (post-install) state is not discarded — it's archived with a
-# `.rolled-back-<STAMP>' suffix so a re-rollforward is still possible.
+# rollback.sh — restore a setup.sh backup. Works with both:
+#   (1) Directory-based backups under ~/.emacs.d/.backups/<STAMP>/
+#   (2) Legacy flat .pre-toolkit-<STAMP> suffixes (from older setup.sh)
+#
+# Scans for both formats, picks the newest stamp, and swaps everything under
+# that stamp back to its original name. The current (post-install) state is
+# archived under .backups/<NOW>-rolledback/ so a re-rollforward is possible.
 set -euo pipefail
 
 EMACS_D="${HOME}/.emacs.d"
+BACKUPS_DIR="${EMACS_D}/.backups"
 NOW="$(date +%Y%m%dT%H%M%S)"
 
-collect_stamps() {
+# Collect stamps from directory-based backups (.backups/<STAMP>/ dirs).
+dir_stamps() {
+  find "$BACKUPS_DIR" -maxdepth 1 -mindepth 1 -type d 2>/dev/null \
+    | xargs -r -I{} basename '{}' \
+    | grep -E '^[0-9]{8}T[0-9]{6}$' || true
+}
+
+# Collect stamps from legacy flat .pre-toolkit-<STAMP> suffixes.
+legacy_stamps() {
   {
     find "$EMACS_D" -maxdepth 1 -mindepth 1 -name '*.pre-toolkit-*' 2>/dev/null
     find "$HOME"    -maxdepth 1 -mindepth 1 -name '*.pre-toolkit-*' 2>/dev/null
-  } | sed -E 's/.*\.pre-toolkit-([0-9TZ]+).*/\1/' | sort -u
+  } | sed -E 's/.*\.pre-toolkit-([0-9TZ]+).*/\1/' | sort -u || true
 }
 
-mapfile -t STAMPS < <(collect_stamps)
-if [[ "${#STAMPS[@]}" -eq 0 ]]; then
-  echo "No .pre-toolkit-* backups found under $HOME or $EMACS_D." >&2
+mapfile -t DIR_STAMPS < <(dir_stamps)
+mapfile -t LEGACY_STAMPS < <(legacy_stamps)
+
+ALL_STAMPS=()
+for s in "${DIR_STAMPS[@]+"${DIR_STAMPS[@]}"}" "${LEGACY_STAMPS[@]+"${LEGACY_STAMPS[@]}"}"; do
+  [[ -n "$s" ]] && ALL_STAMPS+=("$s")
+done
+
+if [[ "${#ALL_STAMPS[@]}" -eq 0 ]]; then
+  echo "No backups found (neither .backups/ dirs nor .pre-toolkit-* entries)." >&2
+  echo "Checked: ${BACKUPS_DIR}/, ${EMACS_D}/*.pre-toolkit-*, ~/elpa-mirror-emacs-*.pre-toolkit-*" >&2
   exit 1
 fi
 
-# Newest first — lexical sort works because stamps are YYYYmmddTHHMMSS.
-LATEST="$(printf '%s\n' "${STAMPS[@]}" | sort -r | head -n1)"
+# Deduplicate and sort newest first.
+mapfile -t SORTED < <(printf '%s\n' "${ALL_STAMPS[@]}" | sort -u -r)
+LATEST="${SORTED[0]}"
 
-echo "Backup stamps available (newest first):"
-printf '%s\n' "${STAMPS[@]}" | sort -r | sed 's/^/  /'
+echo "Available backup stamps (newest first):"
+printf '  %s%s\n' "${SORTED[0]}" "  <- default" "${SORTED[@]:1}"
 echo
 read -r -p "Roll back to ${LATEST}? [y/N] " ans </dev/tty
 [[ "$ans" =~ ^[yY] ]] || { echo "Aborted."; exit 0; }
 
-rollback_in() {
-  local dir="$1"
-  shopt -s nullglob
-  for bak in "$dir"/*.pre-toolkit-"$LATEST"; do
-    [[ -e "$bak" ]] || continue
-    local orig="${bak%.pre-toolkit-$LATEST}"
-    if [[ -e "$orig" ]]; then
-      echo "   archiving current $(basename "$orig") -> $(basename "$orig").rolled-back-${NOW}"
-      mv "$orig" "${orig}.rolled-back-${NOW}"
+# Archive current state so we can roll forward again if needed.
+ROLLFORWARD_DIR="${BACKUPS_DIR}/${NOW}-rolledback"
+mkdir -p "$ROLLFORWARD_DIR"
+
+rollback_dir() {
+  local stamp="$1"
+  local bak_dir="${BACKUPS_DIR}/${stamp}"
+  [[ -d "$bak_dir" ]] || return 0
+
+  echo ">> Restoring from directory backup: ${bak_dir}"
+
+  # Restore items that live directly under ~/.emacs.d/
+  for item in init.el early-init.el init-starter.el init-starter-coding.el \
+              elpa local-packages bin docs Emacs-vanilla Emacs-DIYer; do
+    local src="${bak_dir}/${item}"
+    [[ -e "$src" ]] || continue
+    local dest="${EMACS_D}/${item}"
+    if [[ -e "$dest" ]]; then
+      echo "   archiving current ${item} -> .backups/${NOW}-rolledback/${item}"
+      mv "$dest" "${ROLLFORWARD_DIR}/${item}"
     fi
-    echo "   restoring $(basename "$bak") -> $(basename "$orig")"
-    mv "$bak" "$orig"
+    echo "   restoring ${item}"
+    mv "$src" "$dest"
   done
+
+  # Restore mirror extractions from the home-mirrors/ subdirectory.
+  local mirror_dir="${bak_dir}/home-mirrors"
+  if [[ -d "$mirror_dir" ]]; then
+    for mirror in "$mirror_dir"/elpa-mirror-emacs-*; do
+      [[ -e "$mirror" ]] || continue
+      local mirror_name="$(basename "$mirror")"
+      local dest="${HOME}/${mirror_name}"
+      if [[ -e "$dest" ]]; then
+        echo "   archiving current ${mirror_name} -> .backups/${NOW}-rolledback/home-mirrors/${mirror_name}"
+        mkdir -p "${ROLLFORWARD_DIR}/home-mirrors"
+        mv "$dest" "${ROLLFORWARD_DIR}/home-mirrors/${mirror_name}"
+      fi
+      echo "   restoring ${mirror_name}"
+      mv "$mirror" "$dest"
+    done
+  fi
+
+  # Remove the now-empty backup directory.
+  rmdir "$bak_dir" 2>/dev/null || true
 }
 
-rollback_in "$EMACS_D"
-rollback_in "$HOME"
+rollback_legacy() {
+  local stamp="$1"
+
+  rollback_in() {
+    local dir="$1"
+    shopt -s nullglob
+    for bak in "$dir"/*.pre-toolkit-"$stamp"; do
+      [[ -e "$bak" ]] || continue
+      local orig="${bak%.pre-toolkit-$stamp}"
+      if [[ -e "$orig" ]]; then
+        echo "   archiving current $(basename "$orig") -> $(basename "$orig").rolled-back-${NOW}"
+        mv "$orig" "${orig}.rolled-back-${NOW}"
+      fi
+      echo "   restoring $(basename "$bak") -> $(basename "$orig")"
+      mv "$bak" "$orig"
+    done
+  }
+
+  echo ">> Restoring from legacy flat backup (stamp: ${stamp})"
+  rollback_in "$EMACS_D"
+  rollback_in "$HOME"
+}
+
+# Try directory-based first; fall back to legacy flat if no .backups/ dir.
+if [[ -d "${BACKUPS_DIR}/${LATEST}" ]]; then
+  rollback_dir "$LATEST"
+else
+  rollback_legacy "$LATEST"
+fi
 
 echo
-echo "Rollback complete. Post-install state preserved under *.rolled-back-${NOW}."
+echo "Rollback complete. Post-install state archived under ${ROLLFORWARD_DIR}."
+echo "To roll forward again: restore items from that directory."
 ROLLBACKEOF
 chmod +x "${STAGING}/rollback.sh"
 
@@ -569,8 +682,8 @@ fi
   if [[ -f "${STAGING}/init-starter.el" ]]; then
     echo "Starter:       init-starter.el (optional, not auto-loaded)"
   fi
-  if [[ -f "${STAGING}/coding-starter.el" ]]; then
-    echo "Coding starter: coding-starter.el (optional, not auto-loaded)"
+  if [[ -f "${STAGING}/init-starter-coding.el" ]]; then
+    echo "Coding starter: init-starter-coding.el (optional, not auto-loaded)"
   fi
   if [[ -d "${STAGING}/local-packages" ]]; then
     _lp_count="$(find "${STAGING}/local-packages" -maxdepth 1 -mindepth 1 \
