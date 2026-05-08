@@ -1551,7 +1551,18 @@ On open, keep focus in the original window."
 
   (add-hook 'demap-minimap-construct-hook
             (lambda ()
-              (my/demap-diff-update-current))))
+              (my/demap-diff-update-current)))
+
+  (defun my/demap-preserve-window (&rest _)
+    "Set no-delete-other-windows on the demap side window."
+    (when-let* ((buf (get-buffer demap-minimap-default-name))
+                (win (get-buffer-window buf)))
+      (set-window-parameter win 'no-delete-other-windows t)))
+  (advice-add 'demap-open :after #'my/demap-preserve-window)
+  (my/demap-preserve-window))
+
+(add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/diff-minimap")
+(require 'diff-minimap)
 
 ;;
 ;; -> visuals
