@@ -10,6 +10,22 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-05-11>
+
+Deduplicated and refined starter configs
+
+- Deleted =starters/emacs-28.2.el= (identical to =emacs-28.1.el=) and
+  =starters/emacs-30.1.el= (identical to =emacs-30.2.el=) — kept the latest
+  version of each series.
+- Removed =dape=, =treemacs=, =demap=, and =protobuf-mode= blocks from
+  =starters/emacs-30.2.el= — these now live exclusively in =coding.el= to
+  eliminate cross-file duplication. =emacs-30.2.el= header updated to point
+  users to load both starters.
+- Updated =emacs-28.1.el= header to document that it covers the 28.x series
+  and note the =coding.el= companion.
+- Updated =README.org= to reflect the current starter file set and cross-
+  reference =coding.el= from the per-version starter description.
+
 ** <2026-05-07>
 
 Centralised backups and starter naming
