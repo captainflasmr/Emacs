@@ -40,6 +40,12 @@
 (package-initialize)
 (setq load-prefer-newer t)
 
+;; Skip GPG signature verification on archive refresh — saves downloading
+;; and verifying .sig files for every archive.  Safe in the build context:
+;; first-build traffic goes over TLS to known-good archives; subsequent
+;; builds use the self-controlled local mirror.
+(setq package-check-signature nil)
+
 ;;
 ;; -> local-packages
 ;; Top-level dir + every immediate subdirectory under ~/.emacs.d/local-packages
