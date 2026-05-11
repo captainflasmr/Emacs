@@ -1331,3 +1331,67 @@ On open, keep focus in the original window."
 ;; (setq diff-minimap-stipple-pattern 'dots-sparse)
 ;; (setq diff-minimap-colour-source 'diff-hl)
 ;; (setq diff-minimap-font-scale 0.2)
+
+;;
+;; -> bugs-overview — collect BUGS.org files across project areas
+;;
+
+(defvar my/bugs-search-roots
+  (list (expand-file-name "~/.emacs.d")
+        (expand-file-name "~/.emacs.d/Emacs-DIYer")
+        (expand-file-name "~/.emacs.d/Emacs-vanilla")
+        (expand-file-name "~/.emacs.d/offline-packages")
+        (expand-file-name "~/source/repos")
+        (expand-file-name "~/source")
+        (expand-file-name "~/bin"))
+  "Root directories to scan for BUGS.org files.")
+
+(defun my/bugs-files ()
+  "Return BUGS.org files found under `my/bugs-search-roots'.
+Scans each root directly and any git-repo subdirectories one level deep."
+  (let (files)
+    (dolist (root my/bugs-search-roots)
+      (when (file-directory-p root)
+        (let ((bugs (expand-file-name "BUGS.org" root)))
+          (when (file-exists-p bugs)
+            (push bugs files)))
+        (dolist (sub (directory-files root t "^[^.]"))
+          (when (and (file-directory-p sub)
+                     (file-exists-p (expand-file-name ".git" sub)))
+            (let ((bugs (expand-file-name "BUGS.org" sub)))
+              (when (file-exists-p bugs)
+                (push bugs files)))))))
+    (sort (delete-dups files) #'string<)))
+
+(defun my/org-category-bugs-filename (orig-fun &optional pos force-refresh)
+  "Override `org-get-category' for BUGS.org files.
+Uses the parent directory name as the category instead of the
+default \"BUGS\" so every entry shows which project it belongs to."
+  (let ((cat (funcall orig-fun pos force-refresh)))
+    (if (and (equal cat "BUGS")
+             (buffer-file-name)
+             (string-suffix-p "/BUGS.org" (buffer-file-name)))
+        (file-name-nondirectory
+         (directory-file-name
+          (file-name-directory (buffer-file-name))))
+      cat)))
+
+(advice-add 'org-get-category :around #'my/org-category-bugs-filename)
+
+(defun my/bugs ()
+  "Show all TODO entries across every BUGS.org file in project areas.
+Scans roots defined by `my/bugs-search-roots'.
+Each entry is prefixed with its project directory name thanks to
+`my/org-category-bugs-filename'."
+  (interactive)
+  (let* ((fmt (if (listp org-agenda-prefix-format)
+                  org-agenda-prefix-format
+                (default-value 'org-agenda-prefix-format)))
+         (org-agenda-files (my/bugs-files))
+         (org-agenda-prefix-format
+          (mapcar (lambda (item)
+                    (if (eq (car item) 'todo)
+                        (cons 'todo " %i %-20:c%?-12t% s")
+                      item))
+                  fmt)))
+    (org-todo-list)))
