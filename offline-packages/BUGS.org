@@ -10,30 +10,9 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO some stalling on elpa
-
-Contacting host: elpa.gnu.org:443
-   Package refresh done
-
-** DONE better backup on install to keep tidy
-
-Closed 2026-05-07. Backups now go into =~/.emacs.d/.backups/<STAMP>/= instead of
-littering sibling =.pre-toolkit-<STAMP>= entries at the top level. Rollback
-supports both the new directory layout and the legacy flat format.
-
-** DONE starter scripts to be renamed  init-starter-* so they are grouped
-
-Closed 2026-05-07. =coding-starter.el= renamed to =init-starter-coding.el= so
-all starters share the =init-starter-= prefix and group together in directory
-listings on the target machine.
-
 ** TODO add automated smoke tests for starter configs
 
 The =build-toolkit.sh= smoke test only validates the rendered =init.el=. The starter configs (=starters/emacs-*.el=, =starters/coding.el=) are never loaded during the test. A basic batch load of each starter under the corresponding Emacs version would catch =void-function= / =wrong-type-argument= regressions before deployment.
-
-** TODO validate local-packages at build time
-
-=local-packages/= is copied verbatim into the toolkit with no byte-compile or =checkdoc= check. A quick =emacs --batch -f batch-byte-compile= pass during =build-toolkit.sh= would catch syntax errors before they hit the offline target.
 
 ** TODO org-bootstrap-publish load-path is fragile in init.el.in template
 
@@ -42,10 +21,6 @@ The rendered =init.el= hardcodes the local-packages subdirectory path for =org-b
 ** TODO starter configs duplicate code from live config
 
 The treemacs overlay, demap diff integration, and windmove repeat map are copy-pasted from the top-level =init.el= into the starters. Any upstream fix needs to be applied in multiple places. Consider extracting shared blocks into a =local-packages/= helper that starters can =require=.
-
-** DONE duplicate dumb-jump in packages/emacs-28.1.el
-
-Fixed 2026-05-06. The package list had =dumb-jump= listed twice. Alphabetized and deduplicated all version-specific package lists.
 
 * Issues
 
