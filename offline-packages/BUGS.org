@@ -10,6 +10,11 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
+** TODO some stalling on elpa
+
+Contacting host: elpa.gnu.org:443
+   Package refresh done
+
 ** DONE better backup on install to keep tidy
 
 Closed 2026-05-07. Backups now go into =~/.emacs.d/.backups/<STAMP>/= instead of
