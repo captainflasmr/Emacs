@@ -10,12 +10,11 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO on rsync copy move the point to the destination
-
 ** TODO bug gathering package
 
-** TODO dired - j and k navigation
+** DONE demap to not disappear when (delete-other-windows) activated
 
-** TODO find file to by default just show rg with C-u showing full selection
-
-** TODO demap to not disappear when (delete-other-windows) activated
+Closed 2026-05-08. Added `my/demap-preserve-window' as
+`:after' advice on `demap-open' that sets the
+`no-delete-other-windows' window parameter on the minimap side
+window, preventing `delete-other-windows' from closing it.

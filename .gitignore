@@ -19,5 +19,7 @@
 !templates
 !offline-packages/
 !offline-packages/**
+!obp-config.el
+!obp-shortcodes.el
 !ollama-buddy-user-prompts/
 !ollama-buddy-user-prompts/**

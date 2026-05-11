@@ -122,6 +122,26 @@
   (setq-default ztree-diff-show-equal-files nil))
 
 ;;
+;; -> diff-minimap — minimap sidebar showing diff-hl regions
+;;
+(use-package diff-minimap :demand t)
+
+;;
+;; -> transmute — media management utilities (image, video, audio)
+;;
+(use-package transmute
+  :demand t
+  :bind (("C-c I" . transmute-menu))
+  :config
+  (with-eval-after-load 'image-dired
+    (transmute-setup-thumbnail-keys)))
+
+;;
+;; -> org-bootstrap-publish — generate Bootstrap 5 sites from Org files
+;;
+(use-package org-bootstrap-publish :demand t)
+
+;;
 ;; -> quality-of-life
 ;;
 (setq recentf-max-menu-items 40
