@@ -23,9 +23,9 @@
 #       --out-dir DIR      Passed through to build-toolkit.sh
 #       --with-source VER  Bundle GNU Emacs source tarball; "auto" reads
 #                          sources/LATEST_STABLE. Default: no source bundled.
-#       --gzip             Passed through: .tar.gz instead of .tar.xz (faster)
-#       --no-tools         Passed through: skip the tools/ drop-zone for a much
-#                          smaller "update" tarball (after initial big install)
+#       --xz               Passed through: xz -9e (.tar.xz) instead of default gzip
+#       --tools            Passed through: include the tools/ drop-zone (default: off).
+#                          Language servers + debug adapters add ~420 MB.
 #   -l, --list             List available packages/emacs-<VER>.el configs
 #   -h, --help             This help
 
@@ -54,16 +54,16 @@ usage() {
 VER=""
 CHAIN_TOOLKIT=1
 TOOLKIT_OUT_DIR=""
-USE_GZIP=0
+USE_XZ=0
 WITH_SOURCE_VER=""
-NO_TOOLS=0
+INCLUDE_TOOLS=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --mirror-only)   CHAIN_TOOLKIT=0; shift ;;
     --out-dir)       TOOLKIT_OUT_DIR="$2"; shift 2 ;;
     --with-source)   WITH_SOURCE_VER="$2"; shift 2 ;;
-    --gzip)          USE_GZIP=1; shift ;;
-    --no-tools)      NO_TOOLS=1; shift ;;
+    --xz)            USE_XZ=1; shift ;;
+    --tools)         INCLUDE_TOOLS=1; shift ;;
     -l|--list)       list_configs; exit 0 ;;
     -h|--help)       usage; exit 0 ;;
     -*) echo "Unknown option: $1" >&2; usage; exit 1 ;;
@@ -169,6 +169,7 @@ echo ">> Downloading packages (this may take a few minutes)..."
 HOME="$STAGE" "$EMACS_BIN" --batch \
   --eval '(setq byte-compile-warnings nil)' \
   --eval '(setq warning-minimum-log-level :error)' \
+  --eval '(setq my/offline-packages nil)' \
   -l "$RENDERED" 2>&1 \
   | sed 's/^/   /'
 
@@ -195,8 +196,8 @@ if [[ "$CHAIN_TOOLKIT" -eq 1 ]]; then
   toolkit_args=(--target "emacs-${VER}")
   [[ -n "$WITH_SOURCE_VER" ]] && toolkit_args+=(--with-source "$WITH_SOURCE_VER")
   [[ -n "$TOOLKIT_OUT_DIR" ]] && toolkit_args+=(--out-dir "$TOOLKIT_OUT_DIR")
-  [[ "$USE_GZIP" -eq 1 ]] && toolkit_args+=(--gzip)
-  [[ "$NO_TOOLS" -eq 1 ]] && toolkit_args+=(--no-tools)
+  [[ "$USE_XZ" -eq 1 ]] && toolkit_args+=(--xz)
+  [[ "$INCLUDE_TOOLS" -eq 1 ]] && toolkit_args+=(--tools)
   echo
   echo ">> Chaining into build-toolkit.sh ${toolkit_args[*]}..."
   "$TOOLKIT_SCRIPT" "${toolkit_args[@]}"

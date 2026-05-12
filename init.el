@@ -1317,8 +1317,8 @@ On open, keep focus in the original window."
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 80)
-(add-to-list 'default-frame-alist '(alpha-background . 80))
+(set-frame-parameter nil 'alpha-background 90)
+(add-to-list 'default-frame-alist '(alpha-background . 90))
 
 (add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/diff-minimap")
 (require 'diff-minimap)
@@ -1341,6 +1341,7 @@ On open, keep focus in the original window."
         (expand-file-name "~/.emacs.d/Emacs-DIYer")
         (expand-file-name "~/.emacs.d/Emacs-vanilla")
         (expand-file-name "~/.emacs.d/offline-packages")
+        (expand-file-name "~/.emacs.d/offline-packages/local-packages")
         (expand-file-name "~/source/repos")
         (expand-file-name "~/source")
         (expand-file-name "~/bin"))

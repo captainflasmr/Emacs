@@ -15,14 +15,29 @@
 ;;
 (require 'package)
 
-;; Presence of ~/elpa-mirror-emacs-*/ selects the local mirror; absence
-;; falls through to online archives. Force-disable by setting this to nil.
-(setq my/offline-packages t)
+;; When my/offline-packages is t (default), init.el uses a local ELPA mirror
+;; discovered by globbing ~/elpa-mirror-emacs-*/.  When no mirror is found but
+;; my/offline-packages is still t, package-archives is left unset (nil) so
+;; Emacs never reaches out to the network — safe for air-gapped machines.
+;; Set to nil in early-init.el or via --eval to force online archives
+;; (MELPA / ELPA / Org), e.g. during toolkit build:
+;;   emacs --batch --eval '(setq my/offline-packages nil)' -l init.el
+(unless (boundp 'my/offline-packages)
+  (setq my/offline-packages t))
 
+;; Primary: glob in HOME (~/) for the mirror directory.
+;; Fallback: glob in the parent of user-emacs-directory (handles portable
+;; Windows installs where HOME may not be set).
 (setq my/offline-packages-dir
-      (car (sort (file-expand-wildcards
-                  (expand-file-name "~/elpa-mirror-emacs-*"))
-                 #'string>)))
+      (or (car (sort (file-expand-wildcards
+                      (expand-file-name "~/elpa-mirror-emacs-*"))
+                     #'string>))
+          (car (sort (file-expand-wildcards
+                      (expand-file-name
+                       "../elpa-mirror-emacs-*"
+                       (file-name-as-directory
+                        (expand-file-name user-emacs-directory))))
+                     #'string>))))
 
 (message "my/offline-packages=%s  dir=%s"
          my/offline-packages
@@ -32,7 +47,11 @@
  ((and my/offline-packages my/offline-packages-dir)
   (setq package-archives
         `(("local" . ,(file-name-as-directory my/offline-packages-dir)))))
- ((eq system-type 'gnu/linux)
+ (my/offline-packages
+  ;; offline mode but no mirror found — don't reach out to the network
+  (setq package-archives nil)
+  (message "my/offline-packages-dir not found; no package archives configured"))
+ (t
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                            ("elpa"  . "https://elpa.gnu.org/packages/")
                            ("org"   . "https://orgmode.org/elpa/")))))

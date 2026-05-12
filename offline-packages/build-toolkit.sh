@@ -9,7 +9,7 @@
 # and an installer (setup.sh). Optional GNU Emacs source tarball for rebuild
 # on the target.
 #
-# Output: $OUT_DIR/emacs-offline-toolkit-<ver>-<os>-<arch>-<stamp>.tar.xz
+# Output: $OUT_DIR/emacs-offline-toolkit-<ver>-<os>-<arch>-<stamp>.tar.gz
 #
 # Usage: ./build-toolkit.sh [options]
 #   -t, --target SPEC       Target "emacs-VER" (skip interactive pick)
@@ -19,14 +19,16 @@
 #                           Pass --with-source none to skip.
 #       --local-configs     Copy Emacs-vanilla/DIYer from ~/.emacs.d/<d>/
 #                           instead of pulling fresh from GitHub.
-#       --gzip              Use gzip (.tar.gz) instead of xz -9e (.tar.xz).
-#                           Faster compress/decompress, less RAM, larger output.
-#       --no-tools          Skip the tools/ drop-zone (language servers, debug
-#                           adapters). Produces a much smaller "update" tarball
-#                           after the initial big install; target keeps whatever
-#                           it already has under ~/.emacs.d/bin. Filename gets
-#                           a "-notools" suffix.
-#       --no-smoke-test     Skip the post-staging "boot rendered init.el" check.
+#       --xz                Use xz -9e (.tar.xz) instead of gzip (.tar.gz).
+#                           Smaller output, needs more RAM for compression.
+#       --tools             Include the tools/ drop-zone (language servers, debug
+#                           adapters). Off by default since they're large (~420 MB).
+#                           Pass --tools for the initial install; omit for much
+#                           smaller incremental/update tarballs. Filename gets
+#                           a "-tools" suffix when included.
+#       --smoke-test        Run the post-staging "boot rendered init.el" check
+#                           (disabled by default; only useful when the target
+#                           emacs-<VER> binary is available on this machine).
 #   -l, --list              List available targets and exit
 #   -h, --help              This help
 
@@ -42,9 +44,9 @@ WITH_SOURCE=0
 EMACS_SOURCE_VERSION=""
 TARGET=""
 LOCAL_CONFIGS=0
-USE_GZIP=0
-SMOKE_TEST=1
-INCLUDE_TOOLS=1
+USE_XZ=0
+SMOKE_TEST=0
+INCLUDE_TOOLS=0
 
 # Literate config sources — fetched from GitHub main by default.
 VANILLA_REPO="captainflasmr/Emacs-vanilla"
@@ -100,9 +102,9 @@ while [[ $# -gt 0 ]]; do
     -o|--out-dir)     OUT_DIR="$2"; shift 2 ;;
     -s|--with-source) WITH_SOURCE=1; EMACS_SOURCE_VERSION="$2"; shift 2 ;;
     --local-configs)  LOCAL_CONFIGS=1; shift ;;
-    --gzip)           USE_GZIP=1; shift ;;
-    --no-tools)       INCLUDE_TOOLS=0; shift ;;
-    --no-smoke-test)  SMOKE_TEST=0; shift ;;
+    --xz)             USE_XZ=1; shift ;;
+    --tools)          INCLUDE_TOOLS=1; shift ;;
+    --smoke-test)     SMOKE_TEST=1; shift ;;
     -l|--list)        list_targets; exit 0 ;;
     -h|--help)        usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage; exit 1 ;;
@@ -144,9 +146,9 @@ if [[ "$WITH_SOURCE" -eq 1 && "$EMACS_SOURCE_VERSION" == "auto" ]]; then
   fi
 fi
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-_NOTOOLS_SUFFIX=""
-[[ "$INCLUDE_TOOLS" -eq 0 ]] && _NOTOOLS_SUFFIX="-notools"
-TOOLKIT_NAME="emacs-offline-toolkit-${EMACS_VERSION}-${OS_SLUG}-${ARCH}-${STAMP}${_NOTOOLS_SUFFIX}"
+_TOOLS_SUFFIX=""
+[[ "$INCLUDE_TOOLS" -eq 1 ]] && _TOOLS_SUFFIX="-tools"
+TOOLKIT_NAME="emacs-offline-toolkit-${EMACS_VERSION}-${OS_SLUG}-${ARCH}-${STAMP}${_TOOLS_SUFFIX}"
 STAGING="${OUT_DIR}/.${TOOLKIT_NAME}-staging-$$"
 mkdir -p "$STAGING"
 trap 'rm -rf "$STAGING"' EXIT
@@ -263,11 +265,10 @@ fi
 # `cp -a' preserves executable bits. The coding starter expects JDTLS at
 # ~/.emacs.d/bin/jdtls/bin/jdtls if present.
 TOOLS_SRC="${SCRIPT_DIR}/tools"
-if [[ "$INCLUDE_TOOLS" -eq 0 ]]; then
-  echo ">> --no-tools: skipping tools/ drop-zone (update-only tarball)."
-elif [[ -d "$TOOLS_SRC" ]] \
-     && find "$TOOLS_SRC" -mindepth 1 ! -name '.gitkeep' ! -name 'README.md' \
-          -print -quit | grep -q .; then
+if [[ "$INCLUDE_TOOLS" -eq 1 ]] \
+   && [[ -d "$TOOLS_SRC" ]] \
+   && find "$TOOLS_SRC" -mindepth 1 ! -name '.gitkeep' ! -name 'README.md' \
+        -print -quit | grep -q .; then
   echo ">> Copying tools/ drop-zone from ${TOOLS_SRC}..."
   mkdir -p "${STAGING}/tools"
   tar -C "$TOOLS_SRC" --exclude='.gitkeep' --exclude='README.md' -cf - . \
@@ -482,6 +483,162 @@ echo "  my/offline-packages=t  dir=/home/you/elpa-mirror-emacs-..."
 SETUPEOF
 chmod +x "${STAGING}/setup.sh"
 
+# --- Windows installer: setup.bat ---
+# Installs the bundled Emacs toolkit on a Windows offline machine.
+# Mirrors the logic of setup.sh using cmd.exe / batch conventions.
+cat > "${STAGING}/setup.bat" <<'SETUPBAT'
+@echo off
+setlocal enabledelayedexpansion
+
+set HERE=%~dp0
+
+:: Accept either EMACS_D path (ending with .emacs.d) or HOME path.
+:: Falls back to %%HOME%% or %%USERPROFILE%%.
+if not "%1"=="" (
+  set "TARGET=%1"
+  :: Strip trailing separator if present
+  if "!TARGET:~-1!"=="\" set "TARGET=!TARGET:~0,-1!"
+  if "!TARGET:~-1!"=="/" set "TARGET=!TARGET:~0,-1!"
+  :: Check if it's an .emacs.d path (last 8 chars == ".emacs.d")
+  if /i "!TARGET:~-8!"==".emacs.d" (
+    set EMACS_D=!TARGET!
+    set MY_HOME=!TARGET:~0,-8!
+    :: Strip any separator left at the end of MY_HOME
+    if "!MY_HOME:~-1!"=="\" set MY_HOME=!MY_HOME:~0,-1!
+    if "!MY_HOME:~-1!"=="/" set MY_HOME=!MY_HOME:~0,-1!
+  ) else (
+    set MY_HOME=!TARGET!
+    set EMACS_D=!TARGET!\.emacs.d
+  )
+) else if not "%HOME%"=="" (
+  set MY_HOME=%HOME%
+  set EMACS_D=%MY_HOME%\.emacs.d
+) else (
+  set MY_HOME=%USERPROFILE%
+  set EMACS_D=%MY_HOME%\.emacs.d
+)
+for /f %%I in ('powershell -Command "Get-Date -Format 'yyyyMMddTHHmmss'"') do set STAMP=%%I
+set BACKUP_DIR=%EMACS_D%\.backups\%STAMP%
+
+echo ^>^> Target: %EMACS_D%
+echo ^>^> HOME:     %MY_HOME%
+if not exist "%EMACS_D%" mkdir "%EMACS_D%"
+if not exist "%BACKUP_DIR%" mkdir "%BACKUP_DIR%"
+
+:: Back up existing init files so we don't silently clobber an existing setup.
+for %%f in (init.el early-init.el init-starter.el init-starter-coding.el) do (
+  if exist "%EMACS_D%\%%f" (
+    echo    backing up %%f -^> .backups\%STAMP%\%%f
+    move "%EMACS_D%\%%f" "%BACKUP_DIR%\%%f" >nul
+  )
+)
+
+:: Move any existing elpa aside so packages reinstall from the fresh mirror.
+if exist "%EMACS_D%\elpa" (
+  echo    backing up elpa -^> .backups\%STAMP%\elpa
+  move "%EMACS_D%\elpa" "%BACKUP_DIR%\elpa" >nul
+)
+
+:: Move any pre-existing mirror extractions aside too.
+for /d %%d in ("%MY_HOME%\elpa-mirror-emacs-*") do (
+  if exist "%%d" (
+    if not exist "%BACKUP_DIR%\home-mirrors" mkdir "%BACKUP_DIR%\home-mirrors"
+    echo    backing up %%~nxd -^> .backups\%STAMP%\home-mirrors\%%~nxd
+    move "%%d" "%BACKUP_DIR%\home-mirrors\%%~nxd" >nul
+  )
+)
+
+:: Extract ELPA mirror into %MY_HOME% (init.el globs ~/elpa-mirror-emacs-*).
+for %%m in ("%HERE%elpa-mirror-*.tar.gz") do (
+  if exist "%%m" (
+    echo ^>^> Extracting %%~nxm into %MY_HOME%
+    tar -xzf "%%m" -C "%MY_HOME%"
+  )
+)
+
+:: Install the literate config directories.
+for %%d in (Emacs-vanilla Emacs-DIYer) do (
+  if exist "%HERE%%%d" (
+    if exist "%EMACS_D%\%%d" (
+      echo    backing up %%d -^> .backups\%STAMP%\%%d
+      move "%EMACS_D%\%%d" "%BACKUP_DIR%\%%d" >nul
+    )
+    echo ^>^> Installing %%d to %EMACS_D%\%%d
+    if not exist "%EMACS_D%\%%d" mkdir "%EMACS_D%\%%d"
+    xcopy "%HERE%%%d\." "%EMACS_D%\%%d\" /E /I /H /Y >nul
+  )
+)
+
+:: Install local-packages if bundled.
+if exist "%HERE%local-packages" (
+  if exist "%EMACS_D%\local-packages" (
+    echo    backing up local-packages -^> .backups\%STAMP%\local-packages
+    move "%EMACS_D%\local-packages" "%BACKUP_DIR%\local-packages" >nul
+  )
+  echo ^>^> Installing local-packages to %EMACS_D%\local-packages
+  if not exist "%EMACS_D%\local-packages" mkdir "%EMACS_D%\local-packages"
+  xcopy "%HERE%local-packages\." "%EMACS_D%\local-packages\" /E /I /H /Y >nul
+)
+
+:: Install init.el and optional early-init.el.
+copy "%HERE%init.el" "%EMACS_D%\init.el" >nul
+if exist "%HERE%early-init.el" copy "%HERE%early-init.el" "%EMACS_D%\early-init.el" >nul
+
+:: Install starter snippets (not auto-loaded).
+if exist "%HERE%init-starter.el" (
+  copy "%HERE%init-starter.el" "%EMACS_D%\init-starter.el" >nul
+  echo ^>^> Starter snippet installed at %EMACS_D%\init-starter.el (not auto-loaded^)
+)
+if exist "%HERE%init-starter-coding.el" (
+  copy "%HERE%init-starter-coding.el" "%EMACS_D%\init-starter-coding.el" >nul
+  echo ^>^> Coding companion installed at %EMACS_D%\init-starter-coding.el (not auto-loaded^)
+)
+
+:: Install tools/ drop-zone (language servers, debug adapters) to ~/.emacs.d/bin/.
+if exist "%HERE%tools" (
+  if exist "%EMACS_D%\bin" (
+    echo    backing up bin -^> .backups\%STAMP%\bin
+    move "%EMACS_D%\bin" "%BACKUP_DIR%\bin" >nul
+  )
+  echo ^>^> Installing tools to %EMACS_D%\bin
+  if not exist "%EMACS_D%\bin" mkdir "%EMACS_D%\bin"
+  xcopy "%HERE%tools\." "%EMACS_D%\bin\" /E /I /H /Y >nul
+)
+
+:: Install docs/ drop-zone (coding guide, reference material).
+if exist "%HERE%docs" (
+  if exist "%EMACS_D%\docs" (
+    echo    backing up docs -^> .backups\%STAMP%\docs
+    move "%EMACS_D%\docs" "%BACKUP_DIR%\docs" >nul
+  )
+  echo ^>^> Installing docs to %EMACS_D%\docs
+  if not exist "%EMACS_D%\docs" mkdir "%EMACS_D%\docs"
+  xcopy "%HERE%docs\." "%EMACS_D%\docs\" /E /I /H /Y >nul
+)
+
+:: Report on optional Emacs source.
+dir "%HERE%emacs-*.tar.xz" 2>nul >nul
+if !errorlevel! equ 0 (
+  echo.
+  echo ^>^> Bundled Emacs source found.
+  echo    Extract and build using MSYS2 or Cygwin.
+)
+
+:: Summarise backups.
+dir "%BACKUP_DIR%" /b 2>nul | findstr /r . >nul
+if !errorlevel! equ 0 (
+  echo ^>^> Previous state backed up to %EMACS_D%\.backups\%STAMP%\
+)
+
+echo.
+echo Done. Launch Emacs; *Messages* should report:
+echo   my/offline-packages=t  dir=%MY_HOME%\elpa-mirror-emacs-...
+echo.
+echo Note: If tar failed above with "Cannot connect to" a drive letter,
+echo extract the mirror manually from a local drive:
+echo   tar -xzf "%HERE%elpa-mirror-*.tar.gz" -C "%MY_HOME%"
+SETUPBAT
+
 # --- Installer: rollback.sh ---
 # Reverses a setup.sh install by swapping the contents of a
 # ~/.emacs.d/.backups/<STAMP>/ directory back into place. Supports both the
@@ -623,11 +780,116 @@ echo "To roll forward again: restore items from that directory."
 ROLLBACKEOF
 chmod +x "${STAGING}/rollback.sh"
 
+# --- Windows rollback: rollback.bat ---
+# Reverses a setup.bat install by swapping a .backups/<STAMP>/ directory back.
+cat > "${STAGING}/rollback.bat" <<'ROLLBACKBAT'
+@echo off
+setlocal enabledelayedexpansion
+
+:: Accept either EMACS_D path (ending with .emacs.d) or HOME path.
+:: Must match the same resolution as setup.bat for correct rollback.
+if not "%1"=="" (
+  set "TARGET=%1"
+  :: Strip trailing separator if present
+  if "!TARGET:~-1!"=="\" set "TARGET=!TARGET:~0,-1!"
+  if "!TARGET:~-1!"=="/" set "TARGET=!TARGET:~0,-1!"
+  :: Check if it's an .emacs.d path (last 8 chars == ".emacs.d")
+  if /i "!TARGET:~-8!"==".emacs.d" (
+    set EMACS_D=!TARGET!
+    set MY_HOME=!TARGET:~0,-8!
+    :: Strip any separator left at the end of MY_HOME
+    if "!MY_HOME:~-1!"=="\" set MY_HOME=!MY_HOME:~0,-1!
+    if "!MY_HOME:~-1!"=="/" set MY_HOME=!MY_HOME:~0,-1!
+  ) else (
+    set MY_HOME=!TARGET!
+    set EMACS_D=!TARGET!\.emacs.d
+  )
+) else if not "%HOME%"=="" (
+  set MY_HOME=%HOME%
+  set EMACS_D=%MY_HOME%\.emacs.d
+) else (
+  set MY_HOME=%USERPROFILE%
+  set EMACS_D=%MY_HOME%\.emacs.d
+)
+set BACKUPS_DIR=%EMACS_D%\.backups
+for /f %%I in ('powershell -Command "Get-Date -Format 'yyyyMMddTHHmmss'"') do set NOW=%%I
+
+:: Find newest backup stamp from directory-based backups.
+set LATEST=
+for /f %%s in ('dir "%BACKUPS_DIR%" /b /o-d 2^>nul ^| findstr /r "^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]T[0-9][0-9][0-9][0-9][0-9][0-9]$"') do (
+  if not defined LATEST set LATEST=%%s
+)
+
+if not defined LATEST (
+  echo No backups found under %BACKUPS_DIR%\
+  goto :eof
+)
+
+echo Available backup stamps (newest first^):
+for /f %%s in ('dir "%BACKUPS_DIR%" /b /o-d 2^>nul ^| findstr /r "^[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]T[0-9][0-9][0-9][0-9][0-9][0-9]$"') do (
+  if defined LATEST (
+    if "%%s"=="!LATEST!" (
+      echo   %%s ^<- default
+    ) else (
+      echo   %%s
+    )
+  )
+)
+echo.
+set /p ans="Roll back to !LATEST!? [y/N] "
+if /i not "!ans!"=="y" (
+  echo Aborted.
+  goto :eof
+)
+
+:: Archive current state so re-rollforward is possible.
+set ROLLFORWARD_DIR=%BACKUPS_DIR%\!LATEST!-rolledback
+mkdir "!ROLLFORWARD_DIR!" 2>nul
+
+:: Restore from directory backup.
+set bak_dir=%BACKUPS_DIR%\!LATEST!
+if exist "!bak_dir!" (
+  echo ^>^> Restoring from directory backup: !LATEST!
+
+  for %%i in (init.el early-init.el init-starter.el init-starter-coding.el elpa local-packages bin docs Emacs-vanilla Emacs-DIYer) do (
+    if exist "!bak_dir!\%%i" (
+      if exist "%EMACS_D%\%%i" (
+        echo    archiving current %%i -^> !NOW!-rolledback\%%i
+        move "%EMACS_D%\%%i" "!ROLLFORWARD_DIR!\%%i" >nul
+      )
+      echo    restoring %%i
+      move "!bak_dir!\%%i" "%EMACS_D%\%%i" >nul
+    )
+  )
+
+  :: Restore mirror extractions from the home-mirrors/ subdirectory.
+  if exist "!bak_dir!\home-mirrors" (
+    for /d %%d in ("!bak_dir!\home-mirrors\elpa-mirror-emacs-*") do (
+      if exist "%%d" (
+        set mirror_name=%%~nxd
+        if exist "%MY_HOME%\!mirror_name!" (
+          if not exist "!ROLLFORWARD_DIR!\home-mirrors" mkdir "!ROLLFORWARD_DIR!\home-mirrors"
+          echo    archiving current !mirror_name! -^> !NOW!-rolledback\home-mirrors\!mirror_name!
+          move "%MY_HOME%\!mirror_name!" "!ROLLFORWARD_DIR!\home-mirrors\!mirror_name!" >nul
+        )
+        echo    restoring !mirror_name!
+        move "%%d" "%MY_HOME%\!mirror_name!" >nul
+      )
+    )
+  )
+
+  rmdir "!bak_dir!" 2>nul
+)
+
+echo.
+echo Rollback complete. Post-install state archived under !ROLLFORWARD_DIR!.
+ROLLBACKBAT
+
 # --- Smoke test: boot the rendered init.el under the target Emacs ---
 # Before compressing, launch emacs-<VER> in batch mode against the staged
 # init.el with HOME set to a throwaway dir containing the extracted mirror.
 # Catches: bad template renders, packages listed but missing from the mirror,
-# syntax errors in starters, etc. Skipped with --no-smoke-test.
+# syntax errors in starters, etc. Pass --smoke-test to enable.
 if [[ "$SMOKE_TEST" -eq 1 ]]; then
   # Prefer the same per-version binary create-install.sh uses.
   SMOKE_EMACS=""
@@ -657,7 +919,7 @@ if [[ "$SMOKE_TEST" -eq 1 ]]; then
     else
       _cleanup_smoke
       echo "!! Smoke test FAILED — init.el does not load cleanly." >&2
-      echo "   Re-run with --no-smoke-test to bypass, or fix the init/package list." >&2
+      echo "   Re-run with --smoke-test to test once the issue is fixed." >&2
       exit 1
     fi
     _cleanup_smoke
@@ -694,13 +956,14 @@ fi
     _t_count="$(find "${STAGING}/tools" -maxdepth 1 -mindepth 1 | wc -l)"
     _t_size="$(du -sh "${STAGING}/tools" | cut -f1)"
     echo "Tools:         ${_t_count} entries under tools/ (${_t_size})"
-  elif [[ "$INCLUDE_TOOLS" -eq 0 ]]; then
-    echo "Tools:         (skipped — --no-tools; update-only tarball)"
+  else
+    echo "Tools:         (skipped — pass --tools to include)"
   fi
   if [[ -d "${STAGING}/docs" ]]; then
     _d_count="$(find "${STAGING}/docs" -maxdepth 1 -mindepth 1 | wc -l)"
     echo "Docs:          ${_d_count} entries under docs/"
   fi
+  echo "Windows:       setup.bat + rollback.bat included"
   if [[ "$WITH_SOURCE" -eq 1 ]]; then
     echo "Emacs src:     emacs-${EMACS_SOURCE_VERSION}.tar.xz"
   elif [[ -n "$SOURCE_SKIP_REASON" ]]; then
@@ -712,23 +975,23 @@ fi
      | sed 's|\./||' | sort)
 } > "${STAGING}/MANIFEST.txt"
 
-# --- Package: tar + xz -9e (default) or gzip (--gzip) ---
+# --- Package: gzip (default) or xz -9e (--xz) ---
 FINAL="${OUT_DIR}/${TOOLKIT_NAME}"
 mv "$STAGING" "$FINAL"
 trap 'rm -rf "$FINAL"' EXIT
 
-if [[ "$USE_GZIP" -eq 1 ]]; then
-  OUT_TAR="${OUT_DIR}/${TOOLKIT_NAME}.tar.gz"
-  TAR_CAT_FLAG=-xzOf
-  TAR_LIST_FLAG=-xzf
-  echo ">> Compressing to ${OUT_TAR} (gzip)..."
-  tar -C "$OUT_DIR" --sort=name -czf "$OUT_TAR" "$TOOLKIT_NAME"
-else
+if [[ "$USE_XZ" -eq 1 ]]; then
   OUT_TAR="${OUT_DIR}/${TOOLKIT_NAME}.tar.xz"
   TAR_CAT_FLAG=-xJOf
   TAR_LIST_FLAG=-xJf
   echo ">> Compressing to ${OUT_TAR} (xz -9e)..."
   XZ_OPT='-9e -T1' tar -C "$OUT_DIR" --sort=name -cJf "$OUT_TAR" "$TOOLKIT_NAME"
+else
+  OUT_TAR="${OUT_DIR}/${TOOLKIT_NAME}.tar.gz"
+  TAR_CAT_FLAG=-xzOf
+  TAR_LIST_FLAG=-xzf
+  echo ">> Compressing to ${OUT_TAR} (gzip)..."
+  tar -C "$OUT_DIR" --sort=name -czf "$OUT_TAR" "$TOOLKIT_NAME"
 fi
 
 rm -rf "$FINAL"
@@ -742,8 +1005,12 @@ Built: ${OUT_TAR}  (${SIZE})
 --- MANIFEST.txt ---
 $(tar "$TAR_CAT_FLAG" "$OUT_TAR" "${TOOLKIT_NAME}/MANIFEST.txt")
 
-On the offline machine:
+On the offline machine (Linux):
   tar ${TAR_LIST_FLAG} $(basename "$OUT_TAR")
   cd ${TOOLKIT_NAME}
   ./setup.sh
+
+On Windows (extract with 7-Zip or tar):
+  cd ${TOOLKIT_NAME}
+  setup.bat
 EOF

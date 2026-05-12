@@ -230,14 +230,15 @@ Flags:
 | =-t=, =--target SPEC=      | =emacs-VER= spec; skip picker                    |
 | =-o=, =--out-dir DIR=      | Output directory (default: =$HOME/.emacs.d=)     |
 | =-s=, =--with-source VER=  | Bundle =emacs-VER.tar.xz=; =auto= reads LATEST_STABLE |
-| =--gzip=                   | Use gzip (.tar.gz) instead of xz -9e (.tar.xz)   |
-| =--no-smoke-test=          | Skip the post-staging "boot init.el" check       |
+| =--xz=                     | Use xz -9e (.tar.xz) instead of default gzip     |
+| =--smoke-test=             | Run the post-staging "boot init.el" check         |
+| =--tools=                  | Include tools/ drop-zone (default: off)            |
 | =-l=, =--list=             | List available targets and exit                  |
 | =-h=, =--help=             | Show help                                        |
 
 ** Smoke test
 
-Before compressing, =build-toolkit.sh= extracts the bundled mirror into a throwaway =$HOME=, locates =emacs-<VER>= (checking =$HOME/emacs-versions/emacs-<VER>/bin/emacs=, =$HOME/bin/emacs-<VER>=, =$PATH=), and runs it in =--batch= mode against the staged =init.el= with =(kill-emacs 0)=. If the Emacs binary can't be found for the target version the test is /skipped/ with a warning; if it runs and the init fails to load, the build aborts before the tarball is produced. Pass =--no-smoke-test= to bypass.
+If =--smoke-test= is passed, =build-toolkit.sh= extracts the bundled mirror into a throwaway =$HOME=, locates =emacs-<VER>= (checking =$HOME/emacs-versions/emacs-<VER>/bin/emacs=, =$HOME/bin/emacs-<VER>=, =$PATH=), and runs it in =--batch= mode against the staged =init.el= with =(kill-emacs 0)=. If the Emacs binary can't be found for the target version the test is /skipped/ with a warning; if it runs and the init fails to load, the build aborts before the tarball is produced. Disabled by default.
 
 ** What goes into the toolkit
 
@@ -271,24 +272,28 @@ Excluded from =Emacs-vanilla/= and =Emacs-DIYer/= to keep the toolkit small:
 
 ** Size
 
-Default compression is =xz -9e= (extreme preset). Pass =--gzip= for faster compress/decompress at the cost of a larger tarball — useful during iteration. Typical sizes with xz:
+Default compression is gzip. Pass =--xz= for =xz -9e= (extreme preset) for a smaller tarball at the cost of more RAM and time during compression. Typical sizes:
 
 | Target               | Mirror | Configs | Total (no source) | Total (+source) |
 |----------------------+--------+---------+-------------------+-----------------|
 | Emacs 27.2 (14 pkgs) | ~600 KB | ~700 KB | ~1–2 MB          | ~55–65 MB       |
 | Emacs 30.2 (28 pkgs) | ~1.7 MB | ~700 KB | ~2–3 MB          | ~55–65 MB       |
 
-The =tools/= drop-zone (language servers, debug adapters) dominates the total — ~420 MB uncompressed, ~150 MB compressed. On a full bundle the tarball lands around ~150–200 MB.
+The =tools/= drop-zone (language servers, debug adapters) dominates the total — ~420 MB uncompressed, ~150 MB compressed. A default (no-tools) tarball is ~2–3 MB; add =--tools= for ~150–200 MB.
 
-** --no-tools update tarballs
+** --tools (including language servers)
 
-Once the target has the big initial install, subsequent rebuilds rarely need to re-ship =tools/= — language servers and debug adapters move slowly. Pass =--no-tools= to =create-install.sh= or =build-toolkit.sh= to produce an "update" tarball that omits the drop-zone:
+The =tools/= drop-zone (language servers, debug adapters) is /omitted by default/ because it dominates the tarball (~420 MB uncompressed, ~150 MB compressed). Pass =--tools= to =create-install.sh= or =build-toolkit.sh= to include it:
 
 #+begin_src sh
-./create-install.sh 30.2 --no-tools
+# Big initial install with language servers
+./create-install.sh 30.2 --tools
+
+# Smaller incremental/update tarball (default, no tools)
+./create-install.sh 30.2
 #+end_src
 
-The resulting filename gets a =-notools= suffix for disambiguation, and MANIFEST.txt notes the skip. On the target, =setup.sh= guards the tools install with =if [[ -d tools ]]=, so an absent =tools/= leaves the existing =~/.emacs.d/bin/= untouched — package churn ships, binaries stay put. Typical size drop: ~150 MB → ~3 MB (xz).
+The resulting filename gets a =-tools= suffix when included, for disambiguation. On the target, =setup.sh= guards the tools install with =if [[ -d tools ]]=, so an absent =tools/= leaves the existing =~/.emacs.d/bin/= untouched — package churn ships, binaries stay put. Typical size: ~3 MB without tools, ~150 MB with them.
 
 * Deploying on the offline target (step 3)
 
