@@ -223,8 +223,8 @@
 (add-to-list 'auto-mode-alist '("\\.org_archive\\'" . org-mode))
 (add-to-list 'auto-mode-alist '("/sway/.*config.*/" . i3wm-config-mode))
 (add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode))
-(cl-loop for ext in '("\\.gpr$" "\\.ada$" "\\.ads$" "\\.adb$")
-         do (add-to-list 'auto-mode-alist (cons ext 'ada-light-mode)))
+;; (cl-loop for ext in '("\\.gpr$" "\\.ada$" "\\.ads$" "\\.adb$")
+         ;; do (add-to-list 'auto-mode-alist (cons ext 'ada-light-mode)))
 
 ;;
 ;; -> custom-settings
@@ -1396,3 +1396,74 @@ Each entry is prefixed with its project directory name thanks to
                       item))
                   fmt)))
     (org-todo-list)))
+
+;;
+;; -> old-ada-mode loaded from local-packages/ if present (see coding guide
+;; Part 12). Silent no-op otherwise.
+;;
+(let ((old-ada (expand-file-name "offline-packages/local-packages/old-ada-mode" user-emacs-directory)))
+  (when (file-directory-p old-ada)
+    (add-to-list 'load-path old-ada)
+    (use-package ada-mode
+      :ensure nil
+      :mode ("\\.gpr\\'" "\\.ada\\'" "\\.ads\\'" "\\.adb\\'"))))
+
+;;
+;; -> Ada project file helpers — ada_language_server needs a .gpr to work
+;; properly; these functions find existing ones or create a basic template.
+;;
+(defun my/ada-find-gpr-file (&optional dir)
+  "Find the nearest .gpr file upward from DIR (defaults to `default-directory')."
+  (let ((dir (or dir default-directory)))
+    (locate-dominating-file dir
+      (lambda (d) (car (directory-files d t "\\.gpr\\'"))))))
+
+(defun my/ada-create-gpr (project-name &optional main-file)
+  "Create PROJECT-NAME.gpr with an optional MAIN-FILE entry point."
+  (interactive "sProject name: \nsMain Ada file (e.g. main.adb): ")
+  (let ((gpr-file (concat project-name ".gpr")))
+    (with-current-buffer (find-file gpr-file)
+      (erase-buffer)
+      (insert (format "project %s is\n" project-name)
+              "\n"
+              "   for Source_Dirs use (\"**\");\n"
+              "   for Object_Dir use \"build\";\n"
+              "   for Exec_Dir use \".\";\n"
+              (when (and main-file (not (string-empty-p main-file)))
+                (format "   for Main use (\"%s\");\n" main-file))
+              "\n"
+              (format "end %s;\n" project-name))
+      (goto-char (point-min))
+      (when (called-interactively-p 'interactive)
+        (message "Created %s" gpr-file))
+      gpr-file)))
+
+(defun my/ada-ensure-gpr (&optional dir)
+  "Find a .gpr file in DIR or interactively create one.
+Returns the absolute path to the .gpr file, or nil if cancelled."
+  (let ((dir (or dir default-directory)))
+    (or (my/ada-find-gpr-file dir)
+        (when (y-or-n-p "No .gpr file found.  Create one? ")
+          (call-interactively #'my/ada-create-gpr)))))
+
+(defun my/ada-setup-project (&optional dir)
+  "Set up ada_language_server project for the current Ada buffer.
+Finds or creates a .gpr file and restarts eglot so ALS picks it up."
+  (interactive)
+  (unless (derived-mode-p 'ada-mode)
+    (user-error "Not in an Ada buffer"))
+  (let* ((dir (or dir default-directory))
+         (gpr (my/ada-ensure-gpr dir)))
+    (if gpr
+        (let* ((gpr-dir (file-name-directory gpr))
+               (gpr-file (file-name-nondirectory gpr)))
+          ;; Tell ALS which project file to use via eglot workspace config
+          (setq-local eglot-workspace-configuration
+                      `((ada . ((projectFile . ,gpr)))))
+          ;; If eglot is already running, restart it so ALS re-reads config
+          (when (eglot-current-server)
+            (eglot-shutdown (eglot-current-server))
+            ;; Re-open the project root so eglot picks the right root
+            (let ((default-directory gpr-dir))
+              (eglot-ensure))))
+      (user-error "No .gpr file; ada_language_server needs a project file"))))
