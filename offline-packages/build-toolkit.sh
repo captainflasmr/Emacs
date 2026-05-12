@@ -166,6 +166,7 @@ else
 fi
 cp "${MIRROR_TARBALL}" "${STAGING}/"
 [[ -f "${EMACS_D_DIR}/early-init.el" ]] && cp "${EMACS_D_DIR}/early-init.el" "${STAGING}/"
+[[ -f "${EMACS_D_DIR}/abbrev_defs" ]] && cp "${EMACS_D_DIR}/abbrev_defs" "${STAGING}/"
 [[ -f "${SCRIPT_DIR}/README.org" ]] && cp "${SCRIPT_DIR}/README.org" "${STAGING}/"
 
 # Surface PACKAGES.txt at the toolkit root so users can inspect the bundled
@@ -352,7 +353,7 @@ backup_item() {
 mkdir -p "$BACKUP_DIR"
 
 # Back up existing init files so we don't silently clobber an existing setup.
-for f in init.el early-init.el init-starter.el init-starter-coding.el; do
+for f in init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el; do
   if [[ -e "${EMACS_D}/${f}" && ! -L "${EMACS_D}/${f}" ]]; then
     backup_item "${EMACS_D}/${f}" "${BACKUP_DIR}/${f}"
   fi
@@ -408,6 +409,7 @@ fi
 # Install init.el and (optional) early-init.el.
 cp "${HERE}/init.el" "${EMACS_D}/init.el"
 [[ -f "${HERE}/early-init.el" ]] && cp "${HERE}/early-init.el" "${EMACS_D}/early-init.el"
+[[ -f "${HERE}/abbrev_defs" ]] && cp "${HERE}/abbrev_defs" "${EMACS_D}/abbrev_defs"
 
 # Install starter snippet if bundled. Does NOT auto-load — opt in from init.el
 # with: (load (expand-file-name "init-starter" user-emacs-directory) t t)
@@ -526,7 +528,7 @@ if not exist "%EMACS_D%" mkdir "%EMACS_D%"
 if not exist "%BACKUP_DIR%" mkdir "%BACKUP_DIR%"
 
 :: Back up existing init files so we don't silently clobber an existing setup.
-for %%f in (init.el early-init.el init-starter.el init-starter-coding.el) do (
+for %%f in (init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el) do (
   if exist "%EMACS_D%\%%f" (
     echo    backing up %%f -^> .backups\%STAMP%\%%f
     move "%EMACS_D%\%%f" "%BACKUP_DIR%\%%f" >nul
@@ -583,6 +585,7 @@ if exist "%HERE%local-packages" (
 :: Install init.el and optional early-init.el.
 copy "%HERE%init.el" "%EMACS_D%\init.el" >nul
 if exist "%HERE%early-init.el" copy "%HERE%early-init.el" "%EMACS_D%\early-init.el" >nul
+if exist "%HERE%abbrev_defs" copy "%HERE%abbrev_defs" "%EMACS_D%\abbrev_defs" >nul
 
 :: Install starter snippets (not auto-loaded).
 if exist "%HERE%init-starter.el" (
@@ -710,7 +713,7 @@ rollback_dir() {
   echo ">> Restoring from directory backup: ${bak_dir}"
 
   # Restore items that live directly under ~/.emacs.d/
-  for item in init.el early-init.el init-starter.el init-starter-coding.el \
+  for item in init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el \
               elpa local-packages bin docs Emacs-vanilla Emacs-DIYer; do
     local src="${bak_dir}/${item}"
     [[ -e "$src" ]] || continue
@@ -851,7 +854,7 @@ set bak_dir=%BACKUPS_DIR%\!LATEST!
 if exist "!bak_dir!" (
   echo ^>^> Restoring from directory backup: !LATEST!
 
-  for %%i in (init.el early-init.el init-starter.el init-starter-coding.el elpa local-packages bin docs Emacs-vanilla Emacs-DIYer) do (
+  for %%i in (init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el elpa local-packages bin docs Emacs-vanilla Emacs-DIYer) do (
     if exist "!bak_dir!\%%i" (
       if exist "%EMACS_D%\%%i" (
         echo    archiving current %%i -^> !NOW!-rolledback\%%i

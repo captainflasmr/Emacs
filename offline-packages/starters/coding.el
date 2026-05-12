@@ -19,6 +19,25 @@
 (setq use-package-always-ensure nil)
 
 ;;
+;; -> windows PATH — Emacs needs explicit help finding external tools
+;;
+(when (eq system-type 'windows-nt)
+  (let* ((bin (expand-file-name "bin" user-emacs-directory))
+         (xPaths
+          `(,bin
+            ,(concat bin "/PortableGit/bin")
+            ,(concat bin "/PortableGit/usr/bin")
+            ,(concat bin "/netcoredbg")
+            ,(concat bin "/csharp-ls/tools/net9.0/any")
+            ,(concat bin "/hunspell/bin")
+            ,(concat bin "/find")
+            ,(concat bin "/ImageMagick-portable-Q16-x64")
+            ,(concat bin "/ffmpeg-essentials/bin")))
+         (sysPath (getenv "PATH")))
+    (setenv "PATH" (concat (mapconcat #'identity xPaths ";") ";" sysPath))
+    (setq exec-path (append xPaths (split-string sysPath ";") (list "." exec-directory)))))
+
+;;
 ;; -> performance — LSP servers emit lots of stdout
 ;;
 (setq read-process-output-max (* 1024 1024))      ; 1 MB, up from 4 KB default
@@ -47,7 +66,10 @@
            (als   (expand-file-name "ada_language_server/bin/ada_language_server" bin))
            (buf   (expand-file-name "buf/bin/buf" bin))
            (csls  (expand-file-name "csharp-ls/csharp-ls" bin))
-           (kls   (expand-file-name "kotlin-language-server/bin/kotlin-language-server" bin)))
+           (kls   (expand-file-name "kotlin-language-server/bin/kotlin-language-server" bin))
+           ;; Windows-specific: csharp-ls is a .NET tool, launched via dotnet + DLL
+           (csls-dll (car (file-expand-wildcards
+                           (expand-file-name "csharp-ls/tools/net9.0/any/CSharpLanguageServer.dll" bin)))))
       (when (file-executable-p jdtls)
         (add-to-list 'eglot-server-programs
                      `((java-mode java-ts-mode) .
@@ -63,6 +85,10 @@
       (when (file-executable-p csls)
         (add-to-list 'eglot-server-programs
                      `((csharp-mode csharp-ts-mode) . (,csls))))
+      ;; Windows: csharp-ls launched via dotnet + DLL path
+      (when (and (eq system-type 'windows-nt) csls-dll (file-exists-p csls-dll))
+        (add-to-list 'eglot-server-programs
+                     `((csharp-mode csharp-ts-mode) . ("dotnet" ,csls-dll))))
       (when (file-executable-p kls)
         (add-to-list 'eglot-server-programs
                      `(kotlin-mode . (,kls)))))
@@ -261,14 +287,21 @@
          ("<S-f11>" . dape-step-out))
   :config
   (setq dape-request-timeout 30)
+  ;; Windows path normalization — dape defaults to Unix-style paths which
+  ;; breaks debug adapters expecting Windows drive-letter paths.
+  (when (eq system-type 'windows-nt)
+    (setq dape-normalize-path-separator 'windows))
   ;; netcoredbg — register if the bundled binary is present. The config is
   ;; a template; override :program / :cwd per project via `M-x dape' prompt.
-  (let ((ncdbg (expand-file-name "bin/netcoredbg/netcoredbg" user-emacs-directory)))
-    (when (file-executable-p ncdbg)
+  (let* ((ncdbg   (expand-file-name "bin/netcoredbg/netcoredbg" user-emacs-directory))
+         (ncdbg-win (expand-file-name "bin/netcoredbg/netcoredbg.exe" user-emacs-directory))
+         (ncdbg-path (or (and (file-executable-p ncdbg) ncdbg)
+                         (and (file-executable-p ncdbg-win) ncdbg-win))))
+    (when ncdbg-path
       (add-to-list 'dape-configs
                    `(netcoredbg-launch
                      modes (csharp-mode csharp-ts-mode)
-                     command ,ncdbg
+                     command ,ncdbg-path
                      command-args ("--interpreter=vscode")
                      :type "coreclr"
                      :request "launch"

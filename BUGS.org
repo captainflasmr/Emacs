@@ -10,4 +10,4 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO Modify for Windows deployment
+** DOING Modify for Windows deployment
