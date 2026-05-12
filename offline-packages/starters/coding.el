@@ -345,8 +345,8 @@
 (let ((old-ada (expand-file-name "local-packages/old-ada-mode" user-emacs-directory)))
   (when (file-directory-p old-ada)
     (add-to-list 'load-path old-ada)
-    (dolist (ext '("\\.gpr\\'" "\\.ada\\'" "\\.ads\\'" "\\.adb\\'"))
-      (add-to-list 'auto-mode-alist (cons ext 'ada-mode)))))
+    (use-package ada-mode
+      :mode ("\\.gpr\\'" "\\.ada\\'" "\\.ads\\'" "\\.adb\\'"))))
 
 ;;
 ;; -> treemacs — project sidebar with current-project toggle and enhanced config
