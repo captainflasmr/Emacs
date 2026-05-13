@@ -855,6 +855,14 @@ ORIG-FUN is the original command and ARGS are its arguments."
 
 (global-set-key (kbd "C-c m") #'mu4e)
 
+(advice-add 'mu4e-message :around
+            (defun my/mu4e-suppress-indexing (orig-fn &rest args)
+              "Suppress distracting indexing/retrieval progress messages from minibuffer."
+              (unless (and (stringp (car args))
+                          (string-match-p
+                           "\\`\\(?:Indexing\\|Retrieving mail\\)" (car args)))
+                (apply orig-fn args))))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -1109,7 +1117,7 @@ ORIG-FUN is the original command and ARGS are its arguments."
                  :hostName "localhost"
                  :port 5005)))
 
-(load-theme 'doom-old-hope t)
+(load-theme 'doom-gruvbox t)
 
 (use-package dwell-map
   :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/dwell-map")
