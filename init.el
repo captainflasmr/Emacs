@@ -823,6 +823,10 @@ ORIG-FUN is the original command and ARGS are its arguments."
         :key ?a)
       mu4e-bookmarks)
 
+(setq shr-use-colors nil
+      shr-use-fonts nil
+      mm-text-html-renderer 'shr)
+
 (remove-hook 'mu4e-view-rendered-hook 'mu4e-resize-linked-headers-window)
 (add-hook 'mu4e-view-rendered-hook
           (defun my/mu4e-balance-views ()
