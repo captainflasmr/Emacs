@@ -754,6 +754,7 @@ ORIG-FUN is the original command and ARGS are its arguments."
       mu4e-split-view 'vertical
       mu4e-context-policy 'pick-first
       mu4e-compose-context-policy 'ask
+      mu4e-search-results-limit 2000
       message-send-mail-function 'smtpmail-send-it)
 
 (setq mu4e-contexts
@@ -819,7 +820,7 @@ ORIG-FUN is the original command and ARGS are its arguments."
         :key ?i)
       mu4e-bookmarks)
 (push '(:name "Unified Archive"
-        :query "maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:/captainflasmr/[Gmail]/All Mail"
+        :query "maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:\"/captainflasmr/[Gmail]/All Mail\""
         :key ?a)
       mu4e-bookmarks)
 
