@@ -814,6 +814,19 @@ ORIG-FUN is the original command and ARGS are its arguments."
         ("/james/INBOX" . ?m)
         ("/captainflasmr/INBOX" . ?g)))
 
+;; (remove-hook 'mu4e-view-rendered-hook 'mu4e-resize-linked-headers-window)
+(defvar my/mu4e--focus-window nil)
+
+(advice-add 'mu4e-headers-view-message :before
+            (defun my/mu4e-save-focus-window (&rest _)
+              (setq my/mu4e--focus-window (selected-window))))
+
+(advice-add 'mu4e-view :after
+            (defun my/mu4e-restore-focus-window (&rest _)
+              (when (window-live-p my/mu4e--focus-window)
+                (select-window my/mu4e--focus-window 'norecord)
+                (setq my/mu4e--focus-window nil))))
+
 (global-set-key (kbd "C-c m") #'mu4e)
 
 (custom-set-variables
