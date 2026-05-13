@@ -815,6 +815,15 @@ ORIG-FUN is the original command and ARGS are its arguments."
         ("/captainflasmr/INBOX" . ?g)))
 
 ;; (remove-hook 'mu4e-view-rendered-hook 'mu4e-resize-linked-headers-window)
+(remove-hook 'mu4e-view-rendered-hook 'mu4e-resize-linked-headers-window)
+(add-hook 'mu4e-view-rendered-hook
+          (defun my/mu4e-balance-views ()
+            (when (and (eq mu4e-split-view 'vertical)
+                       (mu4e-current-buffer-type-p 'view))
+              (when-let* ((win (get-buffer-window (current-buffer) t)))
+                (let ((target (floor (/ (frame-width) 2))))
+                  (window-resize win (- target (window-total-width win)) t nil t))))))
+
 (defvar my/mu4e--focus-window nil)
 
 (advice-add 'mu4e-headers-view-message :before
