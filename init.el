@@ -815,13 +815,17 @@ ORIG-FUN is the original command and ARGS are its arguments."
         ("/james/INBOX" . ?m)
         ("/captainflasmr/INBOX" . ?g)))
 
-(push '(:name "Unified Inbox"
-        :query "maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX"
-        :key ?i)
-      mu4e-bookmarks)
 (push '(:name "Unified Archive"
         :query "maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:\"/captainflasmr/[Gmail]/All Mail\""
         :key ?a)
+      mu4e-bookmarks)
+(push '(:name "Unified Sent"
+        :query "maildir:/jimbob/Sent OR maildir:/james/Sent OR maildir:\"/captainflasmr/[Gmail]/Sent Mail\""
+        :key ?s)
+      mu4e-bookmarks)
+(push '(:name "Unified Inbox"
+        :query "maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX"
+        :key ?b)
       mu4e-bookmarks)
 
 (setq shr-use-colors nil
