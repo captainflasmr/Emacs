@@ -16,6 +16,7 @@ gruvbox-theme
 highlight-indent-guides
 htmlize
 i3wm-config-mode
+markdown-mode
 modus-themes
 ollama-buddy
 package-lint

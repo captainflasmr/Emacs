@@ -1593,3 +1593,5 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
             (let ((default-directory gpr-dir))
               (eglot-ensure))))
       (user-error "No .gpr file; ada_language_server needs a project file"))))
+
+(use-package markdown-mode)

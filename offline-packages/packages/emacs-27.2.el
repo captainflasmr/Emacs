@@ -15,6 +15,7 @@ highlight-indent-guides
 htmlize
 i3wm-config-mode
 kotlin-mode
+markdown-mode
 protobuf-mode
 selected-window-accent-mode
 simply-annotate
