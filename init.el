@@ -746,7 +746,7 @@ ORIG-FUN is the original command and ARGS are its arguments."
 (setq mu4e-maildir "~/Maildir"
       mu4e-attachment-dir "~/Downloads"
       mu4e-change-filenames-when-moving t
-      mu4e-update-interval 300
+      mu4e-update-interval 120
       mu4e-get-mail-command "mbsync -a"
       mu4e-headers-auto-update t
       mu4e-view-show-images t
