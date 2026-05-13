@@ -10,10 +10,6 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO add automated smoke tests for starter configs
-
-The =build-toolkit.sh= smoke test only validates the rendered =init.el=. The starter configs (=starters/emacs-*.el=, =starters/coding.el=) are never loaded during the test. A basic batch load of each starter under the corresponding Emacs version would catch =void-function= / =wrong-type-argument= regressions before deployment.
-
 ** TODO org-bootstrap-publish load-path is fragile in init.el.in template
 
 The rendered =init.el= hardcodes the local-packages subdirectory path for =org-bootstrap-publish=. If the directory layout changes, the =require= fails silently. Consider adding a guard in =init.el.in= that checks for the directory before adding to =load-path=.
