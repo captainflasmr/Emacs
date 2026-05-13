@@ -740,80 +740,79 @@ ORIG-FUN is the original command and ARGS are its arguments."
 ;;
 ;; -> mu4e
 ;;
-(defun my/mu4e-configure ()
-  (setq mu4e-maildir "~/Maildir"
-        mu4e-attachment-dir "~/Downloads"
-        mu4e-change-filenames-when-moving t
-        mu4e-update-interval 300
-        mu4e-get-mail-command "mbsync -a"
-        mu4e-headers-auto-update t
-        mu4e-view-show-images t
-        mu4e-view-show-addresses t
-        message-send-mail-function 'smtpmail-send-it)
+(add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
+(require 'mu4e)
 
-  (setq mu4e-contexts
-        `(,(make-mu4e-context
-            :name "jimbob"
-            :enter-func (lambda () (mu4e-message "Switch to jimbob"))
-            :leave-func (lambda () (mu4e-message "Leave jimbob"))
-            :match-func (lambda (msg)
-                          (when msg
-                            (string-prefix-p "/jimbob" (mu4e-message-field msg :maildir))))
-            :vars `((user-mail-address . "jimbob@dyerdwelling.family")
-                    (user-full-name . "james dyer")
-                    (mu4e-sent-folder . "/jimbob/Sent")
-                    (mu4e-drafts-folder . "/jimbob/Drafts")
-                    (mu4e-trash-folder . "/jimbob/Trash")
-                    (mu4e-refile-folder . "/jimbob/Archive")
-                    (smtpmail-smtp-user . "jimbob@dyerdwelling.family")
-                    (smtpmail-smtp-server . "smtp.migadu.com")
-                    (smtpmail-smtp-service . 465)
-                    (smtpmail-stream-type . ssl)))
-          ,(make-mu4e-context
-            :name "james"
-            :enter-func (lambda () (mu4e-message "Switch to james"))
-            :leave-func (lambda () (mu4e-message "Leave james"))
-            :match-func (lambda (msg)
-                          (when msg
-                            (string-prefix-p "/james" (mu4e-message-field msg :maildir))))
-            :vars `((user-mail-address . "james@dyerdwelling.family")
-                    (user-full-name . "james dyer")
-                    (mu4e-sent-folder . "/james/Sent")
-                    (mu4e-drafts-folder . "/james/Drafts")
-                    (mu4e-trash-folder . "/james/Trash")
-                    (mu4e-refile-folder . "/james/Archive")
-                    (smtpmail-smtp-user . "james@dyerdwelling.family")
-                    (smtpmail-smtp-server . "smtp.migadu.com")
-                    (smtpmail-smtp-service . 465)
-                    (smtpmail-stream-type . ssl)))
-          ,(make-mu4e-context
-            :name "captainflasmr"
-            :enter-func (lambda () (mu4e-message "Switch to Gmail"))
-            :leave-func (lambda () (mu4e-message "Leave Gmail"))
-            :match-func (lambda (msg)
-                          (when msg
-                            (string-prefix-p "/captainflasmr" (mu4e-message-field msg :maildir))))
-            :vars `((user-mail-address . "captainflasmr@gmail.com")
-                    (user-full-name . "james dyer")
-                    (mu4e-sent-folder . "/captainflasmr/[Gmail]/Sent Mail")
-                    (mu4e-drafts-folder . "/captainflasmr/[Gmail]/Drafts")
-                    (mu4e-trash-folder . "/captainflasmr/[Gmail]/Trash")
-                    (mu4e-refile-folder . "/captainflasmr/[Gmail]/All Mail")
-                    (smtpmail-smtp-user . "captainflasmr@gmail.com")
-                    (smtpmail-smtp-server . "smtp.gmail.com")
-                    (smtpmail-smtp-service . 587)
-                    (smtpmail-stream-type . starttls))))
-  (setq mu4e-context-policy 'pick-first
-        mu4e-compose-context-policy 'ask)
-  (setq mu4e-maildir-shortcuts
-        '(("/jimbob/INBOX" . ?j)
-          ("/james/INBOX" . ?m)
-          ("/captainflasmr/INBOX" . ?g))))
+(setq mu4e-maildir "~/Maildir"
+      mu4e-attachment-dir "~/Downloads"
+      mu4e-change-filenames-when-moving t
+      mu4e-update-interval 300
+      mu4e-get-mail-command "mbsync -a"
+      mu4e-headers-auto-update t
+      mu4e-view-show-images t
+      mu4e-view-show-addresses t
+      mu4e-split-view 'vertical
+      mu4e-context-policy 'pick-first
+      mu4e-compose-context-policy 'ask
+      message-send-mail-function 'smtpmail-send-it)
 
-(use-package mu4e
-  :ensure nil
-  :load-path "/usr/share/emacs/site-lisp/mu4e"
-  :config (my/mu4e-configure)))
+(setq mu4e-contexts
+      `(,(make-mu4e-context
+          :name "jimbob"
+          :enter-func (lambda () (mu4e-message "Switch to jimbob"))
+          :leave-func (lambda () (mu4e-message "Leave jimbob"))
+          :match-func (lambda (msg)
+                        (when msg
+                          (string-prefix-p "/jimbob" (mu4e-message-field msg :maildir))))
+          :vars `((user-mail-address . "jimbob@dyerdwelling.family")
+                  (user-full-name . "james dyer")
+                  (mu4e-sent-folder . "/jimbob/Sent")
+                  (mu4e-drafts-folder . "/jimbob/Drafts")
+                  (mu4e-trash-folder . "/jimbob/Trash")
+                  (mu4e-refile-folder . "/jimbob/Archive")
+                  (smtpmail-smtp-user . "jimbob@dyerdwelling.family")
+                  (smtpmail-smtp-server . "smtp.migadu.com")
+                  (smtpmail-smtp-service . 465)
+                  (smtpmail-stream-type . ssl)))
+        ,(make-mu4e-context
+          :name "james"
+          :enter-func (lambda () (mu4e-message "Switch to james"))
+          :leave-func (lambda () (mu4e-message "Leave james"))
+          :match-func (lambda (msg)
+                        (when msg
+                          (string-prefix-p "/james" (mu4e-message-field msg :maildir))))
+          :vars `((user-mail-address . "james@dyerdwelling.family")
+                  (user-full-name . "james dyer")
+                  (mu4e-sent-folder . "/james/Sent")
+                  (mu4e-drafts-folder . "/james/Drafts")
+                  (mu4e-trash-folder . "/james/Trash")
+                  (mu4e-refile-folder . "/james/Archive")
+                  (smtpmail-smtp-user . "james@dyerdwelling.family")
+                  (smtpmail-smtp-server . "smtp.migadu.com")
+                  (smtpmail-smtp-service . 465)
+                  (smtpmail-stream-type . ssl)))
+        ,(make-mu4e-context
+          :name "captainflasmr"
+          :enter-func (lambda () (mu4e-message "Switch to Gmail"))
+          :leave-func (lambda () (mu4e-message "Leave Gmail"))
+          :match-func (lambda (msg)
+                        (when msg
+                          (string-prefix-p "/captainflasmr" (mu4e-message-field msg :maildir))))
+          :vars `((user-mail-address . "captainflasmr@gmail.com")
+                  (user-full-name . "james dyer")
+                  (mu4e-sent-folder . "/captainflasmr/[Gmail]/Sent Mail")
+                  (mu4e-drafts-folder . "/captainflasmr/[Gmail]/Drafts")
+                  (mu4e-trash-folder . "/captainflasmr/[Gmail]/Trash")
+                  (mu4e-refile-folder . "/captainflasmr/[Gmail]/All Mail")
+                  (smtpmail-smtp-user . "captainflasmr@gmail.com")
+                  (smtpmail-smtp-server . "smtp.gmail.com")
+                  (smtpmail-smtp-service . 587)
+                  (smtpmail-stream-type . starttls)))))
+
+(setq mu4e-maildir-shortcuts
+      '(("/jimbob/INBOX" . ?j)
+        ("/james/INBOX" . ?m)
+        ("/captainflasmr/INBOX" . ?g)))
 
 (global-set-key (kbd "C-c m") #'mu4e)
 
