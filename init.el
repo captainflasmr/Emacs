@@ -814,7 +814,15 @@ ORIG-FUN is the original command and ARGS are its arguments."
         ("/james/INBOX" . ?m)
         ("/captainflasmr/INBOX" . ?g)))
 
-;; (remove-hook 'mu4e-view-rendered-hook 'mu4e-resize-linked-headers-window)
+(push '(:name "Unified Inbox"
+        :query "maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX"
+        :key ?i)
+      mu4e-bookmarks)
+(push '(:name "Unified Archive"
+        :query "maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:/captainflasmr/[Gmail]/All Mail"
+        :key ?a)
+      mu4e-bookmarks)
+
 (remove-hook 'mu4e-view-rendered-hook 'mu4e-resize-linked-headers-window)
 (add-hook 'mu4e-view-rendered-hook
           (defun my/mu4e-balance-views ()
