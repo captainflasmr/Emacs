@@ -21,6 +21,7 @@
 
 (define-abbrev-table 'global-abbrev-table
   '(
+    ("jb" "james.dyer@baesystems.com" nil :count 0)
     ("jT" "" (lambda nil (interactive) (insert (format-time-string "%Y%m%d%H%M%S"))) :count 0)
     ("ja" "" (lambda nil (interactive) (insert (format-time-string "<%Y-%m-%d>"))) :count 1)
     ("ji" "(interactive)" nil :count 1)
