@@ -11,5 +11,3 @@ This document contains the current bugs/improvements, this is just for me mainly
 * Bugs/Improvements
 
 ** DOING Modify for Windows deployment
-
-** TODO mail send two j's
