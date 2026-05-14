@@ -473,3 +473,33 @@ On open, keep focus in the original window."
             (add-hook 'post-command-hook
                       #'my/treemacs-update-current-line nil t)
             (my/treemacs-update-current-line)))
+
+;;
+;; -> vc-shuttle — override vc-git-push/pull for air-gapped VM workflow
+;; (calls local scripts on the VM guest that copy repo data to/from a
+;; shared folder on the host machine, since there's no remote to push to).
+;;
+(defun my/vc-git-push-shuttle (_file-list &rest _args)
+  "Override vc-push to run a local sync script instead of git push."
+  (interactive)
+  (let ((script-path "/home/jdyer/bin/out"))
+    (if (file-executable-p script-path)
+        (progn
+          (message "Syncing source TO shared folder...")
+          (async-shell-command script-path "*out*"))
+      (error "Sync script not found or not executable at %s"
+             script-path))))
+
+(defun my/vc-git-pull-shuttle (_file-list &rest _args)
+  "Override vc-pull to run a local sync script instead of git pull."
+  (interactive)
+  (let ((script-path "/home/jdyer/bin/in"))
+    (if (file-executable-p script-path)
+        (progn
+          (message "Syncing source FROM shared folder...")
+          (async-shell-command script-path "*in*"))
+      (error "Sync script not found or not executable at %s"
+             script-path))))
+
+(advice-add 'vc-git-push :override #'my/vc-git-push-shuttle)
+(advice-add 'vc-git-pull :override #'my/vc-git-pull-shuttle)
