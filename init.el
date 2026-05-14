@@ -962,8 +962,15 @@ ORIG-FUN is the original command and ARGS are its arguments."
           ;; :colorProvider                    ; Decorate color references
           ;; :foldingRangeProvider             ; Fold regions of buffer
           ;; :executeCommandProvider           ; Execute custom commands
-          ;; :inlayHintProvider                ; Inlay hints
-          )))
+           ;; :inlayHintProvider                ; Inlay hints
+           )))
+
+(setq-default eglot-workspace-configuration
+  '((java . (:import (:gradle (:offline (:enabled t)
+                              :checksums (:verify :json-false)
+                              :arguments "--offline")
+                     :autobuild (:enabled :json-false))))))
+(setq jsonrpc-default-request-timeout 120)
 
 (use-package dumb-jump
   :ensure t
@@ -974,12 +981,7 @@ ORIG-FUN is the original command and ARGS are its arguments."
   (dumb-jump-selector 'completing-read)
   :config
   ;; Prepend globally so dumb-jump beats the default etags backend.
-  ;; Eglot (when active) registers buffer-locally and still runs first,
-  ;; since buffer-local hook functions precede global ones.
   (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
-
-;; xref show-definitions-function is set in Emacs-vanilla/xref-core
-;; (memoization + live-preview wrapper); applies to all backends.
 
 
 ;; Ada support for dumb-jump (not built-in).

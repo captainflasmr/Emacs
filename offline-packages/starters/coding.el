@@ -119,8 +119,11 @@
 
 ;; Minibuffer picker for M-. when multiple definitions match; keep the
 ;; `*xref*' buffer for M-? / reference browsing (better for bulk review).
-(setq xref-show-definitions-function #'xref-show-definitions-completing-read
-      xref-show-xrefs-function       #'xref-show-definitions-buffer)
+;; -- commented out: Emacs-vanilla/xref-core sets
+;; `my/xref-show-definitions-remember' which wraps
+;; `xref-show-definitions-completing-read' with memoization + preview.
+;; (setq xref-show-definitions-function #'xref-show-definitions-completing-read
+;;       xref-show-xrefs-function       #'xref-show-definitions-buffer)
 
 ;; Ada support for dumb-jump (not built-in). Case-sensitive: works when the
 ;; codebase is consistent about casing. Covers subprograms, types, packages
