@@ -224,7 +224,7 @@
 (add-to-list 'auto-mode-alist '("/sway/.*config.*/" . i3wm-config-mode))
 (add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode))
 ;; (cl-loop for ext in '("\\.gpr$" "\\.ada$" "\\.ads$" "\\.adb$")
-         ;; do (add-to-list 'auto-mode-alist (cons ext 'ada-light-mode)))
+;; do (add-to-list 'auto-mode-alist (cons ext 'ada-light-mode)))
 
 ;;
 ;; -> custom-settings
@@ -759,23 +759,6 @@ ORIG-FUN is the original command and ARGS are its arguments."
 
 (setq mu4e-contexts
       `(,(make-mu4e-context
-          :name "jimbob"
-          :enter-func (lambda () (mu4e-message "Switch to jimbob"))
-          :leave-func (lambda () (mu4e-message "Leave jimbob"))
-          :match-func (lambda (msg)
-                        (when msg
-                          (string-prefix-p "/jimbob" (mu4e-message-field msg :maildir))))
-          :vars `((user-mail-address . "jimbob@dyerdwelling.family")
-                  (user-full-name . "james dyer")
-                  (mu4e-sent-folder . "/jimbob/Sent")
-                  (mu4e-drafts-folder . "/jimbob/Drafts")
-                  (mu4e-trash-folder . "/jimbob/Trash")
-                  (mu4e-refile-folder . "/jimbob/Archive")
-                  (smtpmail-smtp-user . "jimbob@dyerdwelling.family")
-                  (smtpmail-smtp-server . "smtp.migadu.com")
-                  (smtpmail-smtp-service . 465)
-                  (smtpmail-stream-type . ssl)))
-        ,(make-mu4e-context
           :name "james"
           :enter-func (lambda () (mu4e-message "Switch to james"))
           :leave-func (lambda () (mu4e-message "Leave james"))
@@ -789,6 +772,23 @@ ORIG-FUN is the original command and ARGS are its arguments."
                   (mu4e-trash-folder . "/james/Trash")
                   (mu4e-refile-folder . "/james/Archive")
                   (smtpmail-smtp-user . "james@dyerdwelling.family")
+                  (smtpmail-smtp-server . "smtp.migadu.com")
+                  (smtpmail-smtp-service . 465)
+                  (smtpmail-stream-type . ssl)))
+        ,(make-mu4e-context
+          :name "bob"
+          :enter-func (lambda () (mu4e-message "Switch to jimbob"))
+          :leave-func (lambda () (mu4e-message "Leave jimbob"))
+          :match-func (lambda (msg)
+                        (when msg
+                          (string-prefix-p "/jimbob" (mu4e-message-field msg :maildir))))
+          :vars `((user-mail-address . "jimbob@dyerdwelling.family")
+                  (user-full-name . "james dyer")
+                  (mu4e-sent-folder . "/jimbob/Sent")
+                  (mu4e-drafts-folder . "/jimbob/Drafts")
+                  (mu4e-trash-folder . "/jimbob/Trash")
+                  (mu4e-refile-folder . "/jimbob/Archive")
+                  (smtpmail-smtp-user . "jimbob@dyerdwelling.family")
                   (smtpmail-smtp-server . "smtp.migadu.com")
                   (smtpmail-smtp-service . 465)
                   (smtpmail-stream-type . ssl)))
@@ -816,16 +816,16 @@ ORIG-FUN is the original command and ARGS are its arguments."
         ("/captainflasmr/INBOX" . ?g)))
 
 (push '(:name "Unified Archive"
-        :query "maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:\"/captainflasmr/[Gmail]/All Mail\""
-        :key ?a)
+              :query "maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:\"/captainflasmr/[Gmail]/All Mail\""
+              :key ?a)
       mu4e-bookmarks)
 (push '(:name "Unified Sent"
-        :query "maildir:/jimbob/Sent OR maildir:/james/Sent OR maildir:\"/captainflasmr/[Gmail]/Sent Mail\""
-        :key ?s)
+              :query "maildir:/jimbob/Sent OR maildir:/james/Sent OR maildir:\"/captainflasmr/[Gmail]/Sent Mail\""
+              :key ?s)
       mu4e-bookmarks)
 (push '(:name "Unified Inbox"
-        :query "maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX"
-        :key ?b)
+              :query "maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX"
+              :key ?b)
       mu4e-bookmarks)
 
 (setq shr-use-colors nil
@@ -859,8 +859,8 @@ ORIG-FUN is the original command and ARGS are its arguments."
             (defun my/mu4e-suppress-indexing (orig-fn &rest args)
               "Suppress distracting indexing/retrieval progress messages from minibuffer."
               (unless (and (stringp (car args))
-                          (string-match-p
-                           "\\`\\(?:Indexing\\|Retrieving mail\\)" (car args)))
+                           (string-match-p
+                            "\\`\\(?:Indexing\\|Retrieving mail\\)" (car args)))
                 (apply orig-fn args))))
 
 (custom-set-variables
@@ -962,14 +962,14 @@ ORIG-FUN is the original command and ARGS are its arguments."
           ;; :colorProvider                    ; Decorate color references
           ;; :foldingRangeProvider             ; Fold regions of buffer
           ;; :executeCommandProvider           ; Execute custom commands
-           ;; :inlayHintProvider                ; Inlay hints
-           )))
+          ;; :inlayHintProvider                ; Inlay hints
+          )))
 
 (setq-default eglot-workspace-configuration
-  '((java . (:import (:gradle (:offline (:enabled t)
-                              :checksums (:verify :json-false)
-                              :arguments "--offline")
-                     :autobuild (:enabled :json-false))))))
+              '((java . (:import (:gradle (:offline (:enabled t)
+                                                    :checksums (:verify :json-false)
+                                                    :arguments "--offline")
+                                          :autobuild (:enabled :json-false))))))
 (setq jsonrpc-default-request-timeout 120)
 
 (use-package dumb-jump
@@ -1544,7 +1544,7 @@ Each entry is prefixed with its project directory name thanks to
   "Find the nearest .gpr file upward from DIR (defaults to `default-directory')."
   (let ((dir (or dir default-directory)))
     (locate-dominating-file dir
-      (lambda (d) (car (directory-files d t "\\.gpr\\'"))))))
+                            (lambda (d) (car (directory-files d t "\\.gpr\\'"))))))
 
 (defun my/ada-create-gpr (project-name &optional main-file)
   "Create PROJECT-NAME.gpr with an optional MAIN-FILE entry point."
