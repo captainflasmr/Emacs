@@ -10,4 +10,6 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
+** TODO mu4e, map f to Enter to display message in *mu4e-headers*
+
 ** DOING Modify for Windows deployment
