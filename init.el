@@ -855,6 +855,8 @@ ORIG-FUN is the original command and ARGS are its arguments."
 
 (global-set-key (kbd "C-c m") #'mu4e)
 
+(define-key mu4e-headers-mode-map (kbd "f") #'mu4e-headers-view-message)
+
 (advice-add 'mu4e-message :around
             (defun my/mu4e-suppress-indexing (orig-fn &rest args)
               "Suppress distracting indexing/retrieval progress messages from minibuffer."
@@ -1119,20 +1121,18 @@ ORIG-FUN is the original command and ARGS are its arguments."
                  :hostName "localhost"
                  :port 5005)))
 
-(load-theme 'doom-gruvbox t)
-
 (use-package dwell-map
   :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/dwell-map")
 
 (dwell-map-mode 1)
 
-(use-package diff-hl
-  :ensure t
-  :config
-  (global-diff-hl-mode 1)
-  (diff-hl-flydiff-mode 1)
-  (unless (display-graphic-p)
-    (diff-hl-margin-mode 1)))
+;; (use-package diff-hl
+;;   :ensure t
+;;   :config
+;;   (global-diff-hl-mode 1)
+;;   (diff-hl-flydiff-mode 1)
+;;   (unless (display-graphic-p)
+;;     (diff-hl-margin-mode 1)))
 
 (use-package protobuf-mode
   :mode "\\.proto\\'")
@@ -1459,6 +1459,8 @@ On open, keep focus in the original window."
 ;; (setq diff-minimap-stipple-pattern 'dots-sparse)
 ;; (setq diff-minimap-colour-source 'diff-hl)
 ;; (setq diff-minimap-font-scale 0.2)
+(setq diff-minimap-diff-backend 'vc)
+
 
 ;;
 ;; -> bugs-overview — collect BUGS.org files across project areas
@@ -1597,3 +1599,5 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
       (user-error "No .gpr file; ada_language_server needs a project file"))))
 
 (use-package markdown-mode)
+
+(load-theme 'deeper-blue t)
