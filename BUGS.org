@@ -10,4 +10,8 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
+** TODO increase fido vertical size
+
+** TODO fido vertical tab to completion window
+
 ** DOING Modify for Windows deployment
