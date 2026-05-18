@@ -871,7 +871,7 @@ ORIG-FUN is the original command and ARGS are its arguments."
 (use-package magit
   :bind ("C-x g" . magit-status)
   :config
-  (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
+  (setq magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
   (setq magit-refresh-status-buffer t)
   (setq magit-section-initial-visibility-alist
         '((untracked . show)
