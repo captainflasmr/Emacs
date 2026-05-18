@@ -865,6 +865,23 @@ ORIG-FUN is the original command and ARGS are its arguments."
                             "\\`\\(?:Indexing\\|Retrieving mail\\)" (car args)))
                 (apply orig-fn args))))
 
+;;
+;; -> magit
+;;
+(use-package magit
+  :bind ("C-x g" . magit-status)
+  :config
+  (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
+  (setq magit-refresh-status-buffer t)
+  (setq magit-section-initial-visibility-alist
+        '((untracked . show)
+          (stashes . hide)))
+  (setq magit-diff-refine-hunk 'all)
+  (define-key magit-status-mode-map (kbd "C-w") nil))
+
+(use-package forge
+  :after magit)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -874,9 +891,9 @@ ORIG-FUN is the original command and ARGS are its arguments."
  '(package-selected-packages
    '(agent-shell async csv-mode dape demap diff-hl dired-sidebar
                  doom-themes dumb-jump ef-themes elpa-mirror
-                 gruvbox-theme htmlize i3wm-config-mode kotlin-mode
-                 org-social ox-hugo package-lint protobuf-mode
-                 timu-caribbean-theme timu-rouge-theme
+                 forge gruvbox-theme htmlize i3wm-config-mode
+                 kotlin-mode magit org-social ox-hugo package-lint
+                 protobuf-mode timu-caribbean-theme timu-rouge-theme
                  timu-spacegrey-theme treemacs web-mode yaml-mode
                  ztree))
  '(warning-suppress-log-types '((frameset)))
@@ -1451,7 +1468,6 @@ On open, keep focus in the original window."
 (add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/diff-minimap")
 (require 'diff-minimap)
 
-;; (setq diff-minimap-side 'left)
 
 ;; (setq diff-minimap-viewport-style 'filled)
 ;; (setq diff-minimap-viewport-style 'edge-bar)
@@ -1460,6 +1476,7 @@ On open, keep focus in the original window."
 ;; (setq diff-minimap-colour-source 'diff-hl)
 ;; (setq diff-minimap-font-scale 0.2)
 (setq diff-minimap-diff-backend 'vc)
+;; (add-hook 'ediff-startup-hook #'diff-minimap-ediff-setup)
 
 
 ;;
@@ -1473,6 +1490,7 @@ On open, keep focus in the original window."
         (expand-file-name "~/.emacs.d/offline-packages")
         (expand-file-name "~/.emacs.d/offline-packages/local-packages")
         (expand-file-name "~/source/repos")
+        (expand-file-name "~/.config/sway")
         (expand-file-name "~/source")
         (expand-file-name "~/bin"))
   "Root directories to scan for BUGS.org files.")

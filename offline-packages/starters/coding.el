@@ -173,6 +173,20 @@
     (diff-hl-margin-mode 1)))
 
 ;;
+;; -> magit — porcelain Git interface
+;;
+(use-package magit
+  :bind ("C-x g" . magit-status)
+  :config
+  (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
+  (setq magit-refresh-status-buffer t)
+  (setq magit-section-initial-visibility-alist
+        '((untracked . show)
+          (stashes . hide)))
+  (setq magit-diff-refine-hunk 'all)
+  (define-key magit-status-mode-map (kbd "C-w") nil))
+
+;;
 ;; -> eldoc — signature hints in echo area, built-in.
 ;;
 (use-package eldoc
