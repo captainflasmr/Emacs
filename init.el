@@ -523,7 +523,7 @@
   :ensure nil
   :config
   (setq-default ztree-diff-filter-list
-                '("\.class" "^tmp$"
+                '("\.class" "^tmp$" "^.idea$"
                   "build" "\.dll" "\.iso" "\.xmp" "\.cache" "\.gnupg" "\.local"
                   "\.mozilla" "\.thunderbird" "\.wine" "\.mp3" "\.mp4" "\.arpack"
                   "\.git" "^Volume$" "^Games$" "^cache$" "^chromium$" "^elpa$" "^nas$"
@@ -572,13 +572,61 @@
 
 (with-eval-after-load 'ztree
 
+  (define-key ztree-mode-map (kbd "u") #'ztree-previous-line)
   (define-key ztree-mode-map (kbd "n") #'ztree-next-line)
   (define-key ztree-mode-map (kbd "p") #'ztree-previous-line)
+  (define-key ztree-mode-map (kbd "f") #'ztree-diff-view-file)
+  (define-key ztree-mode-map (kbd "^") #'ztree-move-up-in-tree)
+  (define-key ztree-mode-map (kbd "=") #'my/ztree-diff-ediff)
+  (define-key ztree-mode-map (kbd "e") #'my/ztree-diff-ediff)
+  (define-key ztree-mode-map (kbd "w") #'my/ztree-copy-filename-as-kill)
+  (defun my/ztree-toggle-current-node ()
+    "Toggle expand/collapse on the directory at point."
+    (interactive)
+    (let* ((line (line-number-at-pos))
+           (node (ztree-find-node-in-line line)))
+      (when (and node (ztree-node-expandable-p node))
+        (ztree-toggle-expand-state node)
+        (let ((current-pos (window-start)))
+          (ztree-refresh-buffer line)
+          (set-window-start (selected-window) current-pos)))))
+
+  (defun my/ztree-copy-filename-as-kill (&optional full-path)
+    "Copy the filename at point to the kill ring.
+With prefix argument, copy the full absolute path.
+Like `dired-copy-filename-as-kill' but for ztree-diff."
+    (interactive "P")
+    (let ((found (ztree-find-node-at-point)))
+      (unless found
+        (user-error "No file at point"))
+      (let* ((node (car found))
+             (side (cdr found))
+             (path (if (eq side 'left)
+                       (ztree-diff-node-left-path node)
+                     (ztree-diff-node-right-path node))))
+        (unless path
+          (user-error "No file path on this side"))
+        (let ((name (if full-path
+                        (expand-file-name path)
+                      (file-name-nondirectory path))))
+          (kill-new name)
+          (message "%s" name)))))
+
+  (defun my/ztree-diff-ediff ()
+    "Run ediff on the two sides of the file at point."
+    (interactive)
+    (let ((found (ztree-find-node-at-point)))
+      (when found
+        (let* ((node (car found))
+               (left (ztree-diff-node-left-path node))
+               (right (ztree-diff-node-right-path node)))
+          (if (and left right)
+              (ztree-diff-ediff left right)
+            (message "File only exists on one side; nothing to ediff"))))))
 
   ;; Preserve point in ztree buffers when switching tab history
-  ;; Some window-configuration changes (eg. `tab-bar-history-back') can
-  ;; redisplay buffers and reset their point. Save ztree buffer points
-  ;; before the history change and restore them for visible windows after.
+  ;; Save points before `ztree-diff-view-file' opens a file (while the
+  ;; cursor is still in ztree), then restore after tab history switches.
   (defun my/ztree-save-all-points ()
     "Save point and window-start for all `ztree-mode' buffers." 
     (dolist (buf (buffer-list))
@@ -603,16 +651,11 @@
                          (integerp my/ztree-saved-window-start))
                 (set-window-start win (min my/ztree-saved-window-start (point-max))))))))))
 
-  (defun my/ztree--around-tab-history (orig-fun &rest args)
-    "Save/restore ztree points around tab history commands.
-ORIG-FUN is the original command and ARGS are its arguments."
-    (my/ztree-save-all-points)
-    (prog1
-        (apply orig-fun args)
-      (my/ztree-restore-visible-points)))
-
-  (advice-add 'tab-bar-history-back :around #'my/ztree--around-tab-history)
-  (advice-add 'tab-bar-history-forward :around #'my/ztree--around-tab-history))
+  (advice-add 'ztree-diff-view-file :before #'my/ztree-save-all-points)
+  (advice-add 'ztree-diff-simple-diff-files :before #'my/ztree-save-all-points)
+  (advice-add 'ztree-diff-ediff :before (lambda (&rest _) (my/ztree-save-all-points)))
+  (advice-add 'tab-bar-history-back :after #'my/ztree-restore-visible-points)
+  (advice-add 'tab-bar-history-forward :after #'my/ztree-restore-visible-points))
 
 ;; Remap ztree faces to sensible theme faces so ztree matches the current theme.
 (defun my/ztree-remap-faces ()
@@ -622,14 +665,18 @@ ORIG-FUN is the original command and ARGS are its arguments."
       (when (or (string-prefix-p "ztree" name)
                 (string-prefix-p "ztreep" name))
         (cond
-         ((string-match-p "add\\|added\\|add-face" name)
+         ((string-match-p "model-add-face\\|add-face$" name)
           (set-face-attribute fn nil :foreground 'unspecified :background 'unspecified :inherit 'success))
-         ((string-match-p "remove\\|del\\|delete\\|missing\\|removed" name)
+         ((string-match-p "model-diff-face" name)
           (set-face-attribute fn nil :foreground 'unspecified :background 'unspecified :inherit 'error))
-         ((string-match-p "diff\\|model-diff\\|equal" name)
+         ((string-match-p "model-ignored-face" name)
           (set-face-attribute fn nil :foreground 'unspecified :background 'unspecified :inherit 'font-lock-comment-face))
-         ((string-match-p "model\\|name" name)
+         ((string-match-p "model-normal-face" name)
+          (set-face-attribute fn nil :foreground 'unspecified :background 'unspecified :inherit 'default))
+         ((string-match-p "model-name" name)
           (set-face-attribute fn nil :foreground 'unspecified :background 'unspecified :inherit 'font-lock-function-name-face))
+         ((string-match-p "header-face" name)
+          (set-face-attribute fn nil :foreground 'unspecified :background 'unspecified :inherit 'font-lock-keyword-face))
          (t
           (set-face-attribute fn nil :foreground 'unspecified :background 'unspecified :inherit 'default)))))))
 
