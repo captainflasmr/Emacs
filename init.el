@@ -1527,23 +1527,59 @@ default \"BUGS\" so every entry shows which project it belongs to."
 
 (advice-add 'org-get-category :around #'my/org-category-bugs-filename)
 
+(defvar my/bugs--agenda-files nil
+  "BUGS.org files for agenda display.
+Set by `my/bugs' so that `org-agenda-redo' uses the same subset of
+agenda files instead of falling back to the global
+`org-agenda-files'.")
+
+(defvar my/bugs--agenda-prefix-format nil
+  "Prefix format for BUGS.org agenda display.
+Set by `my/bugs' so that redo preserves the column alignment
+between project, tags, and TODO headline.")
+
+(defun my/bugs--around-org-agenda-redo (orig-fun &rest args)
+  "Wrap `org-agenda-redo' to restore BUGS.org files and format.
+Without this advice, re-running the TODO agenda after `my/bugs'
+would use the global `org-agenda-files' and default prefix format,
+losing the BUGS.org scope and column alignment."
+  (if my/bugs--agenda-files
+      (let ((org-agenda-files my/bugs--agenda-files)
+            (org-agenda-prefix-format my/bugs--agenda-prefix-format))
+        (apply orig-fun args))
+    (apply orig-fun args)))
+
+(advice-add 'org-agenda-redo :around #'my/bugs--around-org-agenda-redo)
+
+(defun my/bugs--agenda-exit ()
+  "Clear saved BUGS.org agenda state on exit."
+  (setq my/bugs--agenda-files nil
+        my/bugs--agenda-prefix-format nil))
+
+(add-hook 'org-agenda-exit-hook #'my/bugs--agenda-exit)
+
 (defun my/bugs ()
   "Show all TODO entries across every BUGS.org file in project areas.
 Scans roots defined by `my/bugs-search-roots'.
 Each entry is prefixed with its project directory name thanks to
-`my/org-category-bugs-filename'."
+`my/org-category-bugs-filename'.
+Pressing \"g\" (or any redo command) in the agenda refreshes
+correctly using the same BUGS.org files and column alignment."
   (interactive)
   (let* ((fmt (if (listp org-agenda-prefix-format)
                   org-agenda-prefix-format
                 (default-value 'org-agenda-prefix-format)))
-         (org-agenda-files (my/bugs-files))
-         (org-agenda-prefix-format
-          (mapcar (lambda (item)
-                    (if (eq (car item) 'todo)
-                        (cons 'todo " %i %-20:c%?-12t% s")
-                      item))
-                  fmt)))
-    (org-todo-list)))
+         (bugs-prefix
+           (mapcar (lambda (item)
+                     (if (eq (car item) 'todo)
+                         (cons 'todo " %i %-20:c %-10t %s")
+                       item))
+                   fmt)))
+    (setq my/bugs--agenda-files   (my/bugs-files)
+          my/bugs--agenda-prefix-format bugs-prefix)
+    (let ((org-agenda-files my/bugs--agenda-files)
+          (org-agenda-prefix-format bugs-prefix))
+      (org-todo-list))))
 
 ;;
 ;; -> old-ada-mode loaded from local-packages/ if present (see coding guide
