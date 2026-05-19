@@ -519,9 +519,11 @@
 (my/sync-ui-accent-color "orange")
 
 (use-package ztree
+  :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/ztree"
+  :ensure nil
   :config
   (setq-default ztree-diff-filter-list
-                '(
+                '("\.class" "^tmp$"
                   "build" "\.dll" "\.iso" "\.xmp" "\.cache" "\.gnupg" "\.local"
                   "\.mozilla" "\.thunderbird" "\.wine" "\.mp3" "\.mp4" "\.arpack"
                   "\.git" "^Volume$" "^Games$" "^cache$" "^chromium$" "^elpa$" "^nas$"

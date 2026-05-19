@@ -30,6 +30,5 @@ timu-spacegrey-theme
 typescript-mode
 web-mode
 yaml-mode
-ztree
 kotlin-mode
 treemacs

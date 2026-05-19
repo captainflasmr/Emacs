@@ -27,4 +27,3 @@ treemacs
 typescript-mode
 web-mode
 yaml-mode
-ztree

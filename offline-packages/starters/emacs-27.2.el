@@ -120,6 +120,8 @@
 ;; -> ztree — directory/file tree diff
 ;;
 (use-package ztree
+  :load-path "~/.emacs.d/local-packages/ztree"
+  :ensure nil
   :config
   (setq-default ztree-diff-filter-list
                 '("build" "\\.dll" "\\.iso" "\\.cache" "\\.git"
