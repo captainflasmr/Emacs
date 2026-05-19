@@ -827,6 +827,10 @@ ORIG-FUN is the original command and ARGS are its arguments."
               :query "maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX"
               :key ?b)
       mu4e-bookmarks)
+(push '(:name "Unified Trash"
+              :query "maildir:/jimbob/Trash OR maildir:/james/Trash OR maildir:\"/captainflasmr/[Gmail]/Trash\""
+              :key ?t)
+      mu4e-bookmarks)
 
 (setq shr-use-colors nil
       shr-use-fonts nil
