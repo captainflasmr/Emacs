@@ -1246,6 +1246,17 @@ On open, keep focus in the original window."
 (unless noninteractive
   (require 'transient)
 
+  (defun my/obp-clear-cache ()
+    "Delete the local build cache for the current site."
+    (interactive)
+    (when-let ((dir (and org-bootstrap-publish-cache-dir
+                         (expand-file-name
+                          (secure-hash 'sha1
+                                       (expand-file-name org-bootstrap-publish-output-dir))
+                          org-bootstrap-publish-cache-dir))))
+      (delete-directory dir t)
+      (message "org-bootstrap-publish: cache cleared (%s)" dir)))
+
   (transient-define-prefix my/obp-menu ()
     "org-bootstrap-publish — site selector, serve, deploy."
     [[:description (lambda () (format "Active site: %s"
@@ -1266,9 +1277,11 @@ On open, keep focus in the original window."
                    ("P" "publish"      org-bootstrap-publish-publish)
                    ("A" "publish all"  org-bootstrap-publish-publish-all)
                    ("X" "abort"        org-bootstrap-publish-publish-abort)]
-     [:description "Cloudflare"
-                   ("c" "clean site…"  org-bootstrap-publish-clean-site)
-                   ("f" "flush cache…" org-bootstrap-publish-flush-site)]])
+      [:description "Cache"
+                    ("C" "clear build cache" my/obp-clear-cache)]
+      [:description "Cloudflare"
+                    ("c" "clean site…"  org-bootstrap-publish-clean-site)
+                    ("f" "flush cache…" org-bootstrap-publish-flush-site)]])
 
   (global-set-key (kbd "C-c W") #'my/obp-menu))
 

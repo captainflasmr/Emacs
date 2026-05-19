@@ -176,7 +176,7 @@
          (org-bootstrap-publish-background-blur . 4)
          (org-bootstrap-publish-background-opacity . 0.8)
          (org-bootstrap-publish-theme-overrides
-          . (("obp-sidebar-bg"    . "#65506f")
+          . (("obp-sidebar-bg"    . "#564160")
              ("obp-sidebar-fg"    . "#dcdcf2")
              ("obp-sidebar-muted" . "#8a8ab5")
              ("obp-accent"        . "#9b6ed1")
