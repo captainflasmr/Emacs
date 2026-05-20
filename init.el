@@ -1330,11 +1330,11 @@ On open, keep focus in the original window."
                    ("P" "publish"      org-bootstrap-publish-publish)
                    ("A" "publish all"  org-bootstrap-publish-publish-all)
                    ("X" "abort"        org-bootstrap-publish-publish-abort)]
-      [:description "Cache"
-                    ("C" "clear build cache" my/obp-clear-cache)]
-      [:description "Cloudflare"
-                    ("c" "clean site…"  org-bootstrap-publish-clean-site)
-                    ("f" "flush cache…" org-bootstrap-publish-flush-site)]])
+     [:description "Cache"
+                   ("C" "clear build cache" my/obp-clear-cache)]
+     [:description "Cloudflare"
+                   ("c" "clean site…"  org-bootstrap-publish-clean-site)
+                   ("f" "flush cache…" org-bootstrap-publish-flush-site)]])
 
   (global-set-key (kbd "C-c W") #'my/obp-menu))
 
@@ -1636,11 +1636,11 @@ correctly using the same BUGS.org files and column alignment."
                   org-agenda-prefix-format
                 (default-value 'org-agenda-prefix-format)))
          (bugs-prefix
-           (mapcar (lambda (item)
-                     (if (eq (car item) 'todo)
-                         (cons 'todo " %i %-20:c %-10t %s")
-                       item))
-                   fmt)))
+          (mapcar (lambda (item)
+                    (if (eq (car item) 'todo)
+                        (cons 'todo " %i %-20:c %-10t %s")
+                      item))
+                  fmt)))
     (setq my/bugs--agenda-files   (my/bugs-files)
           my/bugs--agenda-prefix-format bugs-prefix)
     (let ((org-agenda-files my/bugs--agenda-files)
@@ -1721,3 +1721,5 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 (use-package markdown-mode)
 
 (load-theme 'deeper-blue t)
+
+(setq ztree-indent-step 2)
