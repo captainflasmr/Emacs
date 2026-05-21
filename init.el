@@ -865,20 +865,20 @@ Like `dired-copy-filename-as-kill' but for ztree-diff."
         ("/captainflasmr/INBOX" . ?g)))
 
 (push '(:name "Unified Archive"
-              :query "maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:\"/captainflasmr/[Gmail]/All Mail\""
+              :query "(maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:\"/captainflasmr/[Gmail]/All Mail\")"
               :key ?a)
       mu4e-bookmarks)
 (push '(:name "Unified Sent"
-              :query "maildir:/jimbob/Sent OR maildir:/james/Sent OR maildir:\"/captainflasmr/[Gmail]/Sent Mail\""
+              :query "(maildir:/jimbob/Sent OR maildir:/james/Sent OR maildir:\"/captainflasmr/[Gmail]/Sent Mail\")"
               :key ?s)
       mu4e-bookmarks)
-(push '(:name "Unified Inbox"
-              :query "maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX"
-              :key ?b)
-      mu4e-bookmarks)
 (push '(:name "Unified Trash"
-              :query "maildir:/jimbob/Trash OR maildir:/james/Trash OR maildir:\"/captainflasmr/[Gmail]/Trash\""
+              :query "(maildir:/jimbob/Trash OR maildir:/james/Trash OR maildir:\"/captainflasmr/[Gmail]/Trash\")"
               :key ?t)
+      mu4e-bookmarks)
+(push '(:name "Unified Inbox"
+              :query "(maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX)"
+              :key ?b)
       mu4e-bookmarks)
 
 (setq shr-use-colors nil
@@ -1525,12 +1525,6 @@ On open, keep focus in the original window."
   (advice-add 'demap-open :after #'my/demap-preserve-window)
   (my/demap-preserve-window))
 
-;;
-;; -> visuals
-;;
-(set-frame-parameter nil 'alpha-background 90)
-(add-to-list 'default-frame-alist '(alpha-background . 90))
-
 (add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/diff-minimap")
 (require 'diff-minimap)
 
@@ -1723,3 +1717,19 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 (load-theme 'deeper-blue t)
 
 (setq ztree-indent-step 2)
+
+(add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/mild")
+(require 'mild)
+
+;; (setq mild-filter-globs '(".git" ".DS_Store" "*.elc" "*.pyc"))
+;; (setq mild-simple-comparison t)
+
+;; (setq mild-filter-groups '(("Backups" "*~" "*.bak")
+                           ;; ("Logs" "*.log" "logs/*")))
+
+;;
+;; -> visuals
+;;
+(set-frame-parameter nil 'alpha-background 90)
+(add-to-list 'default-frame-alist '(alpha-background . 90))
+
