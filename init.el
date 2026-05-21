@@ -806,6 +806,16 @@ Like `dired-copy-filename-as-kill' but for ztree-diff."
       mu4e-search-results-limit 2000
       message-send-mail-function 'smtpmail-send-it)
 
+;; This format gives you "YYYY-MM-DD HH:MM" (e.g., 2026-05-21 08:53)
+(setq mu4e-headers-date-format "%Y-%m-%d %H:%M")
+
+(setq mu4e-headers-fields
+      '((:date    . 17)    ; Date of the message
+        ;; (:flags   .  6)    ; Message flags (U, R, F, etc.)
+        (:from    . 22)    ; Sender name/email
+        (:subject . nil))) ; Subject line (nil tells it to use all remaining space)
+
+
 (setq mu4e-contexts
       `(,(make-mu4e-context
           :name "james"
@@ -1725,7 +1735,7 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 ;; (setq mild-simple-comparison t)
 
 ;; (setq mild-filter-groups '(("Backups" "*~" "*.bak")
-                           ;; ("Logs" "*.log" "logs/*")))
+;; ("Logs" "*.log" "logs/*")))
 
 ;;
 ;; -> visuals
