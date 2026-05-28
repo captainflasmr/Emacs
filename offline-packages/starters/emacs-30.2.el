@@ -78,17 +78,6 @@
   (dired-async-mode 1))
 
 ;;
-;; -> diff-hl — inline VCS indicators in fringe (or margin in TTY)
-;;
-(use-package diff-hl
-  ;; :hook (dired-mode . diff-hl-dired-mode) ; conflicts with emacs-solo git status overlays
-  :config
-  (global-diff-hl-mode 1)
-  (diff-hl-flydiff-mode 1)
-  (unless (display-graphic-p)
-    (diff-hl-margin-mode 1)))
-
-;;
 ;; -> selected-window-accent-mode — highlights the active window's borders
 ;;
 (use-package selected-window-accent-mode
@@ -324,27 +313,11 @@ Like `dired-copy-filename-as-kill' but for ztree-diff."
 (use-package org-bootstrap-publish :demand t)
 
 ;;
-;; -> windmove repeat map — h/j/k/l navigation repeats after C-M- prefix
-;;
-(put 'windmove-left  'repeat-map 'windmove-repeat-map)
-(put 'windmove-right 'repeat-map 'windmove-repeat-map)
-(put 'windmove-up    'repeat-map 'windmove-repeat-map)
-(put 'windmove-down  'repeat-map 'windmove-repeat-map)
-
-(defvar windmove-repeat-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "h") #'windmove-left)
-    (define-key map (kbd "j") #'windmove-down)
-    (define-key map (kbd "k") #'windmove-up)
-    (define-key map (kbd "l") #'windmove-right)
-    map))
-
-;;
 ;; -> quality-of-life
 ;;
 (setq recentf-max-menu-items 40
       recentf-max-saved-items 40
-      max-mini-window-height 6
+      max-mini-window-height 8
       tab-bar-auto-width-max '((120) 20))
 
 (when (fboundp 'repeat-mode) (repeat-mode 1))

@@ -76,17 +76,6 @@
   (dired-async-mode 1))
 
 ;;
-;; -> diff-hl — inline VCS indicators in fringe (or margin in TTY)
-;;
-(use-package diff-hl
-  ;; :hook (dired-mode . diff-hl-dired-mode) ; conflicts with emacs-solo git status overlays
-  :config
-  (global-diff-hl-mode 1)
-  (diff-hl-flydiff-mode 1)
-  (unless (display-graphic-p)
-    (diff-hl-margin-mode 1)))
-
-;;
 ;; -> selected-window-accent-mode — highlights the active window's borders
 ;;
 (use-package selected-window-accent-mode
@@ -309,4 +298,4 @@ Like `dired-copy-filename-as-kill' but for ztree-diff."
 ;;
 (setq recentf-max-menu-items 40
       recentf-max-saved-items 40
-      max-mini-window-height 6)
+      max-mini-window-height 8)

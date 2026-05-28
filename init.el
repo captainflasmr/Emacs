@@ -1724,12 +1724,17 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 
 (use-package markdown-mode)
 
-(load-theme 'deeper-blue t)
-
 (setq ztree-indent-step 2)
 
-(add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/mild")
-(require 'mild)
+(add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/emeld")
+(require 'emeld)
+
+(global-set-key (kbd "C-c z d") 'emeld-diff-dwim)
+(global-set-key (kbd "C-c z j") 'emeld-load-preset)
+(global-set-key (kbd "C-c z s") 'emeld-save-preset)
+(global-set-key (kbd "C-c z x") 'emeld-delete-preset)
+;; (setq emeld-benchmark t)
+;; (setq emeld-respect-gitignore t)
 
 ;; (setq mild-filter-globs '(".git" ".DS_Store" "*.elc" "*.pyc"))
 ;; (setq mild-simple-comparison t)
@@ -1743,3 +1748,7 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 (set-frame-parameter nil 'alpha-background 90)
 (add-to-list 'default-frame-alist '(alpha-background . 90))
 
+(load-theme 'doom-1337 t)
+
+;; $ emacs --batch --eval '(progn (find-file "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld/emeld.el") (goto-char (point-min)) (condition-case nil (while (not (eobp)) (forward-sexp)) (error (message "Unbalanced at pos %d, line %d, col %d" (point) (line-number-at-pos) (current-column)))))' 2>&1
+;; Unbalanced at pos 31818, line 693, col 62
