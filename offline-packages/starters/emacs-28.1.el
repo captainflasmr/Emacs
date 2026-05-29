@@ -12,7 +12,7 @@
 ;; installed from the mirror will produce .eln files in ~/.emacs.d/eln-cache/
 ;; on first startup.
 ;;
-;; Coding-oriented blocks (eglot, dape, treemacs, demap, etc.) live in
+;; Coding-oriented blocks (eglot, dape, emeld-sidebar, demap, etc.) live in
 ;; starters/coding.el — load both to get the full set:
 ;;   (load (expand-file-name "init-starter" user-emacs-directory) t t)
 ;;   (load (expand-file-name "init-starter-coding" user-emacs-directory) t t)

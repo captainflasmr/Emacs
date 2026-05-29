@@ -23,7 +23,6 @@ simply-annotate
 timu-caribbean-theme
 timu-rouge-theme
 timu-spacegrey-theme
-treemacs
 typescript-mode
 web-mode
 yaml-mode

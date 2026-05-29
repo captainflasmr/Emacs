@@ -98,7 +98,7 @@ Each =starters/emacs-<VER>.el=, if present, is bundled as =init-starter.el= at t
 
 The snippets are distilled from the author's live config: =use-package= blocks for the themes, =diff-hl=, =selected-window-accent-mode=, =simply-annotate=, =ztree=, =ollama-buddy= (30.x), etc. They assume the corresponding package is already in the offline mirror (true by construction, since the snippet is matched to =packages/emacs-<VER>.el=).
 
-Coding-oriented blocks (=dape=, =treemacs=, =demap=, =eglot= hooks, =flymake=, =corfu=, etc.) live in =starters/coding.el= to avoid duplication. Load both starters to get the full set:
+Coding-oriented blocks (=dape=, =emeld-sidebar=, =demap=, =eglot= hooks, =flymake=, =corfu=, etc.) live in =starters/coding.el= to avoid duplication. Load both starters to get the full set:
 
 To opt in on the target, append one line to =~/.emacs.d/init.el=:
 
@@ -112,7 +112,7 @@ Adding a starter for a new version: drop =starters/emacs-<VER>.el= next to =init
 
 ** Coding companion (=starters/coding.el=)
 
-=starters/coding.el= is a version-agnostic snippet distilled from =docs/setting-up-emacs-for-coding/README.org= — eglot hooks for Java/C#/C++/TypeScript/Protobuf/Kotlin, flymake =M-n=/=M-p=, eldoc, corfu with =corfu-auto nil=, dape =F5=/=F9=/=F10=/=F11= (with netcoredbg support), treemacs with current-line overlay, demap minimap with diff-hl integration, =cmake-mode=, =typescript-mode=, =protobuf-mode=, =highlight-indent-guides=. It's bundled as =init-starter-coding.el= at the toolkit root and installed to =~/.emacs.d/init-starter-coding.el= (not auto-loaded). All starter files share the =init-starter-= prefix so they group together in directory listings. Opt in alongside or instead of the per-version starter:
+=starters/coding.el= is a version-agnostic snippet distilled from =docs/setting-up-emacs-for-coding/README.org= — eglot hooks for Java/C#/C++/TypeScript/Protobuf/Kotlin, flymake =M-n=/=M-p=, eldoc, corfu with =corfu-auto nil=, dape =F5=/=F9=/=F10=/=F11= (with netcoredbg support), the local =emeld-sidebar= project file-tree (with current-line overlay and follow), demap minimap with diff-hl integration, =cmake-mode=, =typescript-mode=, =protobuf-mode=, =highlight-indent-guides=. It's bundled as =init-starter-coding.el= at the toolkit root and installed to =~/.emacs.d/init-starter-coding.el= (not auto-loaded). All starter files share the =init-starter-= prefix so they group together in directory listings. Opt in alongside or instead of the per-version starter:
 
 #+begin_src emacs-lisp
 (load (expand-file-name "init-starter-coding" user-emacs-directory) t t)

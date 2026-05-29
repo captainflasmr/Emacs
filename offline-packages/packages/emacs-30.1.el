@@ -31,4 +31,3 @@ typescript-mode
 web-mode
 yaml-mode
 kotlin-mode
-treemacs

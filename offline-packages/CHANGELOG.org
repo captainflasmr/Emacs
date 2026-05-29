@@ -10,6 +10,17 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-05-29>
+
+Replaced treemacs with the local =emeld-sidebar=
+
+- Removed the =treemacs= =use-package= block (and its hand-rolled
+  current-line overlay / follow advice) from =starters/coding.el=, replacing
+  it with a small block wiring the local =emeld-sidebar= on =C-x m=.
+  =emeld-sidebar= carries its own current-line overlay and follow behaviour.
+- Dropped =treemacs= from every =packages/emacs-<VER>.el= install manifest.
+- Updated starter headers, =README.org= and =BUGS.org= accordingly.
+
 ** <2026-05-11>
 
 Deduplicated and refined starter configs

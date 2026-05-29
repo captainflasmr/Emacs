@@ -16,7 +16,7 @@ The rendered =init.el= hardcodes the local-packages subdirectory path for =org-b
 
 ** TODO starter configs duplicate code from live config
 
-The treemacs overlay, demap diff integration, and windmove repeat map are copy-pasted from the top-level =init.el= into the starters. Any upstream fix needs to be applied in multiple places. Consider extracting shared blocks into a =local-packages/= helper that starters can =require=.
+The demap diff integration and windmove repeat map are copy-pasted from the top-level =init.el= into the starters. Any upstream fix needs to be applied in multiple places. Consider extracting shared blocks into a =local-packages/= helper that starters can =require=. (The former project-sidebar overlay block is gone — both configs now just wire the local =emeld-sidebar=, which carries its own current-line overlay and follow behaviour.)
 
 * Issues
 

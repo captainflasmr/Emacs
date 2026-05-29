@@ -6,7 +6,7 @@
 ;; replace) the bundled init.el, which already installs the ELPA mirror,
 ;; bootstraps ~/.emacs.d/local-packages, and loads the Emacs-vanilla base.
 ;;
-;; Coding-oriented blocks (eglot, dape, treemacs, demap, etc.) live in
+;; Coding-oriented blocks (eglot, dape, emeld-sidebar, demap, etc.) live in
 ;; starters/coding.el (version-agnostic, with fboundp guards for 29+
 ;; features). Load both to get the full set:
 ;;   (load (expand-file-name "init-starter" user-emacs-directory) t t)
