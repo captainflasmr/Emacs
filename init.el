@@ -957,7 +957,7 @@ Like `dired-copy-filename-as-kill' but for ztree-diff."
                  forge gruvbox-theme htmlize i3wm-config-mode
                  kotlin-mode magit org-social ox-hugo package-lint
                  protobuf-mode timu-caribbean-theme timu-rouge-theme
-                 timu-spacegrey-theme treemacs web-mode yaml-mode
+                 timu-spacegrey-theme web-mode yaml-mode
                  ztree))
  '(warning-suppress-log-types '((frameset)))
  '(warning-suppress-types '((frameset))))
@@ -1230,64 +1230,12 @@ Like `dired-copy-filename-as-kill' but for ztree-diff."
 (use-package kotlin-mode
   :mode "\\.kts\\'")
 
-(defun my/treemacs-toggle-current-project ()
-  "Show treemacs with the current project only, or hide it if visible.
-On open, keep focus in the original window."
-  (interactive)
-  (let ((win (treemacs-get-local-window)))
-    (if (and win (window-live-p win))
-        (delete-window win)
-      (save-selected-window
-        (treemacs-display-current-project-exclusively)))))
-
-(use-package treemacs
-  :demand t
-  :bind ("C-x m" . my/treemacs-toggle-current-project)
-  :config
-  (treemacs-follow-mode t)
-  (treemacs-filewatch-mode t)
-  (treemacs-fringe-indicator-mode 'always)
-
-  (setq treemacs-pulse-on-success t
-        treemacs-follow-after-init t
-        treemacs-indentation 2
-        treemacs-no-png-images t
-        treemacs-text-scale -0.5
-        treemacs-show-cursor nil)
-
-  (set-face-attribute 'treemacs-root-face nil
-                      :inherit 'font-lock-constant-face
-                      :underline t
-                      :weight 'bold
-                      :height 1.0))
-
-(defvar-local my/treemacs-current-overlay nil)
-
-(defun my/treemacs-update-current-line ()
-  "Paint a persistent, high-priority region-face overlay on point's line."
-  (unless (overlayp my/treemacs-current-overlay)
-    (setq my/treemacs-current-overlay (make-overlay 1 1))
-    (overlay-put my/treemacs-current-overlay 'face 'region)
-    (overlay-put my/treemacs-current-overlay 'priority 1000))
-  (move-overlay my/treemacs-current-overlay
-                (line-beginning-position)
-                (1+ (line-end-position))))
-
-(defun my/treemacs-update-current-line-after-follow (&rest _)
-  "Run `my/treemacs-update-current-line' in the treemacs buffer."
-  (let ((buf (ignore-errors (treemacs-get-local-buffer))))
-    (when (buffer-live-p buf)
-      (with-current-buffer buf
-        (my/treemacs-update-current-line)))))
-
-(advice-add 'treemacs--follow :after #'my/treemacs-update-current-line-after-follow)
-
-(add-hook 'treemacs-mode-hook
-          (lambda ()
-            (hl-line-mode -1)
-            (add-hook 'post-command-hook
-                      #'my/treemacs-update-current-line nil t)
-            (my/treemacs-update-current-line)))
+;; emeld-sidebar: a project file-tree sidebar that follows and highlights the
+;; active file (current-line overlay + follow are built in).  `C-x m' toggles
+;; it open/closed, rooted at the current file's project.
+(use-package emeld
+  :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld"
+  :bind ("C-x m" . emeld-sidebar))
 
 (load (expand-file-name "obp-config" user-emacs-directory))
 
