@@ -874,22 +874,28 @@ Like `dired-copy-filename-as-kill' but for ztree-diff."
         ("/james/INBOX" . ?m)
         ("/captainflasmr/INBOX" . ?g)))
 
-(push '(:name "Unified Archive"
-              :query "(maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:\"/captainflasmr/[Gmail]/All Mail\")"
-              :key ?a)
-      mu4e-bookmarks)
-(push '(:name "Unified Sent"
-              :query "(maildir:/jimbob/Sent OR maildir:/james/Sent OR maildir:\"/captainflasmr/[Gmail]/Sent Mail\")"
-              :key ?s)
-      mu4e-bookmarks)
-(push '(:name "Unified Trash"
-              :query "(maildir:/jimbob/Trash OR maildir:/james/Trash OR maildir:\"/captainflasmr/[Gmail]/Trash\")"
-              :key ?t)
-      mu4e-bookmarks)
-(push '(:name "Unified Inbox"
-              :query "(maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX)"
-              :key ?b)
-      mu4e-bookmarks)
+(setq mu4e-bookmarks
+      '((:name "Unified Inbox"
+               :query "(maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX)"
+               :key ?b)
+        (:name "Unified Archive"
+               :query "(maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:\"/captainflasmr/[Gmail]/All Mail\")"
+               :key ?a)
+        (:name "Unified Sent"
+               :query "(maildir:/jimbob/Sent OR maildir:/james/Sent OR maildir:\"/captainflasmr/[Gmail]/Sent Mail\")"
+               :key ?s)
+        (:name "Unified Trash"
+               :query "(maildir:/jimbob/Trash OR maildir:/james/Trash OR maildir:\"/captainflasmr/[Gmail]/Trash\")"
+               :key ?t)
+        (:name "Unified Spam"
+               :query "(maildir:/jimbob/Junk OR maildir:/james/Junk OR maildir:\"/captainflasmr/[Gmail]/Spam\")"
+               :key ?p)
+        (:name "Unread messages"
+               :query "flag:unread AND NOT flag:trashed"
+               :key ?u)
+        (:name "Today's messages"
+               :query "date:today..now"
+               :key ?d)))
 
 (setq shr-use-colors nil
       shr-use-fonts nil
