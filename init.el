@@ -472,6 +472,7 @@
   (global-set-key (kbd "M-s") simply-annotate-command-map)
   (setq simply-annotate-inline-position 'above)
   (setq simply-annotate-tint-amount 20)
+  ;; (setq simply-annotate-thread-statuses '("inbox" "doing" "done" "closed"))
   
   ;; ;; Heavy L-bracket
   (setq simply-annotate-inline-pointer-above "┗━▶")
@@ -1207,11 +1208,6 @@ Like `dired-copy-filename-as-kill' but for ztree-diff."
                  :hostName "localhost"
                  :port 5005)))
 
-(use-package dwell-map
-  :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/dwell-map")
-
-(dwell-map-mode 1)
-
 ;; (use-package diff-hl
 ;;   :ensure t
 ;;   :config
@@ -1606,6 +1602,25 @@ correctly using the same BUGS.org files and column alignment."
       (org-todo-list))))
 
 ;;
+;; -> project-overview — central table of git projects with status + actions
+;;
+;; `project-overview' (bound to M-l p) opens a tabulated-list dashboard with
+;; one row per auto-discovered git project, showing the latest CHANGELOG.org
+;; version/date, open/total BUGS.org count, and git branch/dirty/ahead-behind.
+;; Single keys act on the project under point — see `project-overview-mode-map'.
+;;
+
+(use-package project-overview
+  :ensure nil
+  :load-path "~/.emacs.d/offline-packages/local-packages/project-overview"
+  :commands (project-overview)
+  :init
+  (define-key my-jump-keymap (kbd "p") #'project-overview)
+  :config
+  ;; Reuse the same project roots as the BUGS.org overview.
+  (setq project-overview-search-roots my/bugs-search-roots))
+
+;;
 ;; -> old-ada-mode loaded from local-packages/ if present (see coding guide
 ;; Part 12). Silent no-op otherwise.
 ;;
@@ -1699,10 +1714,20 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 90)
-(add-to-list 'default-frame-alist '(alpha-background . 90))
-
-(load-theme 'doom-1337 t)
+(set-frame-parameter nil 'alpha-background 95)
+(add-to-list 'default-frame-alist '(alpha-background . 95))
 
 ;; $ emacs --batch --eval '(progn (find-file "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld/emeld.el") (goto-char (point-min)) (condition-case nil (while (not (eobp)) (forward-sexp)) (error (message "Unbalanced at pos %d, line %d, col %d" (point) (line-number-at-pos) (current-column)))))' 2>&1
 ;; Unbalanced at pos 31818, line 693, col 62
+
+(use-package simply-kanban
+  :demand t
+  :load-path "~/.emacs.d/offline-packages/local-packages/simply-kanban"
+  :bind
+  ("C-c K" . simply-kanban)
+  ("C-c A" . simply-kanban-agenda))
+
+(define-key org-mode-map (kbd "C-c ;") #'simply-kanban-show-card)
+
+(load-theme 'doom-bluloco-dark t)
+

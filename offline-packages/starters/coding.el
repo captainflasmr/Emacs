@@ -438,6 +438,21 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
   :bind ("C-x m" . emeld-sidebar))
 
 ;;
+;; -> project-overview — dashboard table of git projects with status + actions
+;;
+;; `C-x p O' opens a sortable table with one row per auto-discovered git
+;; project, showing the latest CHANGELOG.org version/date, open/total BUGS.org
+;; count, and git branch/dirty/ahead-behind state.  Single keys act on the
+;; project under point (switch, find-file, magit, dired, open CHANGELOG/BUGS).
+;; Ships in this toolkit under local-packages/project-overview.  Needs the
+;; Emacs 28+ project.el commands, so it is skipped on 27.x.
+(when (fboundp 'project-switch-project)
+  (use-package project-overview
+    :load-path "~/.emacs.d/offline-packages/local-packages/project-overview"
+    :commands (project-overview)
+    :bind (:map project-prefix-map ("O" . project-overview))))
+
+;;
 ;; -> vc-shuttle — override vc-git-push/pull for air-gapped VM workflow
 ;; (calls local scripts on the VM guest that copy repo data to/from a
 ;; shared folder on the host machine, since there's no remote to push to).
