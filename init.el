@@ -494,9 +494,6 @@
 (tiny-diminish 'simple-autosuggest-mode)
 (tiny-diminish 'org-indent-mode)
 
-(use-package meal-planner
-  :load-path "~/source/repos/meal-planner")
-
 (use-package org-social
   :config
   (setq org-social-file "https://host.org-social.org/vfile?token=31841933dc6ee63665fdd874eb60088a21b1ef066939f2b73dea8b51d8ce268d&ts=1764570277&sig=c7a678e4123f8ae5608de3d527fb507029325bce560556cb6465732f481e6de6")
@@ -518,58 +515,6 @@
   (dired-video-thumbnail-mark ((t (:foreground "orange")))))
 
 (my/sync-ui-accent-color "orange")
-
-(use-package ztree
-  :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/ztree"
-  :ensure nil
-  :config
-  (setq-default ztree-diff-filter-list
-                '("\.class" "^tmp$" "^.idea$"
-                  "build" "\.dll" "\.iso" "\.xmp" "\.cache" "\.gnupg" "\.local"
-                  "\.mozilla" "\.thunderbird" "\.wine" "\.mp3" "\.mp4" "\.arpack"
-                  "\.git" "^Volume$" "^Games$" "^cache$" "^chromium$" "^elpa$" "^nas$"
-                  "^syncthing$" "bin" "obj"
-                  ))
-  ;; (setq-default ztree-diff-additional-options '("-w" "-i"))
-  (setq-default ztree-diff-consider-file-size t)
-  (setq-default ztree-diff-consider-file-permissions nil)
-  (setq-default ztree-diff-show-equal-files nil)
-  
-  ;; Add key binding for 'g' to full rescan
-  (with-eval-after-load 'ztree-diff
-    (define-key ztree-mode-map (kbd "g") 'ztree-diff-full-rescan))
-  
-  ;; Helper function to get directories from dired windows
-  (defun ztree-get-dired-directories ()
-    "Get directories from all visible dired buffers."
-    (let ((directories '()))
-      (dolist (window (window-list))
-        (with-current-buffer (window-buffer window)
-          (when (eq major-mode 'dired-mode)
-            (let ((dir (dired-current-directory)))
-              (when dir
-                (push (expand-file-name dir) directories))))))
-      (reverse (delete-dups directories))))
-  
-  ;; Enhanced ztree-diff with directory DWIM
-  (defun ztree-diff-dwim ()
-    "Enhanced ztree-diff that suggests directories from dired windows."
-    (interactive)
-    (let* ((dired-dirs (ztree-get-dired-directories))
-           (default-dir1 (or (car dired-dirs) default-directory))
-           (default-dir2 (or (cadr dired-dirs) default-directory))
-           (dir1 (read-directory-name 
-                  (format "First directory (default: %s): " 
-                          (file-name-nondirectory (directory-file-name default-dir1)))
-                  default-dir1 default-dir1 t))
-           (dir2 (read-directory-name 
-                  (format "Second directory (default: %s): " 
-                          (file-name-nondirectory (directory-file-name default-dir2)))
-                  default-dir2 default-dir2 t)))
-      (ztree-diff dir1 dir2)))
-  
-  ;; Optionally bind the enhanced function to a key
-  (global-set-key (kbd "C-c z d") 'ztree-diff-dwim))
 
 (with-eval-after-load 'ztree
 
@@ -1500,114 +1445,14 @@ Like `dired-copy-filename-as-kill' but for ztree-diff."
 
 
 ;;
-;; -> bugs-overview — collect BUGS.org files across project areas
-;;
-
-(defvar my/bugs-search-roots
-  (list (expand-file-name "~/.emacs.d")
-        (expand-file-name "~/.emacs.d/Emacs-DIYer")
-        (expand-file-name "~/.emacs.d/Emacs-vanilla")
-        (expand-file-name "~/.emacs.d/offline-packages")
-        (expand-file-name "~/.emacs.d/offline-packages/local-packages")
-        (expand-file-name "~/source/repos")
-        (expand-file-name "~/.config/sway")
-        (expand-file-name "~/source")
-        (expand-file-name "~/bin"))
-  "Root directories to scan for BUGS.org files.")
-
-(defun my/bugs-files ()
-  "Return BUGS.org files found under `my/bugs-search-roots'.
-Scans each root directly and any git-repo subdirectories one level deep."
-  (let (files)
-    (dolist (root my/bugs-search-roots)
-      (when (file-directory-p root)
-        (let ((bugs (expand-file-name "BUGS.org" root)))
-          (when (file-exists-p bugs)
-            (push bugs files)))
-        (dolist (sub (directory-files root t "^[^.]"))
-          (when (and (file-directory-p sub)
-                     (file-exists-p (expand-file-name ".git" sub)))
-            (let ((bugs (expand-file-name "BUGS.org" sub)))
-              (when (file-exists-p bugs)
-                (push bugs files)))))))
-    (sort (delete-dups files) #'string<)))
-
-(defun my/org-category-bugs-filename (orig-fun &optional pos force-refresh)
-  "Override `org-get-category' for BUGS.org files.
-Uses the parent directory name as the category instead of the
-default \"BUGS\" so every entry shows which project it belongs to."
-  (let ((cat (funcall orig-fun pos force-refresh)))
-    (if (and (equal cat "BUGS")
-             (buffer-file-name)
-             (string-suffix-p "/BUGS.org" (buffer-file-name)))
-        (file-name-nondirectory
-         (directory-file-name
-          (file-name-directory (buffer-file-name))))
-      cat)))
-
-(advice-add 'org-get-category :around #'my/org-category-bugs-filename)
-
-(defvar my/bugs--agenda-files nil
-  "BUGS.org files for agenda display.
-Set by `my/bugs' so that `org-agenda-redo' uses the same subset of
-agenda files instead of falling back to the global
-`org-agenda-files'.")
-
-(defvar my/bugs--agenda-prefix-format nil
-  "Prefix format for BUGS.org agenda display.
-Set by `my/bugs' so that redo preserves the column alignment
-between project, tags, and TODO headline.")
-
-(defun my/bugs--around-org-agenda-redo (orig-fun &rest args)
-  "Wrap `org-agenda-redo' to restore BUGS.org files and format.
-Without this advice, re-running the TODO agenda after `my/bugs'
-would use the global `org-agenda-files' and default prefix format,
-losing the BUGS.org scope and column alignment."
-  (if my/bugs--agenda-files
-      (let ((org-agenda-files my/bugs--agenda-files)
-            (org-agenda-prefix-format my/bugs--agenda-prefix-format))
-        (apply orig-fun args))
-    (apply orig-fun args)))
-
-(advice-add 'org-agenda-redo :around #'my/bugs--around-org-agenda-redo)
-
-(defun my/bugs--agenda-exit ()
-  "Clear saved BUGS.org agenda state on exit."
-  (setq my/bugs--agenda-files nil
-        my/bugs--agenda-prefix-format nil))
-
-(add-hook 'org-agenda-exit-hook #'my/bugs--agenda-exit)
-
-(defun my/bugs ()
-  "Show all TODO entries across every BUGS.org file in project areas.
-Scans roots defined by `my/bugs-search-roots'.
-Each entry is prefixed with its project directory name thanks to
-`my/org-category-bugs-filename'.
-Pressing \"g\" (or any redo command) in the agenda refreshes
-correctly using the same BUGS.org files and column alignment."
-  (interactive)
-  (let* ((fmt (if (listp org-agenda-prefix-format)
-                  org-agenda-prefix-format
-                (default-value 'org-agenda-prefix-format)))
-         (bugs-prefix
-          (mapcar (lambda (item)
-                    (if (eq (car item) 'todo)
-                        (cons 'todo " %i %-20:c %-10t %s")
-                      item))
-                  fmt)))
-    (setq my/bugs--agenda-files   (my/bugs-files)
-          my/bugs--agenda-prefix-format bugs-prefix)
-    (let ((org-agenda-files my/bugs--agenda-files)
-          (org-agenda-prefix-format bugs-prefix))
-      (org-todo-list))))
-
-;;
 ;; -> project-overview — central table of git projects with status + actions
 ;;
 ;; `project-overview' (bound to M-l p) opens a tabulated-list dashboard with
 ;; one row per auto-discovered git project, showing the latest CHANGELOG.org
 ;; version/date, open/total BUGS.org count, and git branch/dirty/ahead-behind.
 ;; Single keys act on the project under point — see `project-overview-mode-map'.
+;; `project-overview-bugs-agenda-all' (A in the dashboard) collects every
+;; project's BUGS.org into one TODO agenda, replacing the old `my/bugs'.
 ;;
 
 (use-package project-overview
@@ -1616,9 +1461,25 @@ correctly using the same BUGS.org files and column alignment."
   :commands (project-overview)
   :init
   (define-key my-jump-keymap (kbd "p") #'project-overview)
+  ;; Show the dashboard instead of the splash screen at startup.
+  (setq initial-buffer-choice
+        (lambda ()
+          (project-overview)
+          (get-buffer project-overview-buffer-name)))
   :config
-  ;; Reuse the same project roots as the BUGS.org overview.
-  (setq project-overview-search-roots my/bugs-search-roots))
+  ;; Roots scanned for git projects (and their BUGS.org / CHANGELOG.org).
+  (setq project-overview-search-roots
+        (list (expand-file-name "~/.emacs.d")
+              (expand-file-name "~/.emacs.d/Emacs-DIYer")
+              (expand-file-name "~/.emacs.d/Emacs-vanilla")
+              (expand-file-name "~/.emacs.d/offline-packages")
+              (expand-file-name "~/.emacs.d/offline-packages/local-packages")
+              (expand-file-name "~/source/repos")
+              (expand-file-name "~/.config/sway")
+              (expand-file-name "~/source")
+              (expand-file-name "~/bin")))
+  ;; Hide kernel trees and FedProClient-main_* checkouts.
+  (setq project-overview-exclude-regexp "\\`\\(?:linux-\\|FedProClient-main_\\)"))
 
 ;;
 ;; -> old-ada-mode loaded from local-packages/ if present (see coding guide
