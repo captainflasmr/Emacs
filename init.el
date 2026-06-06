@@ -1374,7 +1374,11 @@
               (expand-file-name "~/source")
               (expand-file-name "~/bin")))
   ;; Hide kernel trees and FedProClient-main_* checkouts.
-  (setq project-overview-exclude-regexp "\\`\\(?:linux-\\|FedProClient-main_\\)"))
+  (setq project-overview-exclude-regexp "\\`\\(?:linux-\\|FedProClient-main_\\)")
+  ;; My GitHub user (summarised in the header line, used by the "owned" filter).
+  (setq project-overview-github-user "captainflasmr")
+  ;; Open remotes in Firefox regardless of the system default browser.
+  (setq project-overview-browse-url-function #'browse-url-firefox))
 
 ;;
 ;; -> old-ada-mode loaded from local-packages/ if present (see coding guide
