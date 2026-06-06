@@ -768,6 +768,18 @@
 ;;
 (use-package magit
   :bind ("C-x g" . magit-status)
+  :init
+  ;; Repos for `magit-list-repositories' (each root, one level deep).
+  ;; Set in :init so the variable exists even when that command loads
+  ;; `magit-repos' without the full `magit' feature.
+  (setq magit-repository-directories
+        '(("~/.emacs.d" . 1)
+          ("~/.emacs.d/offline-packages" . 1)
+          ("~/.emacs.d/offline-packages/local-packages" . 1)
+          ("~/source/repos" . 1)
+          ("~/source" . 1)
+          ("~/.config/sway" . 1)
+          ("~/bin" . 1)))
   :config
   (setq magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
   (setq magit-refresh-status-buffer t)
