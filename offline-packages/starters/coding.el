@@ -446,11 +446,48 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 ;; project under point (switch, find-file, magit, dired, open CHANGELOG/BUGS).
 ;; Ships in this toolkit under local-packages/project-overview.  Needs the
 ;; Emacs 28+ project.el commands, so it is skipped on 27.x.
+;;
+;; In the dashboard: RET/o switch · f find file · m magit · D dired ·
+;; w browse remote · c/C changelog · R README · b BUGS · i/P GitHub
+;; issues/PRs · / filter · V cycle view · t toggle Description · g refresh ·
+;; r cache/pull · ? all actions.  Every option below has a sensible default,
+;; so the whole `:custom' block is optional reference; see example-init.el in
+;; the package directory for the full annotated list.
 (when (fboundp 'project-switch-project)
   (use-package project-overview
     :load-path "~/.emacs.d/offline-packages/local-packages/project-overview"
     :commands (project-overview)
-    :bind (:map project-prefix-map ("O" . project-overview))))
+    :bind (:map project-prefix-map ("O" . project-overview))
+    :custom
+    ;; Roots scanned for git projects (each checked directly and one level
+    ;; deep for .git subdirs).  Adjust to wherever you keep your repos.
+    (project-overview-search-roots
+     (list (expand-file-name "~/source/repos")
+           (expand-file-name "~/.emacs.d")))
+    ;; Also list the projects Emacs already knows (`project-switch-project').
+    (project-overview-include-known-projects t)
+    ;; Hide project directories whose name matches this regexp.
+    (project-overview-exclude-regexp "\\`linux-")
+    ;; Column layout on open (full/minimal/status/remote); remember `V' choice.
+    (project-overview-default-view 'full)
+    (project-overview-remember-view t)
+    ;; Fetch open issue/PR counts for GitHub repos (async; needs the
+    ;; authenticated "gh" CLI).  Set to nil to skip all network calls.
+    (project-overview-show-github t)
+    ;; Fall back to fetching the MELPA list from melpa.org when package.el
+    ;; has no local archive contents (once per session).
+    (project-overview-melpa-fallback t)
+    ;; Persist MELPA list + GitHub counts between sessions; refresh after TTL.
+    (project-overview-cache-file
+     (locate-user-emacs-file "project-overview-cache.el"))
+    (project-overview-cache-ttl 86400)
+    ;; -- Personal, off by default; uncomment and adapt --
+    ;; Your GitHub user: summarises owned repos' issue/PR totals in the
+    ;; header line and enables the "owned by me" filter (/ o).
+    ;; (project-overview-github-user "your-github-username")
+    ;; Always open remotes in Firefox regardless of the system default.
+    ;; (project-overview-browse-url-function #'browse-url-firefox)
+    ))
 
 ;;
 ;; -> vc-shuttle — override vc-git-push/pull for air-gapped VM workflow
