@@ -458,6 +458,12 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
     :load-path "~/.emacs.d/offline-packages/local-packages/project-overview"
     :commands (project-overview)
     :bind (:map project-prefix-map ("O" . project-overview))
+    :init
+    ;; Show the dashboard instead of the splash screen at startup.
+    (setq initial-buffer-choice
+          (lambda ()
+            (project-overview)
+            (get-buffer project-overview-buffer-name)))
     :custom
     ;; Roots scanned for git projects (each checked directly and one level
     ;; deep for .git subdirs).  Adjust to wherever you keep your repos.
