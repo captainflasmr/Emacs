@@ -1460,6 +1460,7 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 
 (global-set-key (kbd "C-c z d") 'emeld-diff-dwim)
 (global-set-key (kbd "C-c z j") 'emeld-load-preset)
+(global-set-key (kbd "C-c z l") 'emeld-load-preset)
 (global-set-key (kbd "C-c z s") 'emeld-save-preset)
 (global-set-key (kbd "C-c z x") 'emeld-delete-preset)
 ;; (setq emeld-benchmark t)
@@ -1489,5 +1490,5 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 
 (define-key org-mode-map (kbd "C-c ;") #'simply-kanban-show-card)
 
-(load-theme 'doom-bluloco-dark t)
+(load-theme 'deeper-blue t)
 

@@ -494,6 +494,12 @@ setlocal enabledelayedexpansion
 
 set HERE=%~dp0
 
+:: Use Windows' bundled bsdtar explicitly. The MSYS/Git-bash GNU tar that is
+:: often first on PATH treats a "z:\..." archive path as a remote host ("z:")
+:: and fails with "Cannot connect to z: resolve failed".
+set "TAR=%SystemRoot%\System32\tar.exe"
+if not exist "%TAR%" set "TAR=tar"
+
 :: Accept either EMACS_D path (ending with .emacs.d) or HOME path.
 :: Falls back to %%HOME%% or %%USERPROFILE%%.
 if not "%1"=="" (
@@ -512,12 +518,17 @@ if not "%1"=="" (
     set MY_HOME=!TARGET!
     set EMACS_D=!TARGET!\.emacs.d
   )
-) else if not "%HOME%"=="" (
-  set MY_HOME=%HOME%
-  set EMACS_D=%MY_HOME%\.emacs.d
 ) else (
-  set MY_HOME=%USERPROFILE%
-  set EMACS_D=%MY_HOME%\.emacs.d
+  rem Use %HOME% only if it is an absolute Windows path (drive-letter form,
+  rem e.g. C-colon-backslash). Under MSYS/Git-bash HOME is often "." or
+  rem "/home/user", which would produce invalid relative targets.
+  set "MY_HOME="
+  if not "%HOME%"=="" (
+    set "H=%HOME%"
+    if "!H:~1,1!"==":" set "MY_HOME=%HOME%"
+  )
+  if "!MY_HOME!"=="" set "MY_HOME=%USERPROFILE%"
+  set "EMACS_D=!MY_HOME!\.emacs.d"
 )
 for /f %%I in ('powershell -Command "Get-Date -Format 'yyyyMMddTHHmmss'"') do set STAMP=%%I
 set BACKUP_DIR=%EMACS_D%\.backups\%STAMP%
@@ -554,7 +565,7 @@ for /d %%d in ("%MY_HOME%\elpa-mirror-emacs-*") do (
 for %%m in ("%HERE%elpa-mirror-*.tar.gz") do (
   if exist "%%m" (
     echo ^>^> Extracting %%~nxm into %MY_HOME%
-    tar -xzf "%%m" -C "%MY_HOME%"
+    "%TAR%" -xzf "%%m" -C "%MY_HOME%"
   )
 )
 
@@ -638,8 +649,8 @@ echo Done. Launch Emacs; *Messages* should report:
 echo   my/offline-packages=t  dir=%MY_HOME%\elpa-mirror-emacs-...
 echo.
 echo Note: If tar failed above with "Cannot connect to" a drive letter,
-echo extract the mirror manually from a local drive:
-echo   tar -xzf "%HERE%elpa-mirror-*.tar.gz" -C "%MY_HOME%"
+echo a stray GNU tar was used. Extract the mirror with Windows' bsdtar:
+echo   "%SystemRoot%\System32\tar.exe" -xzf "%HERE%elpa-mirror-*.tar.gz" -C "%MY_HOME%"
 SETUPBAT
 
 # --- Installer: rollback.sh ---
@@ -807,12 +818,17 @@ if not "%1"=="" (
     set MY_HOME=!TARGET!
     set EMACS_D=!TARGET!\.emacs.d
   )
-) else if not "%HOME%"=="" (
-  set MY_HOME=%HOME%
-  set EMACS_D=%MY_HOME%\.emacs.d
 ) else (
-  set MY_HOME=%USERPROFILE%
-  set EMACS_D=%MY_HOME%\.emacs.d
+  rem Use %HOME% only if it is an absolute Windows path (drive-letter form,
+  rem e.g. C-colon-backslash). Under MSYS/Git-bash HOME is often "." or
+  rem "/home/user", which would produce invalid relative targets.
+  set "MY_HOME="
+  if not "%HOME%"=="" (
+    set "H=%HOME%"
+    if "!H:~1,1!"==":" set "MY_HOME=%HOME%"
+  )
+  if "!MY_HOME!"=="" set "MY_HOME=%USERPROFILE%"
+  set "EMACS_D=!MY_HOME!\.emacs.d"
 )
 set BACKUPS_DIR=%EMACS_D%\.backups
 for /f %%I in ('powershell -Command "Get-Date -Format 'yyyyMMddTHHmmss'"') do set NOW=%%I
