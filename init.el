@@ -514,7 +514,7 @@
   :custom-face
   (dired-video-thumbnail-mark ((t (:foreground "orange")))))
 
-(my/sync-ui-accent-color "orange")
+;; (my/sync-ui-accent-color "orange")
 
 (defun insert-default-background-color ()
   "Insert the default background color at point."
@@ -1357,10 +1357,10 @@
   :init
   (define-key my-jump-keymap (kbd "p") #'project-overview)
   ;; Show the dashboard instead of the splash screen at startup.
-  (setq initial-buffer-choice
-        (lambda ()
-          (project-overview)
-          (get-buffer project-overview-buffer-name)))
+  ;; (setq initial-buffer-choice
+  ;;       (lambda ()
+  ;;         (project-overview)
+  ;;         (get-buffer project-overview-buffer-name)))
   :config
   ;; Roots scanned for git projects (and their BUGS.org / CHANGELOG.org).
   (setq project-overview-search-roots
@@ -1464,13 +1464,19 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 (global-set-key (kbd "C-c z s") 'emeld-save-preset)
 (global-set-key (kbd "C-c z x") 'emeld-delete-preset)
 ;; (setq emeld-benchmark t)
-;; (setq emeld-respect-gitignore t)
+(setq emeld-dir-prefix "📁 ")
 
-;; (setq mild-filter-globs '(".git" ".DS_Store" "*.elc" "*.pyc"))
-;; (setq mild-simple-comparison t)
+;; 1. Classic solid triangles — medium (U+25BA / U+25BC)
+;; (setq emeld-fold-collapsed-indicator "► "
+      ;; emeld-fold-expanded-indicator  "▼ ")
 
-;; (setq mild-filter-groups '(("Backups" "*~" "*.bak")
-;; ("Logs" "*.log" "logs/*")))
+;; 2. "Media" triangles — noticeably larger/bolder (U+23F5 / U+23F7)
+;; (setq emeld-fold-collapsed-indicator "⏵ "
+      ;; emeld-fold-expanded-indicator  "⏷ ")
+
+;; 3. Centred medium triangles (U+2BC8 / U+2BC6)
+;; (setq emeld-fold-collapsed-indicator "⯈ "
+      ;; emeld-fold-expanded-indicator  "⯆ ")
 
 ;;
 ;; -> visuals
@@ -1490,5 +1496,5 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 
 (define-key org-mode-map (kbd "C-c ;") #'simply-kanban-show-card)
 
-(load-theme 'deeper-blue t)
+(load-theme 'doom-city-lights t)
 
