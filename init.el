@@ -619,6 +619,7 @@
 ;; -> mu4e
 ;;
 (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
+(when (locate-library "mu4e")
 (require 'mu4e)
 
 (setq mu4e-maildir "~/Maildir"
@@ -762,6 +763,8 @@
                            (string-match-p
                             "\\`\\(?:Indexing\\|Retrieving mail\\)" (car args)))
                 (apply orig-fn args))))
+
+) ;; end (when (locate-library "mu4e"))
 
 ;;
 ;; -> magit
