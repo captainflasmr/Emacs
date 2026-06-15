@@ -14,8 +14,9 @@
 (when (eq system-type 'gnu/linux)
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                            ("elpa" . "https://elpa.gnu.org/packages/")
-                           ("org" . "https://orgmode.org/elpa/")
                            ("nongnu" . "https://elpa.nongnu.org/nongnu/"))))
+
+(setq url-queue-timeout 3)
 
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
@@ -1074,6 +1075,11 @@
 
 (use-package kotlin-mode
   :mode "\\.kts\\'")
+
+(use-package powershell
+  :mode (("\\.ps1\\'"  . powershell-mode)
+         ("\\.psm1\\'" . powershell-mode)
+         ("\\.psd1\\'" . powershell-mode)))
 
 ;; emeld-sidebar: a project file-tree sidebar that follows and highlights the
 ;; active file (current-line overlay + follow are built in).  `C-x m' toggles
