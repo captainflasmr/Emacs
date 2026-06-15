@@ -8,7 +8,7 @@
 ;;
 ;; Built-in stack targeted: eglot (29+), flymake, eldoc, xref, project.el.
 ;; External packages from the mirror: corfu, dape, diff-hl, demap, cmake-mode,
-;; typescript-mode, highlight-indent-guides, protobuf-mode, kotlin-mode.
+;; typescript-mode, highlight-indent-guides, protobuf-mode, kotlin-mode, powershell.
 ;; Also wires the local emeld-sidebar package (project file-tree sidebar).
 ;;
 ;; Version-gated: blocks that need Emacs >= 29 are guarded by `fboundp'
@@ -342,6 +342,11 @@
 
 (use-package kotlin-mode
   :mode "\\.kts\\'")
+
+(use-package powershell
+  :mode (("\\.ps1\\'"  . powershell-mode)
+         ("\\.psm1\\'" . powershell-mode)
+         ("\\.psd1\\'" . powershell-mode)))
 
 (use-package highlight-indent-guides
   :hook ((prog-mode yaml-mode) . highlight-indent-guides-mode)

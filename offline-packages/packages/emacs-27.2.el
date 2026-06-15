@@ -15,6 +15,7 @@ highlight-indent-guides
 htmlize
 i3wm-config-mode
 kotlin-mode
+powershell
 magit
 markdown-mode
 protobuf-mode
