@@ -10,6 +10,8 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
+** TODO windows du for directory
+
 ** TODO mu4e to send mail
 
 ** TODO archives not aligning with thunderbird
