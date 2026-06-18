@@ -621,151 +621,151 @@
 ;;
 (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
 (when (locate-library "mu4e")
-(require 'mu4e)
+  (require 'mu4e)
 
-(setq mu4e-maildir "~/Maildir"
-      mu4e-attachment-dir "~/Downloads"
-      mu4e-change-filenames-when-moving t
-      mu4e-update-interval 120
-      mu4e-get-mail-command "mbsync -a"
-      mu4e-headers-auto-update t
-      mu4e-view-show-images t
-      mu4e-view-show-addresses t
-      mu4e-split-view 'vertical
-      mu4e-context-policy 'pick-first
-      mu4e-compose-context-policy 'ask
-      mu4e-search-results-limit 2000
-      message-send-mail-function 'smtpmail-send-it)
+  (setq mu4e-maildir "~/Maildir"
+        mu4e-attachment-dir "~/Downloads"
+        mu4e-change-filenames-when-moving t
+        mu4e-update-interval 120
+        mu4e-get-mail-command "mbsync -a"
+        mu4e-headers-auto-update t
+        mu4e-view-show-images t
+        mu4e-view-show-addresses t
+        mu4e-split-view 'vertical
+        mu4e-context-policy 'pick-first
+        mu4e-compose-context-policy 'ask
+        mu4e-search-results-limit 2000
+        message-send-mail-function 'smtpmail-send-it)
 
-;; This format gives you "YYYY-MM-DD HH:MM" (e.g., 2026-05-21 08:53)
-(setq mu4e-headers-date-format "%Y-%m-%d %H:%M")
+  ;; This format gives you "YYYY-MM-DD HH:MM" (e.g., 2026-05-21 08:53)
+  (setq mu4e-headers-date-format "%Y-%m-%d %H:%M")
 
-(setq mu4e-headers-fields
-      '((:date    . 17)    ; Date of the message
-        ;; (:flags   .  6)    ; Message flags (U, R, F, etc.)
-        (:from    . 22)    ; Sender name/email
-        (:subject . nil))) ; Subject line (nil tells it to use all remaining space)
+  (setq mu4e-headers-fields
+        '((:date    . 17)    ; Date of the message
+          ;; (:flags   .  6)    ; Message flags (U, R, F, etc.)
+          (:from    . 22)    ; Sender name/email
+          (:subject . nil))) ; Subject line (nil tells it to use all remaining space)
 
 
-(setq mu4e-contexts
-      `(,(make-mu4e-context
-          :name "james"
-          :enter-func (lambda () (mu4e-message "Switch to james"))
-          :leave-func (lambda () (mu4e-message "Leave james"))
-          :match-func (lambda (msg)
-                        (when msg
-                          (string-prefix-p "/james" (mu4e-message-field msg :maildir))))
-          :vars `((user-mail-address . "james@dyerdwelling.family")
-                  (user-full-name . "james dyer")
-                  (mu4e-sent-folder . "/james/Sent")
-                  (mu4e-drafts-folder . "/james/Drafts")
-                  (mu4e-trash-folder . "/james/Trash")
-                  (mu4e-refile-folder . "/james/Archive")
-                  (smtpmail-smtp-user . "james@dyerdwelling.family")
-                  (smtpmail-smtp-server . "smtp.migadu.com")
-                  (smtpmail-smtp-service . 465)
-                  (smtpmail-stream-type . ssl)))
-        ,(make-mu4e-context
-          :name "bob"
-          :enter-func (lambda () (mu4e-message "Switch to jimbob"))
-          :leave-func (lambda () (mu4e-message "Leave jimbob"))
-          :match-func (lambda (msg)
-                        (when msg
-                          (string-prefix-p "/jimbob" (mu4e-message-field msg :maildir))))
-          :vars `((user-mail-address . "jimbob@dyerdwelling.family")
-                  (user-full-name . "james dyer")
-                  (mu4e-sent-folder . "/jimbob/Sent")
-                  (mu4e-drafts-folder . "/jimbob/Drafts")
-                  (mu4e-trash-folder . "/jimbob/Trash")
-                  (mu4e-refile-folder . "/jimbob/Archive")
-                  (smtpmail-smtp-user . "jimbob@dyerdwelling.family")
-                  (smtpmail-smtp-server . "smtp.migadu.com")
-                  (smtpmail-smtp-service . 465)
-                  (smtpmail-stream-type . ssl)))
-        ,(make-mu4e-context
-          :name "captainflasmr"
-          :enter-func (lambda () (mu4e-message "Switch to Gmail"))
-          :leave-func (lambda () (mu4e-message "Leave Gmail"))
-          :match-func (lambda (msg)
-                        (when msg
-                          (string-prefix-p "/captainflasmr" (mu4e-message-field msg :maildir))))
-          :vars `((user-mail-address . "captainflasmr@gmail.com")
-                  (user-full-name . "james dyer")
-                  (mu4e-sent-folder . "/captainflasmr/[Gmail]/Sent Mail")
-                  (mu4e-drafts-folder . "/captainflasmr/[Gmail]/Drafts")
-                  (mu4e-trash-folder . "/captainflasmr/[Gmail]/Trash")
-                  (mu4e-refile-folder . "/captainflasmr/[Gmail]/All Mail")
-                  (smtpmail-smtp-user . "captainflasmr@gmail.com")
-                  (smtpmail-smtp-server . "smtp.gmail.com")
-                  (smtpmail-smtp-service . 587)
-                  (smtpmail-stream-type . starttls)))))
+  (setq mu4e-contexts
+        `(,(make-mu4e-context
+            :name "james"
+            :enter-func (lambda () (mu4e-message "Switch to james"))
+            :leave-func (lambda () (mu4e-message "Leave james"))
+            :match-func (lambda (msg)
+                          (when msg
+                            (string-prefix-p "/james" (mu4e-message-field msg :maildir))))
+            :vars `((user-mail-address . "james@dyerdwelling.family")
+                    (user-full-name . "james dyer")
+                    (mu4e-sent-folder . "/james/Sent")
+                    (mu4e-drafts-folder . "/james/Drafts")
+                    (mu4e-trash-folder . "/james/Trash")
+                    (mu4e-refile-folder . "/james/Archive")
+                    (smtpmail-smtp-user . "james@dyerdwelling.family")
+                    (smtpmail-smtp-server . "smtp.migadu.com")
+                    (smtpmail-smtp-service . 465)
+                    (smtpmail-stream-type . ssl)))
+          ,(make-mu4e-context
+            :name "bob"
+            :enter-func (lambda () (mu4e-message "Switch to jimbob"))
+            :leave-func (lambda () (mu4e-message "Leave jimbob"))
+            :match-func (lambda (msg)
+                          (when msg
+                            (string-prefix-p "/jimbob" (mu4e-message-field msg :maildir))))
+            :vars `((user-mail-address . "jimbob@dyerdwelling.family")
+                    (user-full-name . "james dyer")
+                    (mu4e-sent-folder . "/jimbob/Sent")
+                    (mu4e-drafts-folder . "/jimbob/Drafts")
+                    (mu4e-trash-folder . "/jimbob/Trash")
+                    (mu4e-refile-folder . "/jimbob/Archive")
+                    (smtpmail-smtp-user . "jimbob@dyerdwelling.family")
+                    (smtpmail-smtp-server . "smtp.migadu.com")
+                    (smtpmail-smtp-service . 465)
+                    (smtpmail-stream-type . ssl)))
+          ,(make-mu4e-context
+            :name "captainflasmr"
+            :enter-func (lambda () (mu4e-message "Switch to Gmail"))
+            :leave-func (lambda () (mu4e-message "Leave Gmail"))
+            :match-func (lambda (msg)
+                          (when msg
+                            (string-prefix-p "/captainflasmr" (mu4e-message-field msg :maildir))))
+            :vars `((user-mail-address . "captainflasmr@gmail.com")
+                    (user-full-name . "james dyer")
+                    (mu4e-sent-folder . "/captainflasmr/[Gmail]/Sent Mail")
+                    (mu4e-drafts-folder . "/captainflasmr/[Gmail]/Drafts")
+                    (mu4e-trash-folder . "/captainflasmr/[Gmail]/Trash")
+                    (mu4e-refile-folder . "/captainflasmr/[Gmail]/All Mail")
+                    (smtpmail-smtp-user . "captainflasmr@gmail.com")
+                    (smtpmail-smtp-server . "smtp.gmail.com")
+                    (smtpmail-smtp-service . 587)
+                    (smtpmail-stream-type . starttls)))))
 
-(setq mu4e-maildir-shortcuts
-      '(("/jimbob/INBOX" . ?j)
-        ("/james/INBOX" . ?m)
-        ("/captainflasmr/INBOX" . ?g)))
+  (setq mu4e-maildir-shortcuts
+        '(("/jimbob/INBOX" . ?j)
+          ("/james/INBOX" . ?m)
+          ("/captainflasmr/INBOX" . ?g)))
 
-(setq mu4e-bookmarks
-      '((:name "Unified Inbox"
-               :query "(maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX)"
-               :key ?b)
-        (:name "Unified Archive"
-               :query "(maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:\"/captainflasmr/[Gmail]/All Mail\")"
-               :key ?a)
-        (:name "Unified Sent"
-               :query "(maildir:/jimbob/Sent OR maildir:/james/Sent OR maildir:\"/captainflasmr/[Gmail]/Sent Mail\")"
-               :key ?s)
-        (:name "Unified Trash"
-               :query "(maildir:/jimbob/Trash OR maildir:/james/Trash OR maildir:\"/captainflasmr/[Gmail]/Trash\")"
-               :key ?t)
-        (:name "Unified Spam"
-               :query "(maildir:/jimbob/Junk OR maildir:/james/Junk OR maildir:\"/captainflasmr/[Gmail]/Spam\")"
-               :key ?p)
-        (:name "Unread messages"
-               :query "flag:unread AND NOT flag:trashed"
-               :key ?u)
-        (:name "Today's messages"
-               :query "date:today..now"
-               :key ?d)))
+  (setq mu4e-bookmarks
+        '((:name "Unified Inbox"
+                 :query "(maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX)"
+                 :key ?b)
+          (:name "Unified Archive"
+                 :query "(maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:\"/captainflasmr/[Gmail]/All Mail\")"
+                 :key ?a)
+          (:name "Unified Sent"
+                 :query "(maildir:/jimbob/Sent OR maildir:/james/Sent OR maildir:\"/captainflasmr/[Gmail]/Sent Mail\")"
+                 :key ?s)
+          (:name "Unified Trash"
+                 :query "(maildir:/jimbob/Trash OR maildir:/james/Trash OR maildir:\"/captainflasmr/[Gmail]/Trash\")"
+                 :key ?t)
+          (:name "Unified Spam"
+                 :query "(maildir:/jimbob/Junk OR maildir:/james/Junk OR maildir:\"/captainflasmr/[Gmail]/Spam\")"
+                 :key ?p)
+          (:name "Unread messages"
+                 :query "flag:unread AND NOT flag:trashed"
+                 :key ?u)
+          (:name "Today's messages"
+                 :query "date:today..now"
+                 :key ?d)))
 
-(setq shr-use-colors nil
-      shr-use-fonts nil
-      mm-text-html-renderer 'shr)
+  (setq shr-use-colors nil
+        shr-use-fonts nil
+        mm-text-html-renderer 'shr)
 
-(remove-hook 'mu4e-view-rendered-hook 'mu4e-resize-linked-headers-window)
-(add-hook 'mu4e-view-rendered-hook
-          (defun my/mu4e-balance-views ()
-            (when (and (eq mu4e-split-view 'vertical)
-                       (mu4e-current-buffer-type-p 'view))
-              (when-let* ((win (get-buffer-window (current-buffer) t)))
-                (let ((target (floor (/ (frame-width) 2))))
-                  (window-resize win (- target (window-total-width win)) t nil t))))))
+  (remove-hook 'mu4e-view-rendered-hook 'mu4e-resize-linked-headers-window)
+  (add-hook 'mu4e-view-rendered-hook
+            (defun my/mu4e-balance-views ()
+              (when (and (eq mu4e-split-view 'vertical)
+                         (mu4e-current-buffer-type-p 'view))
+                (when-let* ((win (get-buffer-window (current-buffer) t)))
+                  (let ((target (floor (/ (frame-width) 2))))
+                    (window-resize win (- target (window-total-width win)) t nil t))))))
 
-(defvar my/mu4e--focus-window nil)
+  (defvar my/mu4e--focus-window nil)
 
-(advice-add 'mu4e-headers-view-message :before
-            (defun my/mu4e-save-focus-window (&rest _)
-              (setq my/mu4e--focus-window (selected-window))))
+  (advice-add 'mu4e-headers-view-message :before
+              (defun my/mu4e-save-focus-window (&rest _)
+                (setq my/mu4e--focus-window (selected-window))))
 
-(advice-add 'mu4e-view :after
-            (defun my/mu4e-restore-focus-window (&rest _)
-              (when (window-live-p my/mu4e--focus-window)
-                (select-window my/mu4e--focus-window 'norecord)
-                (setq my/mu4e--focus-window nil))))
+  (advice-add 'mu4e-view :after
+              (defun my/mu4e-restore-focus-window (&rest _)
+                (when (window-live-p my/mu4e--focus-window)
+                  (select-window my/mu4e--focus-window 'norecord)
+                  (setq my/mu4e--focus-window nil))))
 
-(global-set-key (kbd "C-c m") #'mu4e)
+  (global-set-key (kbd "C-c m") #'mu4e)
 
-(define-key mu4e-headers-mode-map (kbd "f") #'mu4e-headers-view-message)
+  (define-key mu4e-headers-mode-map (kbd "f") #'mu4e-headers-view-message)
 
-(advice-add 'mu4e-message :around
-            (defun my/mu4e-suppress-indexing (orig-fn &rest args)
-              "Suppress distracting indexing/retrieval progress messages from minibuffer."
-              (unless (and (stringp (car args))
-                           (string-match-p
-                            "\\`\\(?:Indexing\\|Retrieving mail\\)" (car args)))
-                (apply orig-fn args))))
+  (advice-add 'mu4e-message :around
+              (defun my/mu4e-suppress-indexing (orig-fn &rest args)
+                "Suppress distracting indexing/retrieval progress messages from minibuffer."
+                (unless (and (stringp (car args))
+                             (string-match-p
+                              "\\`\\(?:Indexing\\|Retrieving mail\\)" (car args)))
+                  (apply orig-fn args))))
 
-) ;; end (when (locate-library "mu4e"))
+  ) ;; end (when (locate-library "mu4e"))
 
 ;;
 ;; -> magit
@@ -1477,15 +1477,15 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 
 ;; 1. Classic solid triangles — medium (U+25BA / U+25BC)
 ;; (setq emeld-fold-collapsed-indicator "► "
-      ;; emeld-fold-expanded-indicator  "▼ ")
+;; emeld-fold-expanded-indicator  "▼ ")
 
 ;; 2. "Media" triangles — noticeably larger/bolder (U+23F5 / U+23F7)
 ;; (setq emeld-fold-collapsed-indicator "⏵ "
-      ;; emeld-fold-expanded-indicator  "⏷ ")
+;; emeld-fold-expanded-indicator  "⏷ ")
 
 ;; 3. Centred medium triangles (U+2BC8 / U+2BC6)
 ;; (setq emeld-fold-collapsed-indicator "⯈ "
-      ;; emeld-fold-expanded-indicator  "⯆ ")
+;; emeld-fold-expanded-indicator  "⯆ ")
 
 ;;
 ;; -> visuals
@@ -1507,3 +1507,10 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 
 (load-theme 'doom-city-lights t)
 
+(defun pwsh-here ()
+  "Open a native Windows PowerShell console in the current directory."
+  (interactive)
+  (start-process "powershell" nil "powershell.exe"
+                 "-NoExit" "-Command"
+                 (format "Set-Location -LiteralPath '%s'"
+                         (expand-file-name default-directory))))
