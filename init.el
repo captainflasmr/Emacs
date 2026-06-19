@@ -524,10 +524,10 @@
 
 (global-set-key (kbd "M-s b") ' insert-default-background-color)
 
-(use-package web-mode
-  :mode "\\.cshtml?\\'"
-  :hook (html-mode . web-mode)
-  :bind (:map web-mode-map ("M-;" . nil)))
+;; (use-package web-mode
+;;   :mode "\\.cshtml?\\'"
+;;   :hook (html-mode . web-mode)
+;;   :bind (:map web-mode-map ("M-;" . nil)))
 
 (add-to-list 'auto-mode-alist '("\\.cshtml\\'" . html-mode))
 
@@ -1514,3 +1514,67 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
                  "-NoExit" "-Command"
                  (format "Set-Location -LiteralPath '%s'"
                          (expand-file-name default-directory))))
+
+(use-package outline-indent
+  :ensure t
+  :commands outline-indent-minor-mode
+  :custom
+  (outline-indent-ellipsis " ▼")
+  :hook
+  ((nxml-mode
+    mhtml-mode
+    web-mode
+    yaml-mode
+    yaml-ts-mode
+    json-mode
+    json-ts-mode
+    js-json-mode
+    dockerfile-mode
+    python-mode
+    python-ts-mode
+    conf-mode) . outline-indent-minor-mode))
+
+;; (add-hook 'outline-indent-minor-mode-hook
+;;           (lambda ()
+;;             (when (derived-mode-p 'nxml-mode)
+;;               (outline-indent-close-level 2))))
+
+(require 'transient)
+
+(transient-define-prefix outline-indent-transient ()
+  "Outline / outline-indent folding, navigation, and structure commands."
+  :transient-non-suffix #'transient--do-stay
+  [["Fold at point"
+    ("TAB" "Toggle level"        outline-indent-toggle-level-at-point)
+    ("o"   "Open fold"           outline-indent-open-fold)
+    ("c"   "Close fold"          outline-indent-close-fold)
+    ("O"   "Open recursively"    outline-indent-open-fold-rec)
+    ("s"   "Show subtree"        outline-show-subtree)
+    ("h"   "Hide subtree"        outline-hide-subtree)]
+   ["Whole buffer"
+    ("a"   "Show all"            outline-show-all)
+    ("t"   "Hide body"           outline-hide-body)
+    ("r"   "Open all folds"      outline-indent-open-folds)
+    ("m"   "Close all folds"     outline-indent-close-folds)
+    ("q"   "Hide to N levels"    outline-hide-sublevels)
+    ("k"   "Isolate (hide other)" outline-hide-other)]
+   ["Navigate"
+    ("n"   "Next heading"        outline-next-visible-heading)
+    ("p"   "Prev heading"        outline-previous-visible-heading)
+    ("f"   "Fwd same level"      outline-indent-forward-same-level)
+    ("b"   "Back same level"     outline-indent-backward-same-level)
+    ("u"   "Up heading"          outline-up-heading)]
+   ["Structure / Isolate"
+    (">"   "Shift right"         outline-indent-shift-right)
+    ("<"   "Shift left"          outline-indent-shift-left)
+    ("U"   "Move subtree up"     outline-indent-move-subtree-up)
+    ("D"   "Move subtree down"   outline-indent-move-subtree-down)
+    ("v"   "Select block"        outline-indent-select)
+    ("N"   "Narrow to block"     outline-indent-narrow)
+    ("w"   "Widen"               widen)]
+   ])
+
+(with-eval-after-load 'outline-indent
+  (define-key outline-indent-minor-mode-map (kbd "C-c o") #'outline-indent-transient)
+  ;; Global fold/unfold across every outline-indent buffer (web-mode muscle memory).
+  (define-key outline-indent-minor-mode-map (kbd "C-c C-f") #'outline-indent-toggle-fold))
