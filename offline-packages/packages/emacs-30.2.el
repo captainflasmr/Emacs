@@ -19,6 +19,7 @@ i3wm-config-mode
 magit
 markdown-mode
 modus-themes
+outline-indent
 ollama-buddy
 package-lint
 protobuf-mode

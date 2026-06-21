@@ -18,6 +18,7 @@ kotlin-mode
 powershell
 magit
 markdown-mode
+outline-indent
 protobuf-mode
 selected-window-accent-mode
 simply-annotate

@@ -1523,6 +1523,7 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
   :hook
   ((nxml-mode
     mhtml-mode
+    prog-mode
     web-mode
     yaml-mode
     yaml-ts-mode

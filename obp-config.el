@@ -97,6 +97,7 @@
              ("photos"     . "/photos/")
              ("blog"       . "/blog/")
              ("scans"      . "/scans/")
+             ("linux"      . "/linux/")
              ("emacs"      . "/tags/emacs/")
              ("stables"    . "/blog/posts--the-stables/")
              ("crosswords" . "/blog/posts--crosswords/")
