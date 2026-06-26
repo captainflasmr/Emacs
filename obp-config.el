@@ -90,7 +90,8 @@
              ("obp-accent"        . "#ffb779")
              ("obp-accent-rgb"    . "255, 138, 76")))
          (org-bootstrap-publish-menu-links
-          . (("Evie"       . "/tags/evie/")
+          . (
+;             ("Evie"       . "/tags/evie/")
              ("gallery"    . "/art--gallery/")
              ("art"        . "/art--all/")
              ("videos"     . "/tags/videos/")
