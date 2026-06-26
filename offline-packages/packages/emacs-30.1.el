@@ -3,6 +3,7 @@
 ;; and skipped, not fatal.
 
 async
+chess
 cmake-mode
 corfu
 csv-mode

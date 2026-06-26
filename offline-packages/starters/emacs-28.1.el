@@ -307,3 +307,8 @@ Like `dired-copy-filename-as-kill' but for ztree-diff."
 
 ;; `repeat-mode' was added in Emacs 28.1 — C-x o o o… to cycle windows, etc.
 (when (fboundp 'repeat-mode) (repeat-mode 1))
+
+(use-package chess)
+
+(setq chess-images-separate-frame nil)
+(setq chess-images-default-size 64)

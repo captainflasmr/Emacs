@@ -321,3 +321,8 @@ Like `dired-copy-filename-as-kill' but for ztree-diff."
       tab-bar-auto-width-max '((120) 20))
 
 (when (fboundp 'repeat-mode) (repeat-mode 1))
+
+(use-package chess)
+
+(setq chess-images-separate-frame nil)
+(setq chess-images-default-size 64)

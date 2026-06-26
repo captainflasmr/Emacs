@@ -299,3 +299,8 @@ Like `dired-copy-filename-as-kill' but for ztree-diff."
 (setq recentf-max-menu-items 40
       recentf-max-saved-items 40
       max-mini-window-height 8)
+
+(use-package chess)
+
+(setq chess-images-separate-frame nil)
+(setq chess-images-default-size 64)
