@@ -1586,3 +1586,8 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 
 (custom-set-faces
  '(mode-line-buffer-id ((t (:foreground "#EEEEFF" :weight bold)))))
+
+(use-package chess)
+
+(setq chess-images-separate-frame nil)
+(setq chess-images-default-size 64)
