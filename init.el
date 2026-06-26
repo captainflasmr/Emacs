@@ -465,31 +465,6 @@
          (pounds (string-to-number (cadr parts))))
     (+ (* stone 14) pounds)))
 
-(use-package simply-annotate
-  :demand t
-  :load-path "~/source/repos/simply-annotate"
-  :hook (find-file-hook . simply-annotate-mode)
-  :config
-  (global-set-key (kbd "M-s") simply-annotate-command-map)
-  (setq simply-annotate-inline-position 'above)
-  (setq simply-annotate-tint-amount 20)
-  ;; (setq simply-annotate-thread-statuses '("inbox" "doing" "done" "closed"))
-  
-  ;; ;; Heavy L-bracket
-  (setq simply-annotate-inline-pointer-above "┗━▶")
-  (setq simply-annotate-inline-pointer-after "┏━▶")
-  ;; (setq simply-annotate-inline-pointer-after "▲")
-  ;; (setq simply-annotate-inline-pointer-above "▼")
-  (setq simply-annotate-author-list '("John Doe" "Jane Smith" "James Dyer"))
-  (setq simply-annotate-prompt-for-author 'threads-only)  ; Prompt only for replies
-  (setq simply-annotate-database-strategy 'both)
-  ;; (setq simply-annotate-display-style '(bracket))
-  ;; (setq simply-annotate-inline-default t)
-  )
-
-(with-eval-after-load 'simply-annotate
-  (add-hook 'dired-mode-hook #'simply-annotate-dired-mode))
-
 (tiny-diminish 'cursor-heatmap-mode)
 ;; (tiny-diminish 'simply-annotate-mode)
 (tiny-diminish 'simple-autosuggest-mode)
@@ -521,8 +496,6 @@
   "Insert the default background color at point."
   (interactive)
   (insert (downcase (face-attribute 'default :background))))
-
-(global-set-key (kbd "M-s b") ' insert-default-background-color)
 
 ;; (use-package web-mode
 ;;   :mode "\\.cshtml?\\'"
@@ -1490,8 +1463,8 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 95)
-(add-to-list 'default-frame-alist '(alpha-background . 95))
+(set-frame-parameter nil 'alpha-background 90)
+(add-to-list 'default-frame-alist '(alpha-background . 90))
 
 ;; $ emacs --batch --eval '(progn (find-file "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld/emeld.el") (goto-char (point-min)) (condition-case nil (while (not (eobp)) (forward-sexp)) (error (message "Unbalanced at pos %d, line %d, col %d" (point) (line-number-at-pos) (current-column)))))' 2>&1
 ;; Unbalanced at pos 31818, line 693, col 62
@@ -1579,3 +1552,37 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
   (define-key outline-indent-minor-mode-map (kbd "C-c o") #'outline-indent-transient)
   ;; Global fold/unfold across every outline-indent buffer (web-mode muscle memory).
   (define-key outline-indent-minor-mode-map (kbd "C-c C-f") #'outline-indent-toggle-fold))
+
+(use-package simply-annotate
+  :demand t
+  :load-path "~/source/repos/simply-annotate"
+  :hook (find-file-hook . simply-annotate-mode)
+  :config
+  (global-set-key (kbd "M-s") simply-annotate-command-map)
+  (setq simply-annotate-inline-position 'above)
+  (setq simply-annotate-tint-amount 20)
+  (setq simply-annotate-hide-done-statuses '("resolved" "closed"))
+  ;; (setq simply-annotate-hide-done-style 'full)
+  (setq simply-annotate-hide-done-style 'indicator)
+
+  ;; (setq simply-annotate-thread-statuses '("inbox" "doing" "done" "closed"))
+  
+  ;; ;; Heavy L-bracket
+  (setq simply-annotate-inline-pointer-above "┗━▶")
+  (setq simply-annotate-inline-pointer-after "┏━▶")
+  ;; (setq simply-annotate-inline-pointer-after "▲")
+  ;; (setq simply-annotate-inline-pointer-above "▼")
+  (setq simply-annotate-author-list '("John Doe" "Jane Smith" "James Dyer"))
+  (setq simply-annotate-prompt-for-author 'threads-only)  ; Prompt only for replies
+  (setq simply-annotate-database-strategy 'both)
+  ;; (setq simply-annotate-display-style '(bracket))
+  ;; (setq simply-annotate-inline-default t)
+  )
+
+(with-eval-after-load 'simply-annotate
+  (add-hook 'dired-mode-hook #'simply-annotate-dired-mode))
+
+(load-theme 'deeper-blue t)
+
+(custom-set-faces
+ '(mode-line-buffer-id ((t (:foreground "#EEEEFF" :weight bold)))))
