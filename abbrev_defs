@@ -26,6 +26,7 @@
     ("ja" "" (lambda nil (interactive) (insert (format-time-string "<%Y-%m-%d>"))) :count 1)
     ("ji" "(interactive)" nil :count 1)
     ("jl" "(lambda ()" nil :count 0)
+    ("jr" "" (lambda nil (interactive) (insert (format-time-string "%m/%d/%Y"))) :count 1)
     ("jt" "" (lambda nil (interactive) (insert (format-time-string "%Y%m%d"))) :count 0)
     ("jg" "can you write a concise git commit message for the following?" nil :count 0)
    ))
