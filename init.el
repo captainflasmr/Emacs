@@ -1455,7 +1455,7 @@ n" :prepend t :jump-to-captured t)
 (with-eval-after-load 'outline-indent
   (define-key outline-indent-minor-mode-map (kbd "C-c o") #'outline-indent-transient)
   ;; Global fold/unfold across every outline-indent buffer (web-mode muscle memory).
-  (define-key outline-indent-minor-mode-map (kbd "C-c C-f") #'outline-indent-toggle-fold))
+  (define-key outline-indent-minor-mode-map (kbd "C-c C-f") #'outline-cycle))
 
 (use-package simply-annotate
   :demand t
