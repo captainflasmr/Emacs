@@ -1111,7 +1111,8 @@
      [:description "Deploy"
                    ("P" "publish"      org-bootstrap-publish-publish)
                    ("A" "publish all"  org-bootstrap-publish-publish-all)
-                   ("X" "abort"        org-bootstrap-publish-publish-abort)]
+                   ("X" "abort"        org-bootstrap-publish-publish-abort)
+                   ("m" "menu"         org-bootstrap-publish-menu)]
      [:description "Cache"
                    ("C" "clear build cache" my/obp-clear-cache)]
      [:description "Cloudflare"
