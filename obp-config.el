@@ -59,6 +59,8 @@
              "~/DCIM/content/kate.org"
              "~/DCIM/content/dad-dictionary.org"
              "~/DCIM/content/emacs.org"))
+         (org-bootstrap-publish-noindex t)
+         (org-bootstrap-publish-static-exclude-regex . "evie")
          (org-bootstrap-publish-output-dir   . "~/publish/obp-output")
          (org-bootstrap-publish-layout       . topbar)
          (org-bootstrap-publish-site-title   . "the DyerDwelling!")
@@ -138,6 +140,7 @@
              ("2023"    . "/tags/2023/")
              ("2022"    . "/tags/2022/"))))
         (katieboo85
+         (org-bootstrap-publish-noindex t)
          (org-bootstrap-publish-source-files . ("~/DCIM/content/kate.org"))
          (org-bootstrap-publish-output-dir   . "~/publish/obp-output")
          (org-bootstrap-publish-layout       . topbar)
