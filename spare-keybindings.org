@@ -2,8 +2,7 @@
 
 * Overview
 
-Keybindings that are either unbound or bound to rarely-used default
-commands.  Good candidates for repurposing.
+Keybindings that are either unbound or bound to rarely-used default commands.  Good candidates for repurposing.
 
 * Global Keys
 
