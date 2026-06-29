@@ -260,7 +260,6 @@ n" :prepend t :jump-to-captured t)
   :load-path "~/source/repos/ollama-buddy"
   :demand t
   :bind
-  ("C-c o" . ollama-buddy-role-transient-menu)
   ("C-c O" . ollama-buddy-transient-menu)
   :config
   ;; overall default model
@@ -1411,6 +1410,18 @@ n" :prepend t :jump-to-captured t)
 ;;             (when (derived-mode-p 'nxml-mode)
 ;;               (outline-indent-close-level 2))))
 
+(defun my/outline-hide-sublevels-prompt ()
+  "Hide buffer to a given level, prompting for the level number."
+  (interactive)
+  (outline-hide-sublevels (read-number "Levels to hide: ")))
+
+(defun my/outline-toggle-recursive ()
+  "Toggle fold: close if open, open recursively if closed."
+  (interactive)
+  (if (outline-indent-folded-p)
+      (outline-indent-open-fold-rec)
+    (outline-indent-close-fold)))
+
 (require 'transient)
 
 (transient-define-prefix outline-indent-transient ()
@@ -1418,17 +1429,13 @@ n" :prepend t :jump-to-captured t)
   :transient-non-suffix #'transient--do-stay
   [["Fold at point"
     ("TAB" "Toggle level"        outline-indent-toggle-level-at-point)
-    ("o"   "Open fold"           outline-indent-open-fold)
-    ("c"   "Close fold"          outline-indent-close-fold)
-    ("O"   "Open recursively"    outline-indent-open-fold-rec)
-    ("s"   "Show subtree"        outline-show-subtree)
-    ("h"   "Hide subtree"        outline-hide-subtree)]
+    ("o"   "Toggle recursive"    my/outline-toggle-recursive)
+    ("h"   "Close fold"          outline-indent-close-fold)
+    ("s"   "Show subtree"        outline-show-subtree)]
    ["Whole buffer"
-    ("a"   "Show all"            outline-show-all)
-    ("t"   "Hide body"           outline-hide-body)
-    ("r"   "Open all folds"      outline-indent-open-folds)
+    ("a"   "Open all folds"      outline-indent-open-folds)
     ("m"   "Close all folds"     outline-indent-close-folds)
-    ("q"   "Hide to N levels"    outline-hide-sublevels)
+    ("q"   "Hide to N levels"    my/outline-hide-sublevels-prompt)
     ("k"   "Isolate (hide other)" outline-hide-other)]
    ["Navigate"
     ("n"   "Next heading"        outline-next-visible-heading)
@@ -1439,8 +1446,7 @@ n" :prepend t :jump-to-captured t)
    ["Structure / Isolate"
     (">"   "Shift right"         outline-indent-shift-right)
     ("<"   "Shift left"          outline-indent-shift-left)
-    ("U"   "Move subtree up"     outline-indent-move-subtree-up)
-    ("D"   "Move subtree down"   outline-indent-move-subtree-down)
+
     ("v"   "Select block"        outline-indent-select)
     ("N"   "Narrow to block"     outline-indent-narrow)
     ("w"   "Widen"               widen)]
