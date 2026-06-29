@@ -112,7 +112,7 @@
 :EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /linux/%<%Y%m%d%H%M%S>-emacs--%\\1.jpg
 :END:
 %?
-" :prepend t :jump-to-captured t)
+n" :prepend t :jump-to-captured t)
 
         ("a" "Art")
 
@@ -371,89 +371,6 @@
   ;; dired integration
   (with-eval-after-load 'dired
     (define-key dired-mode-map (kbd "C-c C-a") #'ollama-buddy-dired-attach-marked-files)))
-
-;; ;;
-;; ;; -> dashboard
-;; ;;
-;; (use-package dashboard
-;;   :ensure t
-;;   :init
-;;   (setq dashboard-set-heading-icons nil)
-;;   (setq dashboard-set-file-icons nil)
-;;   (setq dashboard-set-navigator-icons nil)
-
-;;   (dashboard-setup-startup-hook)
-;;   (setq dashboard-banner-logo-title nil)
-;;   (setq dashboard-startup-banner 'ascii)
-;;   (setq dashboard-center-content nil)
-;;   (setq dashboard-show-shortcuts t)
-
-;;   ;; Ensure agenda picks up the todo file
-;;   (setq dashboard-match-agenda-entry "TODO=\"TODO\"|TODO=\"NEXT\"")
-;;   ;; (setq org-agenda-files '("~/DCIM/content/aaa--todo.org")) ; Use global setting instead
-
-
-;;   (setq dashboard-footer-messages '("Ready to hack." "The world is your terminal." "Emacs is the way."))
-
-;;   (defun dashboard-insert-my-jumps (list-size)
-;;     (dashboard-insert-section
-;;      "QUICK JUMPS:"
-;;      '("TODO List" "Content Hub" "Screenshots" "Camera")
-;;      list-size
-;;      'my-jumps
-;;      "l"
-;;      (lambda (w &rest _)
-;;        (let ((el (widget-get w :tag)))
-;;          (cond
-;;           ((string= el "TODO List") (find-file "~/DCIM/content/aaa--todo.org"))
-;;           ((string= el "Content Hub") (find-file "~/DCIM/content/"))
-;;           ((string= el "Screenshots") (find-file "~/DCIM/Screenshots"))
-;;           ((string= el "Camera") (find-file "~/DCIM/Camera")))))
-;;      el))
-
-;;   ;; Define custom sections for your tools
-;;   (defun dashboard-insert-my-tools (list-size)
-;;     (dashboard-insert-section
-;;      "CUSTOM TOOLS:"
-;;      '("Launch AI Agents" "Simply Annotate")
-;;      list-size
-;;      'my-tools
-;;      "o"
-;;      (lambda (w &rest _)
-;;        (let ((el (widget-get w :tag)))
-;;          (cond
-;;           ((string= el "Launch AI Agents") (ollama-buddy-transient-menu))
-;;           ((string= el "Simply Annotate") (simply-annotate-list-projects)))))
-;;      el))
-
-;;   (add-to-list 'dashboard-item-generators '(my-tools . dashboard-insert-my-tools))
-;;   (add-to-list 'dashboard-item-generators '(my-jumps . dashboard-insert-my-jumps))
-
-;;   ;; Advise dashboard--current-section to recognize custom headings
-;;   (defun my/dashboard-current-section ()
-;;     "Try to detect custom dashboard sections before falling back to original."
-;;     (save-excursion
-;;       (let ((sep (dashboard--separator)))
-;;         (when (and (search-backward sep nil t)
-;;                    (search-forward sep nil t))
-;;           (let ((ln (thing-at-point 'line t)))
-;;             (cond ((string-match-p "QUICK JUMPS:" ln) 'my-jumps)
-;;                   ((string-match-p "CUSTOM TOOLS:" ln) 'my-tools)
-;;                   (t nil)))))))
-
-;;   (advice-add 'dashboard--current-section :before-until #'my/dashboard-current-section)
-
-;;   (with-eval-after-load 'dashboard
-;;     (define-key dashboard-mode-map (kbd "C-j") #'dashboard-return)
-;;     (define-key dashboard-mode-map (kbd "f") #'dashboard-return))
-
-;;   (setq dashboard-items '((my-jumps . 5)
-;;                           (my-tools . 5)
-;;                           (recents  . 10)
-;;                           (bookmarks . 10)
-;;                           (projects . 5)))
-
-;;   (dashboard-refresh-buffer))
 
 ;;
 ;; -> other
@@ -765,9 +682,6 @@
           (stashes . hide)))
   (setq magit-diff-refine-hunk 'all)
   (define-key magit-status-mode-map (kbd "C-w") nil))
-
-(use-package forge
-  :after magit)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -1363,77 +1277,6 @@
   ;; Open remotes in Firefox regardless of the system default browser.
   (setq project-overview-browse-url-function #'browse-url-firefox))
 
-;;
-;; -> old-ada-mode loaded from local-packages/ if present (see coding guide
-;; Part 12). Silent no-op otherwise.
-;;
-(let ((old-ada (expand-file-name "offline-packages/local-packages/old-ada-mode" user-emacs-directory)))
-  (when (file-directory-p old-ada)
-    (add-to-list 'load-path old-ada)
-    (use-package ada-mode
-      :ensure nil
-      :mode ("\\.gpr\\'" "\\.ada\\'" "\\.ads\\'" "\\.adb\\'"))))
-
-;;
-;; -> Ada project file helpers — ada_language_server needs a .gpr to work
-;; properly; these functions find existing ones or create a basic template.
-;;
-(defun my/ada-find-gpr-file (&optional dir)
-  "Find the nearest .gpr file upward from DIR (defaults to `default-directory')."
-  (let ((dir (or dir default-directory)))
-    (locate-dominating-file dir
-                            (lambda (d) (car (directory-files d t "\\.gpr\\'"))))))
-
-(defun my/ada-create-gpr (project-name &optional main-file)
-  "Create PROJECT-NAME.gpr with an optional MAIN-FILE entry point."
-  (interactive "sProject name: \nsMain Ada file (e.g. main.adb): ")
-  (let ((gpr-file (concat project-name ".gpr")))
-    (with-current-buffer (find-file gpr-file)
-      (erase-buffer)
-      (insert (format "project %s is\n" project-name)
-              "\n"
-              "   for Source_Dirs use (\"**\");\n"
-              "   for Object_Dir use \"build\";\n"
-              "   for Exec_Dir use \".\";\n"
-              (when (and main-file (not (string-empty-p main-file)))
-                (format "   for Main use (\"%s\");\n" main-file))
-              "\n"
-              (format "end %s;\n" project-name))
-      (goto-char (point-min))
-      (when (called-interactively-p 'interactive)
-        (message "Created %s" gpr-file))
-      gpr-file)))
-
-(defun my/ada-ensure-gpr (&optional dir)
-  "Find a .gpr file in DIR or interactively create one.
-Returns the absolute path to the .gpr file, or nil if cancelled."
-  (let ((dir (or dir default-directory)))
-    (or (my/ada-find-gpr-file dir)
-        (when (y-or-n-p "No .gpr file found.  Create one? ")
-          (call-interactively #'my/ada-create-gpr)))))
-
-(defun my/ada-setup-project (&optional dir)
-  "Set up ada_language_server project for the current Ada buffer.
-Finds or creates a .gpr file and restarts eglot so ALS picks it up."
-  (interactive)
-  (unless (derived-mode-p 'ada-mode)
-    (user-error "Not in an Ada buffer"))
-  (let* ((dir (or dir default-directory))
-         (gpr (my/ada-ensure-gpr dir)))
-    (if gpr
-        (let* ((gpr-dir (file-name-directory gpr))
-               (gpr-file (file-name-nondirectory gpr)))
-          ;; Tell ALS which project file to use via eglot workspace config
-          (setq-local eglot-workspace-configuration
-                      `((ada . ((projectFile . ,gpr)))))
-          ;; If eglot is already running, restart it so ALS re-reads config
-          (when (eglot-current-server)
-            (eglot-shutdown (eglot-current-server))
-            ;; Re-open the project root so eglot picks the right root
-            (let ((default-directory gpr-dir))
-              (eglot-ensure))))
-      (user-error "No .gpr file; ada_language_server needs a project file"))))
-
 (use-package markdown-mode)
 
 (setq ztree-indent-step 2)
@@ -1478,8 +1321,6 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
   ("C-c A" . simply-kanban-agenda))
 
 (define-key org-mode-map (kbd "C-c ;") #'simply-kanban-show-card)
-
-(load-theme 'doom-city-lights t)
 
 (defun pwsh-here ()
   "Open a native Windows PowerShell console in the current directory."
