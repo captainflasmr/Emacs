@@ -655,6 +655,62 @@ n" :prepend t :jump-to-captured t)
                               "\\`\\(?:Indexing\\|Retrieving mail\\)" (car args)))
                   (apply orig-fn args))))
 
+  ;;
+  ;; -> mu4e-update-indicator
+  ;;
+  (defvar my/mu4e--updating nil
+    "Non-nil while mu4e is retrieving or indexing mail.")
+  (defvar my/mu4e-update-timer nil
+    "Timer for refreshing the mu4e update header-line.")
+
+  (defun my/mu4e--update-buffer-p ()
+    "Return non-nil if the mu4e retrieval process is alive."
+    (and (boundp 'mu4e--update-buffer)
+         (buffer-live-p mu4e--update-buffer)
+         (process-live-p (get-buffer-process mu4e--update-buffer))))
+
+  (defun my/mu4e--buffer-is-mu4e-p ()
+    "Return non-nil if current buffer is in a mu4e mode."
+    (memq major-mode
+          '(mu4e-main-mode mu4e-headers-mode
+            mu4e-view-mode mu4e-raw-view-mode)))
+
+  (defun my/mu4e-update-header-refresh ()
+    "Refresh the header-line in mu4e buffers to show update status."
+    (let* ((retrieving (my/mu4e--update-buffer-p))
+           (indicator
+            (cond (retrieving
+                   (propertize " ⟳ mu4e retrieving... " 'face 'mode-line-highlight))
+                  (my/mu4e--updating
+                   (propertize " ⟳ mu4e indexing... "    'face 'mode-line-highlight))
+                  (t nil))))
+      (dolist (buf (buffer-list))
+        (with-current-buffer buf
+          (when (my/mu4e--buffer-is-mu4e-p)
+            (setq-local header-line-format indicator))))
+      (force-mode-line-update t)
+      (unless indicator
+        (setq my/mu4e--updating nil)
+        (when my/mu4e-update-timer
+          (cancel-timer my/mu4e-update-timer)
+          (setq my/mu4e-update-timer nil)))))
+
+  (defun my/mu4e-update-header-start ()
+    "Start the mu4e update header-line timer."
+    (setq my/mu4e--updating t)
+    (my/mu4e-update-header-refresh)
+    (unless my/mu4e-update-timer
+      (setq my/mu4e-update-timer
+            (run-at-time 0.5 0.5 #'my/mu4e-update-header-refresh))))
+
+  (defun my/mu4e-update-header-stop ()
+    "Mark mu4e update as done and clear header-lines."
+    (setq my/mu4e--updating nil)
+    (my/mu4e-update-header-refresh))
+
+  (add-hook 'mu4e-update-pre-hook #'my/mu4e-update-header-start)
+  (add-hook 'mu4e-index-updated-hook #'my/mu4e-update-header-stop)
+
   ) ;; end (when (locate-library "mu4e"))
 
 ;;
