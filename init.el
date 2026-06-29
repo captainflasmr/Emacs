@@ -1428,28 +1428,27 @@ n" :prepend t :jump-to-captured t)
   "Outline / outline-indent folding, navigation, and structure commands."
   :transient-non-suffix #'transient--do-stay
   [["Fold at point"
-    ("TAB" "Toggle level"        outline-indent-toggle-level-at-point)
-    ("o"   "Toggle recursive"    my/outline-toggle-recursive)
-    ("h"   "Close fold"          outline-indent-close-fold)
-    ("s"   "Show subtree"        outline-show-subtree)]
+    ("TAB" "Toggle level"         outline-indent-toggle-level-at-point)
+    ("o"   "Toggle recursive"     my/outline-toggle-recursive)
+    ("h"   "Close fold"           outline-indent-close-fold)
+    ("s"   "Show subtree"         outline-show-subtree)]
    ["Whole buffer"
-    ("a"   "Open all folds"      outline-indent-open-folds)
-    ("m"   "Close all folds"     outline-indent-close-folds)
-    ("q"   "Hide to N levels"    my/outline-hide-sublevels-prompt)
+    ("a"   "Open all folds"       outline-indent-open-folds)
+    ("m"   "Close all folds"      outline-indent-close-folds)
+    ("l"   "Hide to N levels"     my/outline-hide-sublevels-prompt)
     ("k"   "Isolate (hide other)" outline-hide-other)]
    ["Navigate"
-    ("n"   "Next heading"        outline-next-visible-heading)
-    ("p"   "Prev heading"        outline-previous-visible-heading)
-    ("f"   "Fwd same level"      outline-indent-forward-same-level)
-    ("b"   "Back same level"     outline-indent-backward-same-level)
-    ("u"   "Up heading"          outline-up-heading)]
+    ("n"   "Next heading"         outline-next-visible-heading)
+    ("p"   "Prev heading"         outline-previous-visible-heading)
+    ("f"   "Fwd same level"       outline-indent-forward-same-level)
+    ("b"   "Back same level"      outline-indent-backward-same-level)
+    ("u"   "Up heading"           outline-up-heading)]
    ["Structure / Isolate"
-    (">"   "Shift right"         outline-indent-shift-right)
-    ("<"   "Shift left"          outline-indent-shift-left)
-
-    ("v"   "Select block"        outline-indent-select)
-    ("N"   "Narrow to block"     outline-indent-narrow)
-    ("w"   "Widen"               widen)]
+    (">"   "Shift right"          outline-indent-shift-right)
+    ("<"   "Shift left"           outline-indent-shift-left)
+    ("v"   "Select block"         outline-indent-select)
+    ("N"   "Narrow to block"      outline-indent-narrow)
+    ("w"   "Widen"                widen)]
    ])
 
 (with-eval-after-load 'outline-indent

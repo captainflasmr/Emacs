@@ -136,23 +136,23 @@
 
   (add-to-list 'dumb-jump-find-rules
                '(:type "function" :supports ("rg" "ag" "grep" "git-grep")
-                 :language "ada"
-                 :regex "\\s*(procedure|function)\\s+JJJ\\b"))
+                       :language "ada"
+                       :regex "\\s*(procedure|function)\\s+JJJ\\b"))
 
   (add-to-list 'dumb-jump-find-rules
                '(:type "type" :supports ("rg" "ag" "grep" "git-grep")
-                 :language "ada"
-                 :regex "\\s*(type|subtype)\\s+JJJ\\b"))
+                       :language "ada"
+                       :regex "\\s*(type|subtype)\\s+JJJ\\b"))
 
   (add-to-list 'dumb-jump-find-rules
                '(:type "module" :supports ("rg" "ag" "grep" "git-grep")
-                 :language "ada"
-                 :regex "\\s*package(\\s+body)?\\s+JJJ\\b"))
+                       :language "ada"
+                       :regex "\\s*package(\\s+body)?\\s+JJJ\\b"))
 
   (add-to-list 'dumb-jump-find-rules
                '(:type "variable" :supports ("rg" "ag" "grep" "git-grep")
-                 :language "ada"
-                 :regex "\\s*JJJ\\s*:\\s*(constant\\s+)?[A-Za-z_][A-Za-z0-9_.]*")))
+                       :language "ada"
+                       :regex "\\s*JJJ\\s*:\\s*(constant\\s+)?[A-Za-z_][A-Za-z0-9_.]*")))
 
 ;;
 ;; -> flymake — diagnostics, built-in. M-n/M-p to jump between errors.
@@ -379,7 +379,7 @@
   "Find the nearest .gpr file upward from DIR (defaults to `default-directory')."
   (let ((dir (or dir default-directory)))
     (locate-dominating-file dir
-      (lambda (d) (car (directory-files d t "\\.gpr\\'"))))))
+                            (lambda (d) (car (directory-files d t "\\.gpr\\'"))))))
 
 (defun my/ada-create-gpr (project-name &optional main-file)
   "Create PROJECT-NAME.gpr with an optional MAIN-FILE entry point."
@@ -542,11 +542,14 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 ;;
 (when (locate-library "outline-indent")
   (use-package outline-indent
+    :ensure t
     :commands outline-indent-minor-mode
     :custom
     (outline-indent-ellipsis " ▼")
     :hook
     ((nxml-mode
+      mhtml-mode
+      prog-mode
       web-mode
       yaml-mode
       yaml-ts-mode
@@ -558,45 +561,54 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
       python-ts-mode
       conf-mode) . outline-indent-minor-mode))
 
-  ;; Discovery menu: pops down after each selection, but motion keys pass
-  ;; through (transient--do-stay) so you can traverse while it's open.
-  (when (require 'transient nil t)
-    (transient-define-prefix outline-indent-transient ()
-      "Outline / outline-indent folding, navigation, and structure commands."
-      :transient-non-suffix #'transient--do-stay
-      [["Fold at point"
-        ("TAB" "Toggle level"         outline-indent-toggle-level-at-point)
-        ("o"   "Open fold"            outline-indent-open-fold)
-        ("c"   "Close fold"           outline-indent-close-fold)
-        ("O"   "Open recursively"     outline-indent-open-fold-rec)
-        ("s"   "Show subtree"         outline-show-subtree)
-        ("h"   "Hide subtree"         outline-hide-subtree)]
-       ["Whole buffer"
-        ("a"   "Show all"             outline-show-all)
-        ("t"   "Hide body"            outline-hide-body)
-        ("r"   "Open all folds"       outline-indent-open-folds)
-        ("m"   "Close all folds"      outline-indent-close-folds)
-        ("q"   "Hide to N levels"     outline-hide-sublevels)
-        ("k"   "Isolate (hide other)" outline-hide-other)]
-       ["Navigate"
-        ("n"   "Next heading"         outline-next-visible-heading)
-        ("p"   "Prev heading"         outline-previous-visible-heading)
-        ("f"   "Fwd same level"       outline-indent-forward-same-level)
-        ("b"   "Back same level"      outline-indent-backward-same-level)
-        ("u"   "Up heading"           outline-up-heading)]
-       ["Structure / Isolate"
-        (">"   "Shift right"          outline-indent-shift-right)
-        ("<"   "Shift left"           outline-indent-shift-left)
-        ("U"   "Move subtree up"      outline-indent-move-subtree-up)
-        ("D"   "Move subtree down"    outline-indent-move-subtree-down)
-        ("v"   "Select block"         outline-indent-select)
-        ("N"   "Narrow to block"      outline-indent-narrow)
-        ("w"   "Widen"                widen)]]))
+  ;; (add-hook 'outline-indent-minor-mode-hook
+  ;;           (lambda ()
+  ;;             (when (derived-mode-p 'nxml-mode)
+  ;;               (outline-indent-close-level 2))))
+
+  (defun my/outline-hide-sublevels-prompt ()
+    "Hide buffer to a given level, prompting for the level number."
+    (interactive)
+    (outline-hide-sublevels (read-number "Levels to hide: ")))
+
+  (defun my/outline-toggle-recursive ()
+    "Toggle fold: close if open, open recursively if closed."
+    (interactive)
+    (if (outline-indent-folded-p)
+        (outline-indent-open-fold-rec)
+      (outline-indent-close-fold)))
+
+  (require 'transient)
+
+  (transient-define-prefix outline-indent-transient ()
+    "Outline / outline-indent folding, navigation, and structure commands."
+    :transient-non-suffix #'transient--do-stay
+    [["Fold at point"
+      ("TAB" "Toggle level"         outline-indent-toggle-level-at-point)
+      ("o"   "Toggle recursive"     my/outline-toggle-recursive)
+      ("h"   "Close fold"           outline-indent-close-fold)
+      ("s"   "Show subtree"         outline-show-subtree)]
+     ["Whole buffer"
+      ("a"   "Open all folds"       outline-indent-open-folds)
+      ("m"   "Close all folds"      outline-indent-close-folds)
+      ("l"   "Hide to N levels"     my/outline-hide-sublevels-prompt)
+      ("k"   "Isolate (hide other)" outline-hide-other)]
+     ["Navigate"
+      ("n"   "Next heading"         outline-next-visible-heading)
+      ("p"   "Prev heading"         outline-previous-visible-heading)
+      ("f"   "Fwd same level"       outline-indent-forward-same-level)
+      ("b"   "Back same level"      outline-indent-backward-same-level)
+      ("u"   "Up heading"           outline-up-heading)]
+     ["Structure / Isolate"
+      (">"   "Shift right"          outline-indent-shift-right)
+      ("<"   "Shift left"           outline-indent-shift-left)
+      ("v"   "Select block"         outline-indent-select)
+      ("N"   "Narrow to block"      outline-indent-narrow)
+      ("w"   "Widen"                widen)]
+     ])
 
   (with-eval-after-load 'outline-indent
-    (when (fboundp 'outline-indent-transient)
-      (define-key outline-indent-minor-mode-map (kbd "C-c o")
-                  #'outline-indent-transient))
+    (define-key outline-indent-minor-mode-map (kbd "C-c o") #'outline-indent-transient)
     ;; Global fold/unfold across every outline-indent buffer (web-mode muscle memory).
-    (define-key outline-indent-minor-mode-map (kbd "C-c C-f")
-                #'outline-indent-toggle-fold)))
+    (define-key outline-indent-minor-mode-map (kbd "C-c C-f") #'outline-cycle))
+  )
