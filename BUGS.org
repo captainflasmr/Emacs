@@ -10,7 +10,9 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO use M-a for something
+** TODO fix nas mount
+
+** TODO use M-c for something
 
 ** TODO add usb backup mount to install
 

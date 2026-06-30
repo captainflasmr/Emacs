@@ -312,3 +312,10 @@ Like `dired-copy-filename-as-kill' but for ztree-diff."
 
 (setq chess-images-separate-frame nil)
 (setq chess-images-default-size 64)
+
+(use-package dired-clipboard
+  :hook (dired-mode . dired-clipboard-mode)
+  :custom
+  (dired-clipboard-recursive-copies 'always)
+  (dired-clipboard-existing-file-policy 'rename)
+  (dired-clipboard-keep-marker nil))

@@ -505,6 +505,14 @@ n" :prepend t :jump-to-captured t)
         ("C-t z" . dired-image-thumbnail-insert-subdir-recursive)  ; z for all (last letter)
         ("C-t k" . dired-image-thumbnail-kill-all-subdirs)))  ; k for kill
 
+(use-package dired-clipboard
+  :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/dired-clipboard"
+  :hook (dired-mode . dired-clipboard-mode)
+  :custom
+  (dired-clipboard-recursive-copies 'always)
+  (dired-clipboard-existing-file-policy 'rename)
+  (dired-clipboard-keep-marker nil))
+
 ;;
 ;; -> mu4e
 ;;
@@ -672,7 +680,7 @@ n" :prepend t :jump-to-captured t)
     "Return non-nil if current buffer is in a mu4e mode."
     (memq major-mode
           '(mu4e-main-mode mu4e-headers-mode
-            mu4e-view-mode mu4e-raw-view-mode)))
+                           mu4e-view-mode mu4e-raw-view-mode)))
 
   (defun my/mu4e-update-header-refresh ()
     "Refresh the header-line in mu4e buffers to show update status."
@@ -1362,8 +1370,8 @@ n" :prepend t :jump-to-captured t)
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 90)
-(add-to-list 'default-frame-alist '(alpha-background . 90))
+(set-frame-parameter nil 'alpha-background 80)
+(add-to-list 'default-frame-alist '(alpha-background . 80))
 
 ;; $ emacs --batch --eval '(progn (find-file "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld/emeld.el") (goto-char (point-min)) (condition-case nil (while (not (eobp)) (forward-sexp)) (error (message "Unbalanced at pos %d, line %d, col %d" (point) (line-number-at-pos) (current-column)))))' 2>&1
 ;; Unbalanced at pos 31818, line 693, col 62
@@ -1462,8 +1470,9 @@ n" :prepend t :jump-to-captured t)
   :hook (find-file-hook . simply-annotate-mode)
   :config
   (global-set-key (kbd "M-s") simply-annotate-command-map)
-  (setq simply-annotate-inline-position 'above)
-  (setq simply-annotate-tint-amount 20)
+  (require 'posframe)
+  (setq simply-annotate-inline-position 'margin-right)
+  (setq simply-annotate-tint-amount 50)
   (setq simply-annotate-hide-done-statuses '("resolved" "closed"))
   ;; (setq simply-annotate-hide-done-style 'full)
   (setq simply-annotate-hide-done-style 'indicator)
@@ -1478,14 +1487,14 @@ n" :prepend t :jump-to-captured t)
   (setq simply-annotate-author-list '("John Doe" "Jane Smith" "James Dyer"))
   (setq simply-annotate-prompt-for-author 'threads-only)  ; Prompt only for replies
   (setq simply-annotate-database-strategy 'both)
-  ;; (setq simply-annotate-display-style '(bracket))
+  (setq simply-annotate-display-style '(bracket))
   ;; (setq simply-annotate-inline-default t)
   )
 
 (with-eval-after-load 'simply-annotate
   (add-hook 'dired-mode-hook #'simply-annotate-dired-mode))
 
-(load-theme 'deeper-blue t)
+(load-theme 'doom-Iosvkem t)
 
 (custom-set-faces
  '(mode-line-buffer-id ((t (:foreground "#EEEEFF" :weight bold)))))
@@ -1494,3 +1503,9 @@ n" :prepend t :jump-to-captured t)
 
 (setq chess-images-separate-frame nil)
 (setq chess-images-default-size 64)
+
+(set-face-background 'fringe (face-background 'default))
+(add-hook 'enable-theme-functions
+          (lambda (&rest _)
+            (when (facep 'fringe)
+              (set-face-background 'fringe (face-background 'default)))))
