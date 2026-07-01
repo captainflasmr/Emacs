@@ -10,15 +10,9 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO sway thanos/type might kill all Emacs
-
 ** TODO try ghosttty.el
 
 ** TODO use M-c for something
-
-** TODO add usb backup mount to install
-
-** DOING mu4e to send mail
 
 ** TODO archives not aligning with thunderbird
 
