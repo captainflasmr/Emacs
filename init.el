@@ -552,10 +552,10 @@ n" :prepend t :jump-to-captured t)
                     (mu4e-refile-folder . "/james/Archive")
                     (smtpmail-smtp-user . "james@dyerdwelling.family")
                     (smtpmail-smtp-server . "smtp.migadu.com")
-                    (smtpmail-smtp-service . 465)
-                    (smtpmail-stream-type . ssl)))
+                    (smtpmail-smtp-service . 587)
+                    (smtpmail-stream-type . starttls)))
           ,(make-mu4e-context
-            :name "bob"
+            :name "jimbob"
             :enter-func (lambda () (mu4e-message "Switch to jimbob"))
             :leave-func (lambda () (mu4e-message "Leave jimbob"))
             :match-func (lambda (msg)
@@ -569,8 +569,8 @@ n" :prepend t :jump-to-captured t)
                     (mu4e-refile-folder . "/jimbob/Archive")
                     (smtpmail-smtp-user . "jimbob@dyerdwelling.family")
                     (smtpmail-smtp-server . "smtp.migadu.com")
-                    (smtpmail-smtp-service . 465)
-                    (smtpmail-stream-type . ssl)))
+                    (smtpmail-smtp-service . 587)
+                    (smtpmail-stream-type . starttls)))
           ,(make-mu4e-context
             :name "captainflasmr"
             :enter-func (lambda () (mu4e-message "Switch to Gmail"))
