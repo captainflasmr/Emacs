@@ -505,14 +505,6 @@ n" :prepend t :jump-to-captured t)
         ("C-t z" . dired-image-thumbnail-insert-subdir-recursive)  ; z for all (last letter)
         ("C-t k" . dired-image-thumbnail-kill-all-subdirs)))  ; k for kill
 
-(use-package dired-clipboard
-  :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/dired-clipboard"
-  :hook (dired-mode . dired-clipboard-mode)
-  :custom
-  (dired-clipboard-recursive-copies 'always)
-  (dired-clipboard-existing-file-policy 'rename)
-  (dired-clipboard-keep-marker nil))
-
 ;;
 ;; -> mu4e
 ;;
@@ -1509,3 +1501,4 @@ n" :prepend t :jump-to-captured t)
           (lambda (&rest _)
             (when (facep 'fringe)
               (set-face-background 'fringe (face-background 'default)))))
+

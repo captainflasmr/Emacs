@@ -12,8 +12,6 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 ** TODO try ghosttty.el
 
-** TODO fix nas mount
-
 ** TODO use M-c for something
 
 ** TODO add usb backup mount to install
