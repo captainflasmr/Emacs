@@ -1,0 +1,30 @@
+#+TITLE: captainflasmr's journal
+#+NICK: captainflasmr
+#+DESCRIPTION:
+#+FOLLOW: https://org-social.org/social.org
+#+FOLLOW: https://andros.dev/static/social.org
+
+#+FOLLOW: Notxor https://notxor.nueva-actitud.org/social.org
+#+FOLLOW: sachac https://sachachua.com/social.org
+* Posts
+** 
+:PROPERTIES:
+:ID: 2025-12-01T06:36:22+0000
+:TAGS: 
+:CLIENT: org-social.el
+:MOOD: 
+:END:
+
+Hello there!, thought I would try this out and might put some snippets I've been working on.  Here is my blog ; https://www.emacs.dyerdwelling.family/
+
+** 
+:PROPERTIES:
+:ID: 2025-12-02T11:00:14+0000
+:TAGS: 
+:CLIENT: org-social.el
+:MOOD: 
+:END:
+
+Just been working on my newest package, I have adapted image-dired quite a lot to get it working well as an image viewer, the main aspect I really like is to be able to view the images in a grid form, so I thought I would create one that would work in a similar manner for videos, check it out!
+
+https://github.com/captainflasmr/dired-video-thumbnail
