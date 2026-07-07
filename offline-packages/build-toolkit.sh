@@ -246,6 +246,18 @@ if [[ -f "$CODING_SRC" ]]; then
   cp "$CODING_SRC" "${STAGING}/init-starter-coding.el"
 fi
 
+# --- Windows starter init snippet (optional) ---
+# starters/emacs-on-windows.el is the Windows-specific init.el from
+# ~/source/repos/Emacs-on-windows.  Installed on the target as
+# ~/.emacs.d/init-on-windows.el and left unloaded.  The user opts in
+# by adding to ~/.emacs.d/init.el:
+#   (load (expand-file-name "init-on-windows" user-emacs-directory) t t)
+WIN_STARTER_SRC="${SCRIPT_DIR}/starters/emacs-on-windows.el"
+if [[ -f "$WIN_STARTER_SRC" ]]; then
+  echo ">> Copying Windows starter from $(basename "$WIN_STARTER_SRC")..."
+  cp "$WIN_STARTER_SRC" "${STAGING}/init-on-windows.el"
+fi
+
 # --- Local packages ---
 # Drop user-created or locally-modified packages into offline-packages/local-packages/.
 # Either foo.el at the top level, or foo/foo.el (+ siblings) in a subdirectory.
@@ -353,7 +365,7 @@ backup_item() {
 mkdir -p "$BACKUP_DIR"
 
 # Back up existing init files so we don't silently clobber an existing setup.
-for f in init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el; do
+for f in init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el init-on-windows.el; do
   if [[ -e "${EMACS_D}/${f}" && ! -L "${EMACS_D}/${f}" ]]; then
     backup_item "${EMACS_D}/${f}" "${BACKUP_DIR}/${f}"
   fi
@@ -423,6 +435,13 @@ fi
 if [[ -f "${HERE}/init-starter-coding.el" ]]; then
   cp "${HERE}/init-starter-coding.el" "${EMACS_D}/init-starter-coding.el"
   echo ">> Coding companion installed at ${EMACS_D}/init-starter-coding.el (not auto-loaded)"
+fi
+
+# Install Windows starter if bundled. NOT auto-loaded — opt in from init.el
+# with: (load (expand-file-name "init-on-windows" user-emacs-directory) t t)
+if [[ -f "${HERE}/init-on-windows.el" ]]; then
+  cp "${HERE}/init-on-windows.el" "${EMACS_D}/init-on-windows.el"
+  echo ">> Windows starter installed at ${EMACS_D}/init-on-windows.el (not auto-loaded)"
 fi
 
 # Install tools/ drop-zone (language servers, debug adapters) to ~/.emacs.d/bin/.
@@ -539,7 +558,7 @@ if not exist "%EMACS_D%" mkdir "%EMACS_D%"
 if not exist "%BACKUP_DIR%" mkdir "%BACKUP_DIR%"
 
 :: Back up existing init files so we don't silently clobber an existing setup.
-for %%f in (init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el) do (
+for %%f in (init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el init-on-windows.el) do (
   if exist "%EMACS_D%\%%f" (
     echo    backing up %%f -^> .backups\%STAMP%\%%f
     move "%EMACS_D%\%%f" "%BACKUP_DIR%\%%f" >nul
@@ -606,6 +625,10 @@ if exist "%HERE%init-starter.el" (
 if exist "%HERE%init-starter-coding.el" (
   copy "%HERE%init-starter-coding.el" "%EMACS_D%\init-starter-coding.el" >nul
   echo ^>^> Coding companion installed at %EMACS_D%\init-starter-coding.el (not auto-loaded^)
+)
+if exist "%HERE%init-on-windows.el" (
+  copy "%HERE%init-on-windows.el" "%EMACS_D%\init-on-windows.el" >nul
+  echo ^>^> Windows starter installed at %EMACS_D%\init-on-windows.el (not auto-loaded^)
 )
 
 :: Install tools/ drop-zone (language servers, debug adapters) to ~/.emacs.d/bin/.
@@ -724,7 +747,7 @@ rollback_dir() {
   echo ">> Restoring from directory backup: ${bak_dir}"
 
   # Restore items that live directly under ~/.emacs.d/
-  for item in init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el \
+  for item in init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el init-on-windows.el \
               elpa local-packages bin docs Emacs-vanilla Emacs-DIYer; do
     local src="${bak_dir}/${item}"
     [[ -e "$src" ]] || continue
@@ -870,7 +893,7 @@ set bak_dir=%BACKUPS_DIR%\!LATEST!
 if exist "!bak_dir!" (
   echo ^>^> Restoring from directory backup: !LATEST!
 
-  for %%i in (init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el elpa local-packages bin docs Emacs-vanilla Emacs-DIYer) do (
+  for %%i in (init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el init-on-windows.el elpa local-packages bin docs Emacs-vanilla Emacs-DIYer) do (
     if exist "!bak_dir!\%%i" (
       if exist "%EMACS_D%\%%i" (
         echo    archiving current %%i -^> !NOW!-rolledback\%%i
@@ -965,6 +988,9 @@ fi
   fi
   if [[ -f "${STAGING}/init-starter-coding.el" ]]; then
     echo "Coding starter: init-starter-coding.el (optional, not auto-loaded)"
+  fi
+  if [[ -f "${STAGING}/init-on-windows.el" ]]; then
+    echo "Windows starter: init-on-windows.el (optional, not auto-loaded)"
   fi
   if [[ -d "${STAGING}/local-packages" ]]; then
     _lp_count="$(find "${STAGING}/local-packages" -maxdepth 1 -mindepth 1 \
