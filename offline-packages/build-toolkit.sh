@@ -138,7 +138,7 @@ if [[ "$WITH_SOURCE" -eq 1 && "$EMACS_SOURCE_VERSION" == "auto" ]]; then
     WITH_SOURCE=0
   fi
 fi
-STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+STAMP="$(date +%Y%m%dT%H%M%S)"
 TOOLKIT_NAME="emacs-offline-toolkit-${EMACS_VERSION}-${OS_SLUG}-${ARCH}-${STAMP}"
 STAGING="${OUT_DIR}/.${TOOLKIT_NAME}-staging-$$"
 mkdir -p "$STAGING"

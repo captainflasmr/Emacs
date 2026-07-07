@@ -144,7 +144,7 @@ echo ">> Packages (${PKG_COUNT_CFG}): ${PACKAGES}"
 TEMPLATE="${SCRIPT_DIR}/init.el.in"
 [[ -f "$TEMPLATE" ]] || { echo "Missing template: $TEMPLATE" >&2; exit 1; }
 
-STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+STAMP="$(date +%Y%m%dT%H%M%S)"
 STAGE="$(mktemp -d "${TMPDIR:-/tmp}/emacs-offline-build-${VER}-XXXXXX")"
 trap 'rm -rf "$STAGE"' EXIT
 mkdir -p "${STAGE}/.emacs.d"

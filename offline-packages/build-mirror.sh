@@ -18,7 +18,7 @@ OUT_DIR="${1:-$HOME}"
 EMACS="${EMACS:-emacs}"
 EMACS_VERSION="$("$EMACS" --batch --eval '(princ emacs-version)' 2>&1 | tail -n1)"
 ARCH="$(uname -m)"
-STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+STAMP="$(date +%Y%m%dT%H%M%S)"
 
 # OS slug: prefer ID[-VERSION_ID] from /etc/os-release (e.g. "arch", "ubuntu-22.04")
 OS_SLUG="unknown"

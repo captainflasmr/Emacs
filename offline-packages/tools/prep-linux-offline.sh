@@ -19,7 +19,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT_DIR="$(cd "${1:-.}" && pwd)"
-STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+STAMP="$(date +%Y%m%dT%H%M%S)"
 BUNDLE_NAME="linux-tools-offline-${STAMP}"
 STAGING="$(mktemp -d "/tmp/${BUNDLE_NAME}-XXXXXX")"
 trap 'rm -rf "$STAGING"' EXIT
