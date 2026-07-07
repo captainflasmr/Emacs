@@ -14,3 +14,4 @@ docs/*
 tools/*
 !tools/.gitkeep
 !tools/README.md
+!tools/setup-windows-tools.bat

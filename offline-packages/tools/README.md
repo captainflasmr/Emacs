@@ -36,6 +36,28 @@ is fine.
 - **vscode-js-debug** — requires `npm install && npm run compile`; ship the
   compiled `out/` tree from the online build machine if you want it.
 
+## Windows support
+
+These binaries are Linux x86_64. On Windows, use `setup-windows-tools.bat` (in this
+directory) to download Windows-native equivalents. Tools that are Java-based
+(JDTLS, kotlin-language-server) work cross-platform using the bundled JARs;
+the script handles platform-specific launchers for the rest.
+
+| Tool | Windows status | Provides |
+|------|----------------|----------|
+| `jdtls/` | Java JARs bundled work cross-platform; need `.bat` launcher | eglot (java-mode) |
+| `kotlin-language-server/` | Java JARs bundled work cross-platform; need `.bat` launcher | eglot (kotlin-mode) |
+| `netcoredbg/` | Downloaded by `setup-windows-tools.bat` as `win64` ZIP | dape (C#/.NET debugger) |
+| `ada_language_server/` | Downloaded by `setup-windows-tools.bat` as `win64` ZIP | eglot (ada-mode) |
+| `buf/` | Downloaded by `setup-windows-tools.bat` as `Windows-x86_64.exe` | eglot (protobuf-mode) |
+| `csharp-ls/` | Installed via `dotnet tool install --global csharp-ls` | eglot (csharp-mode) |
+| `npm/` | `.tgz` files are platform-independent | `npm install -g` |
+
+Run the script from the extracted toolkit directory after `setup.bat`:
+```
+setup-windows-tools.bat
+```
+
 ## Layout expected by `starters/coding.el`
 
 ```
