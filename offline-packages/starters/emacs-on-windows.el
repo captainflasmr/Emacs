@@ -163,12 +163,8 @@
 
 (use-package protobuf-mode)
 
-(use-package tree)
-
 (with-eval-after-load 'dired
   (define-key dired-mode-map (kbd "C") 'dired-do-copy))
-
-(load-theme 'timu-rouge t)
 
 (use-package doom-themes)
 
@@ -190,9 +186,6 @@
   (interactive)
   (insert (downcase (face-attribute 'default :background))))
 
-(global-set-key (kbd "C-q i") 'highlight-indent-guides-mode)
-(global-set-key (kbd "M-s b") ' insert-default-background-color)
-
 (use-package web-mode
   :mode "\\.cshtml?\\'"
   :hook (html-mode . web-mode)
@@ -200,6 +193,7 @@
 
 (add-to-list 'auto-mode-alist '("\\.cshtml\\'" . html-mode))
 (add-to-list 'auto-mode-alist '("\\.proto\\'" . protobuf-mode))
+(add-to-list 'auto-mode-alist '("\\.csproj\\'" . nxml-mode))
 
 (setq eglot-ignored-server-capabilities
       '(
@@ -233,8 +227,6 @@
 (setq recentf-max-menu-items 40)
 (setq recentf-max-saved-items 40)
 
-(setq max-mini-window-height 6)
-
 ;; ============================================================
 
 (setq org-todo-keywords
@@ -250,11 +242,6 @@
         ))
 
 (setq completion-auto-select t)
-
-(defvar-local my-fido-use-regex nil
-  "Whether to use regex filtering in current minibuffer.")
-
-(add-to-list 'auto-mode-alist '("\\.csproj\\'" . nxml-mode))
 
 (use-package dape
   :init
