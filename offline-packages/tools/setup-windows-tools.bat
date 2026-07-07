@@ -15,6 +15,10 @@
 :: Prerequisites you install separately: Java 21+, .NET 10+, Node.js, Visual Studio.
 setlocal enabledelayedexpansion
 
+:: Ensure System32 and common Windows binary locations are on PATH.
+set "WIN_PATH=%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem;%SystemRoot%\System32\WindowsPowerShell\v1.0\;%SystemRoot%\System32\OpenSSH\"
+set "PATH=%WIN_PATH%;%PATH%"
+
 set ROOT=%~1
 if "%ROOT%"=="" set ROOT=%APPDATA%\.emacs.d\bin
 if not exist "%ROOT%" mkdir "%ROOT%"

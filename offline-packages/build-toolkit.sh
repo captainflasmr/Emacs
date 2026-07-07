@@ -476,6 +476,11 @@ setlocal enabledelayedexpansion
 
 set HERE=%~dp0
 
+:: Ensure System32 and common Windows binary locations are on PATH.
+:: When invoked from Emacs eshell or a minimal cmd, System32 may be missing.
+set "WIN_PATH=%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem;%SystemRoot%\System32\WindowsPowerShell\v1.0\;%SystemRoot%\System32\OpenSSH\"
+set "PATH=%WIN_PATH%;%PATH%"
+
 :: Use Windows' bundled bsdtar explicitly. The MSYS/Git-bash GNU tar that is
 :: often first on PATH treats a "z:\..." archive path as a remote host ("z:")
 :: and fails with "Cannot connect to z: resolve failed".
@@ -768,6 +773,10 @@ chmod +x "${STAGING}/rollback.sh"
 cat > "${STAGING}/rollback.bat" <<'ROLLBACKBAT'
 @echo off
 setlocal enabledelayedexpansion
+
+:: Ensure System32 is on PATH (robocopy, move, etc. live there).
+set "WIN_PATH=%SystemRoot%\System32;%SystemRoot%;%SystemRoot%\System32\Wbem;%SystemRoot%\System32\WindowsPowerShell\v1.0\"
+set "PATH=%WIN_PATH%;%PATH%"
 
 :: Accept either EMACS_D path (ending with .emacs.d) or HOME path.
 :: Must match the same resolution as setup.bat for correct rollback.

@@ -24,6 +24,7 @@
 ;;
 (when (eq system-type 'windows-nt)
   (let* ((bin (expand-file-name "bin" user-emacs-directory))
+         (sys (getenv "SystemRoot"))
          (xPaths
           `(,bin
             ,(concat bin "/PortableGit/bin")
@@ -34,7 +35,11 @@
             ,(concat bin "/find")
             ,(concat bin "/ImageMagick-portable-Q16-x64")
             ,(concat bin "/ffmpeg-essentials/bin")
-            ,(concat bin "/cwrsync/bin")))
+            ,(concat bin "/cwrsync/bin")
+            ,(concat sys "/System32")
+            ,(concat sys "/System32/Wbem")
+            ,(concat sys "/System32/WindowsPowerShell/v1.0/")
+            ,(concat sys "/System32/OpenSSH/")))
          (sysPath (getenv "PATH")))
     (setenv "PATH" (concat (mapconcat #'identity xPaths ";") ";" sysPath))
     (setq exec-path (append xPaths (split-string sysPath ";") (list "." exec-directory)))))
