@@ -95,13 +95,8 @@ if exist "!HUN_DIR!\.done" goto ALREADY_HUN
   if exist "!HUN_DIR!" rmdir /s /q "!HUN_DIR!"
   mkdir "!HUN_DIR!"
   pushd "!HUN_DIR!"
-  set HUNZIP=https://github.com/truatpasteurdotfr/hunspell-windows/releases/download/v1.7.2/hunspell-1.7.2-win32.zip
-  echo    Downloading from !HUNZIP!...
-  call :download "!HUNZIP!" "hunspell.zip"
-  if not exist hunspell.zip goto HUN_SKIP_DIC
-  tar -xf hunspell.zip --strip-components=1
-  del hunspell.zip
-:HUN_SKIP_DIC
+  echo    Hunspell binary repo no longer available; installing dictionary only.
+  echo    Download hunspell binaries manually from https://github.com/iquiw/hunspell-binary/releases
   :: Download English dictionary
   if not exist "share\hunspell" mkdir "share\hunspell"
   call :download "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.dic" "share\hunspell\en_GB.dic"
@@ -123,7 +118,7 @@ if exist "!NC_DIR!\.done" goto ALREADY_NC
   if exist "!NC_DIR!" rmdir /s /q "!NC_DIR!"
   mkdir "!NC_DIR!"
   pushd "!NC_DIR!"
-  set NCURL=https://github.com/Samsung/netcoredbg/releases/download/release-1.0.1/netcoredbg-1.0.1-win64.zip
+  set NCURL=https://github.com/Samsung/netcoredbg/releases/download/3.2.0-1092/netcoredbg-win64.zip
   echo    Downloading from !NCURL!...
   call :download "!NCURL!" "netcoredbg.zip"
   if not exist netcoredbg.zip goto NC_SKIP
@@ -168,13 +163,15 @@ echo [6/13] ffmpeg (video processing)...
 set FF_DIR=%ROOT%\ffmpeg-7.1.1-essentials_build
 if exist "!FF_DIR!\.done" goto ALREADY_FF
   if exist "!FF_DIR!" rmdir /s /q "!FF_DIR!"
-  set FFZIP=ffmpeg-7.1.1-essentials_build.zip
-  set FFURL=https://www.gyan.dev/ffmpeg/builds/packages/!FFZIP!
+  set FFZIP=ffmpeg-release-essentials.zip
+  set FFURL=https://www.gyan.dev/ffmpeg/builds/!FFZIP!
   echo    Downloading from !FFURL!...
   call :download "!FFURL!" "%TMP%\!FFZIP!"
   if not exist "%TMP%\!FFZIP!" goto FAIL_FF
   tar -xf "%TMP%\!FFZIP!" -C "%ROOT%"
-  move "%ROOT%\ffmpeg-7.1.1-essentials_build\bin\ffmpeg.exe" "%ROOT%\" 2>nul
+  for /d %%d in ("%ROOT%\ffmpeg-*-essentials_build") do (
+    move "%%d" "!FF_DIR!" >nul 2>nul
+  )
   del "%TMP%\!FFZIP!"
   copy nul "!FF_DIR!\.done" >nul
   echo    ffmpeg installed.
@@ -195,12 +192,17 @@ echo [7/13] ImageMagick (image processing)...
 set IM_DIR=%ROOT%\ImageMagick-7.1.2-9-portable-Q16-x64
 if exist "!IM_DIR!\.done" goto ALREADY_IM
   if exist "!IM_DIR!" rmdir /s /q "!IM_DIR!"
-  set IMZIP=ImageMagick-7.1.2-9-portable-Q16-x64.zip
-  set IMURL=https://imagemagick.org/archive/binaries/!IMZIP!
+  set IMZIP=ImageMagick-7.1.2-27-portable-Q16-x64.7z
+  set IMURL=https://github.com/ImageMagick/ImageMagick/releases/download/7.1.2-27/!IMZIP!
   echo    Downloading from !IMURL!...
   call :download "!IMURL!" "%TMP%\!IMZIP!"
   if not exist "%TMP%\!IMZIP!" goto FAIL_IM
-  tar -xf "%TMP%\!IMZIP!" -C "%ROOT%"
+  if "%HAVE_CURL%"=="1" (
+    :: Try tar first (bsdtar on Win10+ handles 7z), fall back to 7-Zip
+    tar -xf "%TMP%\!IMZIP!" -C "%ROOT%" 2>nul
+  )
+  if not exist "!IM_DIR!" (
+    echo    Trying 7-Zip extraction... &tar -xf "!IM_DIR!...")
   del "%TMP%\!IMZIP!"
   copy nul "!IM_DIR!\.done" >nul
   echo    ImageMagick installed.
@@ -289,8 +291,8 @@ echo      kotlin-ls: https://github.com/fwcd/kotlin-language-server/releases
 :: ============================================================
 echo [11/13] ada_language_server...
 if exist "%ROOT%\ada_language_server\.done" goto ALREADY_ALS
-  set ALSZIP=ada_language_server-windows-x86_64-28.0w.zip
-  set ALSURL=https://github.com/AdaCore/ada_language_server/releases/download/28.0w/!ALSZIP!
+  set ALSZIP=als-2026.3.202607051-win32-x64.tar.gz
+  set ALSURL=https://github.com/AdaCore/ada_language_server/releases/download/2026.3.202607051/!ALSZIP!
   mkdir "%ROOT%\ada_language_server" 2>nul
   pushd "%ROOT%\ada_language_server"
   echo    Downloading from !ALSURL!...
