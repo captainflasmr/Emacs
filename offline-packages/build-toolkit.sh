@@ -483,7 +483,7 @@ set "TAR=%SystemRoot%\System32\tar.exe"
 if not exist "%TAR%" set "TAR=tar"
 
 :: Accept either EMACS_D path (ending with .emacs.d) or HOME path.
-:: Falls back to %%HOME%% or %%USERPROFILE%%.
+:: Falls back to %APPDATA%\.emacs.d (the standard Emacs config location on Windows).
 if not "%1"=="" (
   set "TARGET=%1"
   :: Strip trailing separator if present
@@ -501,16 +501,10 @@ if not "%1"=="" (
     set EMACS_D=!TARGET!\.emacs.d
   )
 ) else (
-  rem Use %HOME% only if it is an absolute Windows path (drive-letter form,
-  rem e.g. C-colon-backslash). Under MSYS/Git-bash HOME is often "." or
-  rem "/home/user", which would produce invalid relative targets.
-  set "MY_HOME="
-  if not "%HOME%"=="" (
-    set "H=%HOME%"
-    if "!H:~1,1!"==":" set "MY_HOME=%HOME%"
-  )
-  if "!MY_HOME!"=="" set "MY_HOME=%USERPROFILE%"
-  set "EMACS_D=!MY_HOME!\.emacs.d"
+  rem Use %APPDATA% as the default HOME — Emacs on Windows looks here by
+  rem default, so .emacs.d lives at %APPDATA%\.emacs.d.
+  set "MY_HOME=%APPDATA%"
+  set "EMACS_D=%APPDATA%\.emacs.d"
 )
 for /f %%I in ('powershell -Command "Get-Date -Format 'yyyyMMddTHHmmss'"') do set STAMP=%%I
 set BACKUP_DIR=%EMACS_D%\.backups\%STAMP%
@@ -794,16 +788,9 @@ if not "%1"=="" (
     set EMACS_D=!TARGET!\.emacs.d
   )
 ) else (
-  rem Use %HOME% only if it is an absolute Windows path (drive-letter form,
-  rem e.g. C-colon-backslash). Under MSYS/Git-bash HOME is often "." or
-  rem "/home/user", which would produce invalid relative targets.
-  set "MY_HOME="
-  if not "%HOME%"=="" (
-    set "H=%HOME%"
-    if "!H:~1,1!"==":" set "MY_HOME=%HOME%"
-  )
-  if "!MY_HOME!"=="" set "MY_HOME=%USERPROFILE%"
-  set "EMACS_D=!MY_HOME!\.emacs.d"
+  rem Use %APPDATA% as the default HOME — must match setup.bat.
+  set "MY_HOME=%APPDATA%"
+  set "EMACS_D=%APPDATA%\.emacs.d"
 )
 set BACKUPS_DIR=%EMACS_D%\.backups
 for /f %%I in ('powershell -Command "Get-Date -Format 'yyyyMMddTHHmmss'"') do set NOW=%%I

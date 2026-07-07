@@ -90,9 +90,13 @@ download \
   "${TOOLS_DIR}/archives/ffmpeg-release-essentials.zip" \
   || FAILED=$((FAILED + 1))
 
-# ---------- 6. ImageMagick ----------
+# ---------- 6. ImageMagick (7z format — needs 7zr.exe to extract) ----------
 echo ""
-echo "[6/13] ImageMagick"
+echo "[6/13] ImageMagick (7z)"
+download \
+  "https://www.7-zip.org/a/7zr.exe" \
+  "${TOOLS_DIR}/archives/7zr.exe" \
+  || FAILED=$((FAILED + 1))
 download \
   "https://github.com/ImageMagick/ImageMagick/releases/download/7.1.2-27/ImageMagick-7.1.2-27-portable-Q16-x64.7z" \
   "${TOOLS_DIR}/archives/ImageMagick-7.1.2-27-portable-Q16-x64.7z" \
@@ -255,7 +259,9 @@ if exist "%ROOT%\ffmpeg-*-essentials_build\.done" goto :skip_ffmpeg
 if exist "%ROOT%\ImageMagick-*-portable-Q16-x64\.done" goto :skip_imagemagick
   echo [6/13] ImageMagick...
   if exist "%ARCHIVES%\ImageMagick-*-portable-Q16-x64.7z" (
-    if "%HAVE_CURL%"=="1" (
+    if exist "%ARCHIVES%\7zr.exe" (
+      "%ARCHIVES%\7zr.exe" x "%ARCHIVES%\ImageMagick-*-portable-Q16-x64.7z" -o"%ROOT%" -y >nul
+    ) else (
       tar -xf "%ARCHIVES%\ImageMagick-*-portable-Q16-x64.7z" -C "%ROOT%" 2>nul
     )
     for /d %%d in ("%ROOT%\ImageMagick-*-portable-Q16-x64") do (
@@ -264,7 +270,7 @@ if exist "%ROOT%\ImageMagick-*-portable-Q16-x64\.done" goto :skip_imagemagick
     if exist "%ROOT%\ImageMagick-*-portable-Q16-x64" (
       echo    Installed.
     ) else (
-      echo    Failed to extract .7z format. Install manually from:
+      echo    Failed to extract .7z. Install manually from:
       echo    https://imagemagick.org/script/download.php
     )
   ) else (

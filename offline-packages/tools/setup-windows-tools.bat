@@ -7,7 +7,7 @@
 ::   JDTLS, kotlin-language-server, ada_language_server, buf
 ::   hunspell, cmake, clang, Pandoc, OmniSharp, protoc, svn2git
 ::
-:: Run AFTER setup.bat.  Installs under %USERPROFILE%\bin\ by default
+:: Run AFTER setup.bat.  Installs into %APPDATA%\.emacs.d\bin\ by default.
 :: (matching Windows init.el `~/bin/...` paths).  Pass a different root:
 ::   setup-windows-tools.bat D:\tools
 ::
@@ -187,25 +187,33 @@ if exist "!FF_DIR!\.done" goto ALREADY_FF
 
 :: ============================================================
 :: 7. ImageMagick — image processing (for image-dired)
+::    Downloaded as .7z; 7zr.exe (standalone 7-Zip extractor) is fetched
+::    first to handle extraction on Windows.
 :: ============================================================
 echo [7/13] ImageMagick (image processing)...
-set IM_DIR=%ROOT%\ImageMagick-7.1.2-9-portable-Q16-x64
+set IM_DIR=%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64
 if exist "!IM_DIR!\.done" goto ALREADY_IM
   if exist "!IM_DIR!" rmdir /s /q "!IM_DIR!"
+  :: Download 7zr.exe (588 KB standalone 7-Zip extractor)
+  call :download "https://www.7-zip.org/a/7zr.exe" "%TMP%\7zr.exe"
   set IMZIP=ImageMagick-7.1.2-27-portable-Q16-x64.7z
   set IMURL=https://github.com/ImageMagick/ImageMagick/releases/download/7.1.2-27/!IMZIP!
   echo    Downloading from !IMURL!...
   call :download "!IMURL!" "%TMP%\!IMZIP!"
   if not exist "%TMP%\!IMZIP!" goto FAIL_IM
-  if "%HAVE_CURL%"=="1" (
-    :: Try tar first (bsdtar on Win10+ handles 7z), fall back to 7-Zip
+  if exist "%TMP%\7zr.exe" (
+    "%TMP%\7zr.exe" x "%TMP%\!IMZIP!" -o"%ROOT%" -y >nul
+  ) else (
     tar -xf "%TMP%\!IMZIP!" -C "%ROOT%" 2>nul
   )
-  if not exist "!IM_DIR!" (
-    echo    Trying 7-Zip extraction... &tar -xf "!IM_DIR!...")
-  del "%TMP%\!IMZIP!"
-  copy nul "!IM_DIR!\.done" >nul
-  echo    ImageMagick installed.
+  del "%TMP%\!IMZIP!" 2>nul
+  del "%TMP%\7zr.exe" 2>nul
+  if exist "!IM_DIR!" (
+    copy nul "!IM_DIR!\.done" >nul
+    echo    ImageMagick installed.
+  ) else (
+    echo    Failed to extract. Install manually from https://imagemagick.org/script/download.php
+  )
   goto END_IM
 :FAIL_IM
   echo    Download failed. Install from https://imagemagick.org/script/download.php
@@ -399,7 +407,7 @@ echo   ripgrep         -^> %ROOT%\find\rg.exe
 echo   Hunspell        -^> %ROOT%\hunspell
 echo   netcoredbg      -^> %ROOT%\netcoredbg
 echo   ffmpeg          -^> %ROOT%\ffmpeg-7.1.1-essentials_build\bin
-echo   ImageMagick     -^> %ROOT%\ImageMagick-7.1.2-9-portable-Q16-x64
+echo   ImageMagick     -^> %ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64
 echo   CMake           -^> %ROOT%\cmake\bin
 echo   Clang/LLVM      -^> %ROOT%\clang\bin
 echo   ada_ls          -^> %ROOT%\ada_language_server
@@ -421,7 +429,7 @@ echo             ,(concat bin-root "/find"^)
 echo             ,(concat bin-root "/netcoredbg"^)
 echo             ,(concat bin-root "/csharp-ls"^)
 echo             ,(concat bin-root "/ffmpeg-7.1.1-essentials_build/bin"^)
-echo             ,(concat bin-root "/ImageMagick-7.1.2-9-portable-Q16-x64"^)
+echo             ,(concat bin-root "/ImageMagick-7.1.2-27-portable-Q16-x64"^)
 echo             ,(concat bin-root "/clang/bin"^)
 echo             ,(concat bin-root "/cmake"^)
 echo             ,(concat bin-root "/protoc"^)
