@@ -67,33 +67,27 @@
  '(window-divider ((t (:foreground "black")))))
 
 (when (eq system-type 'windows-nt)
-  (let (
-        (winPaths "C:/WINDOWS/system32;C:/WINDOWS;C:/WINDOWS/System32/Wbem;C:/WINDOWS/System32/WindowsPowerShell/v1.0/;C:/WINDOWS/System32/OpenSSH/;C:/Program Files/dotnet/;C:/Program Files/Git/cmd;C:/Users/vm.j.dyer/AppData/Local/Microsoft/WindowsApps;C:/Users/vm.j.dyer/.dotnet/tools;C:/Users/vm.j.dyer/AppData/Local/Programs/Microsoft VS Code/bin;C:/Users/vm.j.dyer/Downloads/protoc-31.1-win64/bin;C:/Program Files/CMake/bin;d:/Program Files/Microsoft Visual Studio/2022/Professional/MSBuild/Current/Bin;c:/Users/vm.j.dyer/Downloads/ffmpeg-7.1.1-essentials_build/bin")
-        (xPaths
-         `(,(expand-file-name "~/bin")
-           ,(expand-file-name "~/bin/PortableGit/bin")
-           ,(expand-file-name "~/bin/PortableGit/usr/bin")
-           ,(expand-file-name "~/bin/Apache-Subversion/bin/")
-           ,(expand-file-name "~/bin/svn2git-2.4.0/bin")
-           ,(expand-file-name "~/bin/clang/bin")
-           ,(expand-file-name "~/bin/hunspell/bin")
-           ,(expand-file-name "~/bin/find")
-           ,(expand-file-name "~/bin/cmake")
-           ,(expand-file-name "C:/Program Files/Pandoc")
-           ,(expand-file-name "C:/Program Files/Java/jre1.8.0_451/bin")
-           ,(expand-file-name "~/bin/omnisharp-win-x64")
-           ,(expand-file-name "~/bin/netcoredbg")
-           ,(expand-file-name "~/bin/ffmpeg-7.1.1-essentials_build/bin/")
-           ,(expand-file-name "~/bin/ImageMagick-7.1.2-9-portable-Q16-x64/")
-           ,(expand-file-name "~/bin/csharp-ls/tools/net9.0/any")
-           "c:/GnuWin32/bin"
-           "c:/GNAT/2021/bin"
-           )))
-    (setenv "PATH" (concat
-                    (mapconcat 'identity xPaths ";")
-                    winPaths
-                    ))
-    (setq exec-path (append xPaths (split-string winPaths ";") (list "." exec-directory)))))
+  (let* ((bin (expand-file-name "bin" user-emacs-directory))
+         (xPaths
+          `(,bin
+            ,(concat bin "/PortableGit/bin")
+            ,(concat bin "/PortableGit/usr/bin")
+            ,(concat bin "/netcoredbg")
+            ,(concat bin "/csharp-ls/tools/net9.0/any")
+            ,(concat bin "/hunspell/bin")
+            ,(concat bin "/find")
+            ,(concat bin "/clang/bin")
+            ,(concat bin "/cmake/bin")
+            ,(concat bin "/protoc")
+            ,(concat bin "/ada_language_server/bin")
+            ,(concat bin "/buf/bin")
+            ,(concat bin "/kotlin-language-server/bin")
+            ,(concat bin "/jdtls/bin")
+            ,(concat bin "/ImageMagick-7.1.2-27-portable-Q16-x64")
+            ,(concat bin "/ffmpeg-7.1.1-essentials_build/bin")))
+         (sysPath (getenv "PATH")))
+    (setenv "PATH" (concat (mapconcat #'identity xPaths ";") ";" sysPath))
+    (setq exec-path (append xPaths (split-string sysPath ";") (list "." exec-directory)))))
 
 (add-hook 'csharp-mode-hook
           (lambda ()
@@ -121,13 +115,13 @@
 
 ;; MIMESIS Visual Solution Build System for Emacs
 ;; Adapted for modular architecture with IGM, MSS, DM, VDS, IGC components
-(setq eglot-server-programs
-      '((csharp-mode . ("dotnet" "d:/source/emacs-30.1/bin/csharp-ls/tools/net9.0/any/CSharpLanguageServer.dll"))))
-
-(define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "z:/SharedVM")))
+(let* ((bin (expand-file-name "bin" user-emacs-directory))
+       (csls-dll (car (file-expand-wildcards
+                       (expand-file-name "csharp-ls/tools/net9.0/any/CSharpLanguageServer.dll" bin)))))
+  (setq eglot-server-programs
+        `((csharp-mode . ("dotnet" ,csls-dll)))))
 
 (use-package corfu
-  :load-path "z:/SharedVM/source/corfu-main"
   :custom
   (corfu-auto nil)
   (corfu-auto-delay 0.1)
@@ -145,126 +139,7 @@
                                        (interactive)
                                        (find-file (concat user-emacs-directory "README.org"))))
 
-(use-package ztree
-  :load-path "z:/SharedVM/source/ztree"
-  :config
-  (setq-default ztree-diff-filter-list
-                '(
-                  "build" "\.dll" "\.iso" "\.xmp" "\.cache" "\.gnupg" "\.local"
-                  "\.mozilla" "\.thunderbird" "\.wine" "\.mp3" "\.mp4" "\.arpack"
-                  "\.git" "^Volume$" "^Games$" "^cache$" "^chromium$" "^elpa$" "^nas$"
-                  "^syncthing$" "bin" "obj"
-                  ))
-  ;; (setq-default ztree-diff-additional-options '("-w" "-i"))
-  (setq-default ztree-diff-consider-file-size t)
-  (setq-default ztree-diff-consider-file-permissions nil)
-  (setq-default ztree-diff-show-equal-files nil)
-  
-  ;; Add key binding for 'g' to full rescan
-  (with-eval-after-load 'ztree-diff
-    (define-key ztree-mode-map (kbd "g") 'ztree-diff-full-rescan))
-  
-  ;; Helper function to get directories from dired windows
-  (defun ztree-get-dired-directories ()
-    "Get directories from all visible dired buffers."
-    (let ((directories '()))
-      (dolist (window (window-list))
-        (with-current-buffer (window-buffer window)
-          (when (eq major-mode 'dired-mode)
-            (let ((dir (dired-current-directory)))
-              (when dir
-                (push (expand-file-name dir) directories))))))
-      (reverse (delete-dups directories))))
-  
-  ;; Enhanced ztree-diff with directory DWIM
-  (defun ztree-diff-dwim ()
-    "Enhanced ztree-diff that suggests directories from dired windows."
-    (interactive)
-    (let* ((dired-dirs (ztree-get-dired-directories))
-           (default-dir1 (or (car dired-dirs) default-directory))
-           (default-dir2 (or (cadr dired-dirs) default-directory))
-           (dir1 (read-directory-name 
-                  (format "First directory (default: %s): " 
-                          (file-name-nondirectory (directory-file-name default-dir1)))
-                  default-dir1 default-dir1 t))
-           (dir2 (read-directory-name 
-                  (format "Second directory (default: %s): " 
-                          (file-name-nondirectory (directory-file-name default-dir2)))
-                  default-dir2 default-dir2 t)))
-      (ztree-diff dir1 dir2)))
-  
-  ;; Optionally bind the enhanced function to a key
-  (global-set-key (kbd "C-c z d") 'ztree-diff-dwim))
-
-(with-eval-after-load 'ztree
-  (define-key ztree-mode-map (kbd "n") #'ztree-next-line)
-  (define-key ztree-mode-map (kbd "p") #'ztree-previous-line)
-
-  ;; Preserve point in ztree buffers when switching tab history
-  ;; Some window-configuration changes (eg. `tab-bar-history-back') can
-  ;; redisplay buffers and reset their point. Save ztree buffer points
-  ;; before the history change and restore them for visible windows after.
-  (defun my/ztree-save-all-points ()
-    "Save point and window-start for all `ztree-mode' buffers." 
-    (dolist (buf (buffer-list))
-      (with-current-buffer buf
-        (when (derived-mode-p 'ztree-mode)
-          (set (make-local-variable 'my/ztree-saved-point) (point))
-          (let ((win (get-buffer-window buf t)))
-            (when win
-              (set (make-local-variable 'my/ztree-saved-window-start) (window-start win))))))))
-
-  (defun my/ztree-restore-visible-points ()
-    "Restore saved point and window-start for visible `ztree-mode' buffers." 
-    (dolist (win (window-list))
-      (let ((buf (window-buffer win)))
-        (with-current-buffer buf
-          (when (and (derived-mode-p 'ztree-mode)
-                     (boundp 'my/ztree-saved-point))
-            (let ((p (min my/ztree-saved-point (point-max))))
-              (with-selected-window win
-                (goto-char p))
-              (when (and (boundp 'my/ztree-saved-window-start)
-                         (integerp my/ztree-saved-window-start))
-                (set-window-start win (min my/ztree-saved-window-start (point-max))))))))))
-
-  (defun my/ztree--around-tab-history (orig-fun &rest args)
-    "Save/restore ztree points around tab history commands.
-ORIG-FUN is the original command and ARGS are its arguments."
-    (my/ztree-save-all-points)
-    (prog1
-        (apply orig-fun args)
-      (my/ztree-restore-visible-points)))
-
-  (advice-add 'tab-bar-history-back :around #'my/ztree--around-tab-history)
-  (advice-add 'tab-bar-history-forward :around #'my/ztree--around-tab-history))
-
-;; Remap ztree faces to sensible theme faces so ztree matches the current theme.
-(defun my/ztree-remap-faces ()
-  "Map ztree/ztreep faces to theme faces for coherence with current theme."
-  (dolist (fn (face-list))
-    (let ((name (symbol-name fn)))
-      (when (or (string-prefix-p "ztree" name)
-                (string-prefix-p "ztreep" name))
-        (cond
-         ((string-match-p "add\\|added\\|add-face" name)
-          (set-face-attribute fn nil :foreground nil :background nil :inherit 'success))
-         ((string-match-p "remove\\|del\\|delete\\|missing\\|removed" name)
-          (set-face-attribute fn nil :foreground nil :background nil :inherit 'error))
-         ((string-match-p "diff\\|model-diff\\|equal" name)
-          (set-face-attribute fn nil :foreground nil :background nil :inherit 'font-lock-comment-face))
-         ((string-match-p "model\\|name" name)
-          (set-face-attribute fn nil :foreground nil :background nil :inherit 'font-lock-function-name-face))
-         (t
-          (set-face-attribute fn nil :foreground nil :background nil :inherit 'default)))))))
-
-;; Run remapping after any theme is loaded, and now if a theme is already active.
-(advice-add 'load-theme :after (lambda (&rest _) (my/ztree-remap-faces)))
-(when custom-enabled-themes
-  (my/ztree-remap-faces))
-
 (use-package simply-annotate
-  :load-path "z:/SharedVM/source/simply-annotate-main"
   :hook
   (find-file-hook . simply-annotate-mode)
   :custom
@@ -281,25 +156,18 @@ ORIG-FUN is the original command and ARGS are its arguments."
 
 (setq flymake-show-diagnostics-at-end-of-line nil)
 
-(use-package protobuf-mode
-  :load-path "z:/SharedVM/source/protobuf-mode-master")
+(use-package protobuf-mode)
 
-(use-package tree
-  :load-path "z:/SharedVM/source/tree")
+(use-package tree)
 
 (with-eval-after-load 'dired
   (define-key dired-mode-map (kbd "C") 'dired-do-copy))
 
-(load-file "z:/SharedVM/source/themes/timu-rouge-theme.el")
-(load-file "z:/SharedVM/source/themes/timu-spacegrey-theme.el")
-(load-file "z:/SharedVM/source/themes/timu-caribbean-theme.el")
 (load-theme 'timu-rouge t)
 
-(use-package doom-themes
-  :load-path "z:/SharedVM/source/themes/doom")
+(use-package doom-themes)
 
 (use-package highlight-indent-guides
-  :load-path "z:/SharedVM/source/highlight-indent-guides-master"
   :mode "\\.cshtml?\\'"
   :hook (html-mode . highlight-indent-guides-mode)
   :config
@@ -321,7 +189,6 @@ ORIG-FUN is the original command and ARGS are its arguments."
 (global-set-key (kbd "M-s b") ' insert-default-background-color)
 
 (use-package web-mode
-  :load-path "z:/SharedVM/source/web-mode-master"
   :mode "\\.cshtml?\\'"
   :hook (html-mode . web-mode)
   :bind (:map web-mode-map ("M-;" . nil)))
@@ -385,15 +252,14 @@ ORIG-FUN is the original command and ARGS are its arguments."
 (add-to-list 'auto-mode-alist '("\\.csproj\\'" . nxml-mode))
 
 (use-package dape
-  :load-path "z:/SharedVM/source/dape-master"
   :init
   ;; Set key prefix BEFORE loading dape
   (setq dape-key-prefix (kbd "C-c d"))
   :config
   ;; Define common configuration
-  (defvar mimesis-netcoredbg-path "d:/source/emacs-30.1/bin/netcoredbg/netcoredbg.exe"
+  (defvar mimesis-netcoredbg-path (expand-file-name "bin/netcoredbg/netcoredbg.exe" user-emacs-directory)
     "Path to netcoredbg executable.")
-  (defvar mimesis-netcoredbg-log "d:/source/emacs-30.1/bin/netcoredbg/netcoredbg.log"
+  (defvar mimesis-netcoredbg-log (expand-file-name "bin/netcoredbg/netcoredbg.log" user-emacs-directory)
     "Path to netcoredbg log file.")
   (defvar mimesis-project-root "d:/source/MIMESIS-OVC"
     "Root directory of MIMESIS-OVC project.")
@@ -452,7 +318,6 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
   (setq dape-repl-echo-shell-output t))
 
 (use-package dired-video-thumbnail
-  :load-path "z:/SharedVM/source/dired-video-thumbnail-main"
   :bind (:map dired-mode-map
               ("C-t v" . dired-video-thumbnail))
   :custom
@@ -467,11 +332,9 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
 
 ;; (setq dired-video-thumbnail-recursive t)
 
-(use-package jira-to-org
-  :load-path "z:/SharedVM/source/jira-to-org-main")
+(use-package jira-to-org)
 
 (use-package selected-window-accent-mode
-  :load-path "z:/SharedVM/source/selected-window-accent-mode-main"
   :config (selected-window-accent-mode 1)
   :custom
   (selected-window-accent-fringe-thickness 10)
@@ -480,5 +343,4 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
 
 (global-set-key (kbd "C-c w") selected-window-accent-map)
 
-(use-package dired-image-thumbnail
-  :load-path "z:/SharedVM/source/dired-image-thumbnail-main")
+(use-package dired-image-thumbnail)

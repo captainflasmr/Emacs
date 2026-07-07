@@ -10,8 +10,9 @@ local-packages/*
 docs/*
 !docs/.gitkeep
 
-# Offline Windows tool bundles — pre-downloaded artifacts, large (~900 MB)
+# Offline tool bundles — pre-downloaded artifacts, large (100-900 MB)
 windows-tools-offline-*.tar.gz
+linux-tools-offline-*.tar.gz
 
 # Non-Emacs tools drop-zone — language-server / debugger binaries per platform
 tools/*
@@ -19,3 +20,4 @@ tools/*
 !tools/README.md
 !tools/setup-windows-tools.bat
 !tools/prep-windows-offline.sh
+!tools/prep-linux-offline.sh

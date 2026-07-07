@@ -24,8 +24,6 @@
 #       --with-source VER  Bundle GNU Emacs source tarball; "auto" reads
 #                          sources/LATEST_STABLE. Default: no source bundled.
 #       --xz               Passed through: xz -9e (.tar.xz) instead of default gzip
-#       --tools            Passed through: include the tools/ drop-zone (default: off).
-#                          Language servers + debug adapters add ~420 MB.
 #   -l, --list             List available packages/emacs-<VER>.el configs
 #   -h, --help             This help
 
@@ -56,14 +54,12 @@ CHAIN_TOOLKIT=1
 TOOLKIT_OUT_DIR=""
 USE_XZ=0
 WITH_SOURCE_VER=""
-INCLUDE_TOOLS=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --mirror-only)   CHAIN_TOOLKIT=0; shift ;;
     --out-dir)       TOOLKIT_OUT_DIR="$2"; shift 2 ;;
     --with-source)   WITH_SOURCE_VER="$2"; shift 2 ;;
     --xz)            USE_XZ=1; shift ;;
-    --tools)         INCLUDE_TOOLS=1; shift ;;
     -l|--list)       list_configs; exit 0 ;;
     -h|--help)       usage; exit 0 ;;
     -*) echo "Unknown option: $1" >&2; usage; exit 1 ;;
@@ -197,7 +193,6 @@ if [[ "$CHAIN_TOOLKIT" -eq 1 ]]; then
   [[ -n "$WITH_SOURCE_VER" ]] && toolkit_args+=(--with-source "$WITH_SOURCE_VER")
   [[ -n "$TOOLKIT_OUT_DIR" ]] && toolkit_args+=(--out-dir "$TOOLKIT_OUT_DIR")
   [[ "$USE_XZ" -eq 1 ]] && toolkit_args+=(--xz)
-  [[ "$INCLUDE_TOOLS" -eq 1 ]] && toolkit_args+=(--tools)
   echo
   echo ">> Chaining into build-toolkit.sh ${toolkit_args[*]}..."
   "$TOOLKIT_SCRIPT" "${toolkit_args[@]}"

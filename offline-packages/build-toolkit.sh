@@ -21,11 +21,6 @@
 #                           instead of pulling fresh from GitHub.
 #       --xz                Use xz -9e (.tar.xz) instead of gzip (.tar.gz).
 #                           Smaller output, needs more RAM for compression.
-#       --tools             Include the tools/ drop-zone (language servers, debug
-#                           adapters). Off by default since they're large (~420 MB).
-#                           Pass --tools for the initial install; omit for much
-#                           smaller incremental/update tarballs. Filename gets
-#                           a "-tools" suffix when included.
 #       --smoke-test        Run the post-staging "boot rendered init.el" check
 #                           (disabled by default; only useful when the target
 #                           emacs-<VER> binary is available on this machine).
@@ -46,7 +41,6 @@ TARGET=""
 LOCAL_CONFIGS=0
 USE_XZ=0
 SMOKE_TEST=0
-INCLUDE_TOOLS=0
 
 # Literate config sources — fetched from GitHub main by default.
 VANILLA_REPO="captainflasmr/Emacs-vanilla"
@@ -103,7 +97,6 @@ while [[ $# -gt 0 ]]; do
     -s|--with-source) WITH_SOURCE=1; EMACS_SOURCE_VERSION="$2"; shift 2 ;;
     --local-configs)  LOCAL_CONFIGS=1; shift ;;
     --xz)             USE_XZ=1; shift ;;
-    --tools)          INCLUDE_TOOLS=1; shift ;;
     --smoke-test)     SMOKE_TEST=1; shift ;;
     -l|--list)        list_targets; exit 0 ;;
     -h|--help)        usage; exit 0 ;;
@@ -146,9 +139,7 @@ if [[ "$WITH_SOURCE" -eq 1 && "$EMACS_SOURCE_VERSION" == "auto" ]]; then
   fi
 fi
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-_TOOLS_SUFFIX=""
-[[ "$INCLUDE_TOOLS" -eq 1 ]] && _TOOLS_SUFFIX="-tools"
-TOOLKIT_NAME="emacs-offline-toolkit-${EMACS_VERSION}-${OS_SLUG}-${ARCH}-${STAMP}${_TOOLS_SUFFIX}"
+TOOLKIT_NAME="emacs-offline-toolkit-${EMACS_VERSION}-${OS_SLUG}-${ARCH}-${STAMP}"
 STAGING="${OUT_DIR}/.${TOOLKIT_NAME}-staging-$$"
 mkdir -p "$STAGING"
 trap 'rm -rf "$STAGING"' EXIT
@@ -270,22 +261,6 @@ if [[ -d "$LOCAL_PKG_SRC" ]] \
   mkdir -p "${STAGING}/local-packages"
   tar -C "$LOCAL_PKG_SRC" "${_tar_excludes[@]}" --exclude='.gitkeep' -cf - . \
     | tar -C "${STAGING}/local-packages" -xf -
-fi
-
-# --- Tools drop-zone ---
-# Non-Emacs binaries (language servers, debug adapters, formatters) dropped
-# into offline-packages/tools/. Installed on the target at ~/.emacs.d/bin/.
-# `cp -a' preserves executable bits. The coding starter expects JDTLS at
-# ~/.emacs.d/bin/jdtls/bin/jdtls if present.
-TOOLS_SRC="${SCRIPT_DIR}/tools"
-if [[ "$INCLUDE_TOOLS" -eq 1 ]] \
-   && [[ -d "$TOOLS_SRC" ]] \
-   && find "$TOOLS_SRC" -mindepth 1 ! -name '.gitkeep' ! -name 'README.md' \
-        -print -quit | grep -q .; then
-  echo ">> Copying tools/ drop-zone from ${TOOLS_SRC}..."
-  mkdir -p "${STAGING}/tools"
-  tar -C "$TOOLS_SRC" --exclude='.gitkeep' --exclude='README.md' -cf - . \
-    | tar -C "${STAGING}/tools" -xf -
 fi
 
 # --- Docs drop-zone ---
@@ -442,18 +417,6 @@ fi
 if [[ -f "${HERE}/init-on-windows.el" ]]; then
   cp "${HERE}/init-on-windows.el" "${EMACS_D}/init-on-windows.el"
   echo ">> Windows starter installed at ${EMACS_D}/init-on-windows.el (not auto-loaded)"
-fi
-
-# Install tools/ drop-zone (language servers, debug adapters) to ~/.emacs.d/bin/.
-# `cp -a' keeps the executable bits. Users can either add ~/.emacs.d/bin to PATH
-# or reference binaries by absolute path from their eglot-server-programs.
-if [[ -d "${HERE}/tools" ]]; then
-  if [[ -d "${EMACS_D}/bin" ]]; then
-    backup_item "${EMACS_D}/bin" "${BACKUP_DIR}/bin"
-  fi
-  echo ">> Installing tools/ to ${EMACS_D}/bin"
-  mkdir -p "${EMACS_D}/bin"
-  cp -a "${HERE}/tools/." "${EMACS_D}/bin/"
 fi
 
 # Install docs/ drop-zone (coding guide, reference material).
@@ -629,17 +592,6 @@ if exist "%HERE%init-starter-coding.el" (
 if exist "%HERE%init-on-windows.el" (
   copy "%HERE%init-on-windows.el" "%EMACS_D%\init-on-windows.el" >nul
   echo ^>^> Windows starter installed at %EMACS_D%\init-on-windows.el (not auto-loaded^)
-)
-
-:: Install tools/ drop-zone (language servers, debug adapters) to ~/.emacs.d/bin/.
-if exist "%HERE%tools" (
-  if exist "%EMACS_D%\bin" (
-    echo    backing up bin -^> .backups\%STAMP%\bin
-    move "%EMACS_D%\bin" "%BACKUP_DIR%\bin" >nul
-  )
-  echo ^>^> Installing tools to %EMACS_D%\bin
-  if not exist "%EMACS_D%\bin" mkdir "%EMACS_D%\bin"
-  xcopy "%HERE%tools\." "%EMACS_D%\bin\" /E /I /H /Y >nul
 )
 
 :: Install docs/ drop-zone (coding guide, reference material).
@@ -997,13 +949,7 @@ fi
                   \( -type d -o -name '*.el' \) | wc -l)"
     echo "Local pkgs:    ${_lp_count} entries under local-packages/"
   fi
-  if [[ -d "${STAGING}/tools" ]]; then
-    _t_count="$(find "${STAGING}/tools" -maxdepth 1 -mindepth 1 | wc -l)"
-    _t_size="$(du -sh "${STAGING}/tools" | cut -f1)"
-    echo "Tools:         ${_t_count} entries under tools/ (${_t_size})"
-  else
-    echo "Tools:         (skipped — pass --tools to include)"
-  fi
+  echo "Tools:         separate — use tools/prep-linux-offline.sh or tools/prep-windows-offline.sh"
   if [[ -d "${STAGING}/docs" ]]; then
     _d_count="$(find "${STAGING}/docs" -maxdepth 1 -mindepth 1 | wc -l)"
     echo "Docs:          ${_d_count} entries under docs/"

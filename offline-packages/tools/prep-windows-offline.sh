@@ -179,9 +179,8 @@ echo =================================================================
 echo Offline Windows Tools Installer
 echo =================================================================
 echo Installing to: %ROOT%
-echo.
+echo[
 
-:: Helper: extract zip/tar.gz
 :install_portablegit
 if exist "%ROOT%\PortableGit\.done" goto :skip_portablegit
   echo [1/13] PortableGit...
@@ -189,7 +188,9 @@ if exist "%ROOT%\PortableGit\.done" goto :skip_portablegit
     "%ARCHIVES%\PortableGit-2.50.0-64-bit.7z.exe" -o"%ROOT%\PortableGit" -y >nul
     copy nul "%ROOT%\PortableGit\.done" >nul
     echo    Installed.
-  ) else ( echo    Skipped (archive not found). )
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
 :skip_portablegit
 
 :install_ripgrep
@@ -200,7 +201,9 @@ if exist "%ROOT%\find\rg.exe" goto :skip_ripgrep
     tar -xf "%ARCHIVES%\ripgrep-14.1.1-x86_64-pc-windows-gnu.zip" -C "%TMP%" --strip-components=1
     move "%TMP%\rg.exe" "%ROOT%\find\rg.exe" >nul
     echo    Installed.
-  ) else ( echo    Skipped (archive not found). )
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
 :skip_ripgrep
 
 :install_hunspell
@@ -211,38 +214,62 @@ if exist "%ROOT%\hunspell\.done" goto :skip_hunspell
     tar -xf "%ARCHIVES%\hunspell-1.7.2-win32.zip" -C "%ROOT%\hunspell" --strip-components=1
     copy nul "%ROOT%\hunspell\.done" >nul
     echo    Installed.
-  ) else ( echo    Skipped (archive not found). )
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
 :skip_hunspell
 
 :install_netcoredbg
 if exist "%ROOT%\netcoredbg\.done" goto :skip_netcoredbg
   echo [4/13] netcoredbg...
-  if exist "%ARCHIVES%\netcoredbg-1.0.1-win64.zip" (
+  if exist "%ARCHIVES%\netcoredbg-win64.zip" (
     mkdir "%ROOT%\netcoredbg" 2>nul
-    tar -xf "%ARCHIVES%\netcoredbg-1.0.1-win64.zip" -C "%ROOT%\netcoredbg"
+    tar -xf "%ARCHIVES%\netcoredbg-win64.zip" -C "%ROOT%\netcoredbg"
     copy nul "%ROOT%\netcoredbg\.done" >nul
     echo    Installed.
-  ) else ( echo    Skipped (archive not found). )
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
 :skip_netcoredbg
 
 :install_ffmpeg
-if exist "%ROOT%\ffmpeg-7.1.1-essentials_build\.done" goto :skip_ffmpeg
+if exist "%ROOT%\ffmpeg-*-essentials_build\.done" goto :skip_ffmpeg
   echo [5/13] ffmpeg...
-  if exist "%ARCHIVES%\ffmpeg-7.1.1-essentials_build.zip" (
-    tar -xf "%ARCHIVES%\ffmpeg-7.1.1-essentials_build.zip" -C "%ROOT%"
-    copy nul "%ROOT%\ffmpeg-7.1.1-essentials_build\.done" >nul
+  if exist "%ARCHIVES%\ffmpeg-release-essentials.zip" (
+    mkdir "%TMP%\ffmpeg-extract" 2>nul
+    tar -xf "%ARCHIVES%\ffmpeg-release-essentials.zip" -C "%TMP%\ffmpeg-extract"
+    for /d %%d in ("%TMP%\ffmpeg-extract\ffmpeg-*-essentials_build") do (
+      move "%%d" "%ROOT%\" >nul
+    )
+    rmdir /s /q "%TMP%\ffmpeg-extract" 2>nul
+    for /d %%d in ("%ROOT%\ffmpeg-*-essentials_build") do (
+      copy nul "%%d\.done" >nul
+    )
     echo    Installed.
-  ) else ( echo    Skipped (archive not found). )
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
 :skip_ffmpeg
 
 :install_imagemagick
-if exist "%ROOT%\ImageMagick-7.1.2-9-portable-Q16-x64\.done" goto :skip_imagemagick
+if exist "%ROOT%\ImageMagick-*-portable-Q16-x64\.done" goto :skip_imagemagick
   echo [6/13] ImageMagick...
-  if exist "%ARCHIVES%\ImageMagick-7.1.2-9-portable-Q16-x64.zip" (
-    tar -xf "%ARCHIVES%\ImageMagick-7.1.2-9-portable-Q16-x64.zip" -C "%ROOT%"
-    copy nul "%ROOT%\ImageMagick-7.1.2-9-portable-Q16-x64\.done" >nul
-    echo    Installed.
-  ) else ( echo    Skipped (archive not found). )
+  if exist "%ARCHIVES%\ImageMagick-*-portable-Q16-x64.7z" (
+    if "%HAVE_CURL%"=="1" (
+      tar -xf "%ARCHIVES%\ImageMagick-*-portable-Q16-x64.7z" -C "%ROOT%" 2>nul
+    )
+    for /d %%d in ("%ROOT%\ImageMagick-*-portable-Q16-x64") do (
+      copy nul "%%d\.done" >nul
+    )
+    if exist "%ROOT%\ImageMagick-*-portable-Q16-x64" (
+      echo    Installed.
+    ) else (
+      echo    Failed to extract .7z format. Install manually from:
+      echo    https://imagemagick.org/script/download.php
+    )
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
 :skip_imagemagick
 
 :install_cmake
@@ -255,7 +282,9 @@ if exist "%ROOT%\cmake\.done" goto :skip_cmake
     rmdir /s /q "%TMP%\cmake-4.2.0-windows-x86_64" 2>nul
     copy nul "%ROOT%\cmake\.done" >nul
     echo    Installed.
-  ) else ( echo    Skipped (archive not found). )
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
 :skip_cmake
 
 :install_clang
@@ -266,19 +295,23 @@ if exist "%ROOT%\clang\.done" goto :skip_clang
     "%ARCHIVES%\LLVM-20.1.0-win64.exe" /S /D="%ROOT%\clang"
     copy nul "%ROOT%\clang\.done" >nul
     echo    Installed.
-  ) else ( echo    Skipped (archive not found). )
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
 :skip_clang
 
 :install_ada
 if exist "%ROOT%\ada_language_server\.done" goto :skip_ada
   echo [9/13] Ada Language Server...
-  if exist "%ARCHIVES%\ada_language_server-windows-x86_64-28.0w.zip" (
+  if exist "%ARCHIVES%\als-*-win32-x64.tar.gz" (
     mkdir "%ROOT%\ada_language_server" 2>nul
-    tar -xf "%ARCHIVES%\ada_language_server-windows-x86_64-28.0w.zip" -C "%ROOT%\ada_language_server"
+    tar -xf "%ARCHIVES%\als-*-win32-x64.tar.gz" -C "%ROOT%\ada_language_server"
     if exist "%ROOT%\ada_language_server\*.debug" del "%ROOT%\ada_language_server\*.debug"
     copy nul "%ROOT%\ada_language_server\.done" >nul
     echo    Installed.
-  ) else ( echo    Skipped (archive not found). )
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
 :skip_ada
 
 :install_buf
@@ -291,7 +324,9 @@ if exist "%ROOT%\buf\.done" goto :skip_buf
     copy "%ROOT%\buf\buf.exe" "%ROOT%\buf\bin\buf.exe" >nul
     copy nul "%ROOT%\buf\.done" >nul
     echo    Installed.
-  ) else ( echo    Skipped (archive not found). )
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
 :skip_buf
 
 :install_protoc
@@ -304,7 +339,9 @@ if exist "%ROOT%\protoc\.done" goto :skip_protoc
     if exist "%TMP%\include" rmdir /s /q "%TMP%\include" 2>nul
     copy nul "%ROOT%\protoc\.done" >nul
     echo    Installed.
-  ) else ( echo    Skipped (archive not found). )
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
 :skip_protoc
 
 :install_jdtls
@@ -313,7 +350,9 @@ if exist "%ARCHIVES%\jdt-language-server-latest.tar.gz" (
   mkdir "%ROOT%\jdtls" 2>nul
   tar -xzf "%ARCHIVES%\jdt-language-server-latest.tar.gz" -C "%ROOT%\jdtls" --strip-components=1
   echo    Installed.
-) else ( echo    Skipped (archive not found). )
+) else (
+  echo    Skipped ^(archive not found^).
+)
 :skip_jdtls
 
 :install_kotlin
@@ -322,19 +361,21 @@ if exist "%ARCHIVES%\kotlin-language-server-server.zip" (
   mkdir "%ROOT%\kotlin-language-server" 2>nul
   tar -xf "%ARCHIVES%\kotlin-language-server-server.zip" -C "%ROOT%\kotlin-language-server"
   echo    Installed.
-) else ( echo    Skipped (archive not found). )
+) else (
+  echo    Skipped ^(archive not found^).
+)
 :skip_kotlin
 
 :install_csharpls
-echo.
+echo(
 echo [extra] csharp-ls requires .NET SDK: dotnet tool install --global csharp-ls
 
-echo.
+echo(
 echo =================================================================
 echo Installation complete!
 echo Tools installed to: %ROOT%
 echo =================================================================
-echo.
+echo(
 echo Add to your Windows init.el PATH configuration:
 echo   (when (eq system-type 'windows-nt^)
 echo     (let* ((bin-root "%ROOT:\=\\%"^)^)
@@ -344,7 +385,7 @@ echo            ,(concat bin-root "/find"^)
 echo            ,(concat bin-root "/netcoredbg"^)
 echo            ,(concat bin-root "/csharp-ls"^)
 echo            ...^)^))
-echo.
+echo(
 pause
 INSTALLEOF
 
