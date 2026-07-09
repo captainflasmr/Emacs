@@ -403,9 +403,9 @@ if exist "%ARCHIVES%\kotlin-language-server-server.zip" (
 :install_svn
 if exist "%ROOT%\svn\.done" goto :skip_svn
   echo [14/16] Apache-Subversion (svn)...
-  if exist "%ARCHIVES%\Slik-Subversion-*-x64.zip" (
+  if exist "%ARCHIVES%\Slik-Subversion-1.14.5-x64.zip" (
     mkdir "%ROOT%\svn" 2>nul
-    tar -xf "%ARCHIVES%\Slik-Subversion-*-x64.zip" -C "%ROOT%\svn" --strip-components=1
+    tar -xf "%ARCHIVES%\Slik-Subversion-1.14.5-x64.zip" -C "%ROOT%\svn" --strip-components=1
     copy nul "%ROOT%\svn\.done" >nul
     echo    Installed.
   ) else (
@@ -429,9 +429,9 @@ if exist "%ROOT%\omnisharp\.done" goto :skip_omnisharp
 :install_exiftool
 if exist "%ROOT%\exiftool\.done" goto :skip_exiftool
   echo [16/16] exiftool...
-  if exist "%ARCHIVES%\exiftool-*.zip" (
+  if exist "%ARCHIVES%\exiftool-13.59_64.zip" (
     mkdir "%ROOT%\exiftool" 2>nul
-    tar -xf "%ARCHIVES%\exiftool-*.zip" -C "%ROOT%\exiftool" --strip-components=1
+    tar -xf "%ARCHIVES%\exiftool-13.59_64.zip" -C "%ROOT%\exiftool"
     copy nul "%ROOT%\exiftool\.done" >nul
     echo    Installed.
   ) else (
