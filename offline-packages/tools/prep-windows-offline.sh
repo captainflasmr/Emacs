@@ -91,6 +91,17 @@ if [ -f "${TOOLS_DIR}/archives/hunspell-v1.7.3.7z" ]; then
   fi
   echo "   Pre-extracted."
 fi
+# Download English dictionary alongside pre-extracted binaries
+echo "   Downloading English dictionary..."
+mkdir -p "${TOOLS_DIR}/hunspell/share/hunspell"
+download \
+  "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.dic" \
+  "${TOOLS_DIR}/hunspell/share/hunspell/en_GB.dic" \
+  || FAILED=$((FAILED + 1))
+download \
+  "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.aff" \
+  "${TOOLS_DIR}/hunspell/share/hunspell/en_GB.aff" \
+  || FAILED=$((FAILED + 1))
 
 # ---------- 4. netcoredbg ----------
 echo ""
@@ -288,6 +299,14 @@ if exist "%ROOT%\hunspell\.done" goto :skip_hunspell
     echo    Downloading dictionary...
     powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.dic' -OutFile '%ROOT%\hunspell\share\hunspell\en_GB.dic'" 2>nul
     powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.aff' -OutFile '%ROOT%\hunspell\share\hunspell\en_GB.aff'" 2>nul
+  )
+  :: Copy dictionaries to C:\Hunspell\ (in hunspell's built-in search path)
+  if not exist "C:\Hunspell" mkdir "C:\Hunspell"
+  if exist "%ROOT%\hunspell\share\hunspell\en_GB.dic" (
+    copy /Y "%ROOT%\hunspell\share\hunspell\en_GB.dic" "C:\Hunspell\en_GB.dic" >nul
+    copy /Y "%ROOT%\hunspell\share\hunspell\en_GB.aff" "C:\Hunspell\en_GB.aff" >nul
+    copy /Y "%ROOT%\hunspell\share\hunspell\en_GB.dic" "C:\Hunspell\default.dic" >nul
+    copy /Y "%ROOT%\hunspell\share\hunspell\en_GB.aff" "C:\Hunspell\default.aff" >nul
   )
   copy nul "%ROOT%\hunspell\.done" >nul
   echo    Installed.

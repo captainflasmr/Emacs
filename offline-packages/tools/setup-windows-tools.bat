@@ -117,6 +117,14 @@ if exist "!HUN_DIR!\.done" goto ALREADY_HUN
   call :download "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.dic" "share\hunspell\en_GB.dic"
   call :download "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.aff" "share\hunspell\en_GB.aff"
   popd
+  :: Copy dictionaries to C:\Hunspell\ (in hunspell's built-in search path)
+  if not exist "C:\Hunspell" mkdir "C:\Hunspell"
+  if exist "!HUN_DIR!\share\hunspell\en_GB.dic" (
+    copy /Y "!HUN_DIR!\share\hunspell\en_GB.dic" "C:\Hunspell\en_GB.dic"
+    copy /Y "!HUN_DIR!\share\hunspell\en_GB.aff" "C:\Hunspell\en_GB.aff"
+    copy /Y "!HUN_DIR!\share\hunspell\en_GB.dic" "C:\Hunspell\default.dic"
+    copy /Y "!HUN_DIR!\share\hunspell\en_GB.aff" "C:\Hunspell\default.aff"
+  )
   copy nul "!HUN_DIR!\.done" >nul
   echo    Hunspell installed.
   goto END_HUN
