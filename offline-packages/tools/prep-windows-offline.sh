@@ -90,16 +90,12 @@ download \
   "${TOOLS_DIR}/archives/ffmpeg-release-essentials.zip" \
   || FAILED=$((FAILED + 1))
 
-# ---------- 6. ImageMagick (7z format — needs 7zr.exe to extract) ----------
+# ---------- 6. ImageMagick (zip format — extracted by Windows tar) ----------
 echo ""
-echo "[6/16] ImageMagick (7z)"
+echo "[6/16] ImageMagick (zip)"
 download \
-  "https://www.7-zip.org/a/7zr.exe" \
-  "${TOOLS_DIR}/archives/7zr.exe" \
-  || FAILED=$((FAILED + 1))
-download \
-  "https://github.com/ImageMagick/ImageMagick/releases/download/7.1.2-27/ImageMagick-7.1.2-27-portable-Q16-x64.7z" \
-  "${TOOLS_DIR}/archives/ImageMagick-7.1.2-27-portable-Q16-x64.7z" \
+  "https://github.com/ImageMagick/ImageMagick/releases/download/7.1.2-27/ImageMagick-7.1.2-27-portable-Q16-x64.zip" \
+  "${TOOLS_DIR}/archives/ImageMagick-7.1.2-27-portable-Q16-x64.zip" \
   || FAILED=$((FAILED + 1))
 
 # ---------- 7. CMake ----------
@@ -286,17 +282,13 @@ if exist "%ROOT%\ffmpeg-*-essentials_build\.done" goto :skip_ffmpeg
 :install_imagemagick
 if exist "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64\.done" goto :skip_imagemagick
   echo [6/16] ImageMagick...
-  if exist "%ARCHIVES%\ImageMagick-7.1.2-27-portable-Q16-x64.7z" (
-    if exist "%ARCHIVES%\7zr.exe" (
-      "%ARCHIVES%\7zr.exe" x "%ARCHIVES%\ImageMagick-7.1.2-27-portable-Q16-x64.7z" -o"%ROOT%" -y >nul
-    ) else (
-      tar -xf "%ARCHIVES%\ImageMagick-7.1.2-27-portable-Q16-x64.7z" -C "%ROOT%" 2>nul
-    )
+  if exist "%ARCHIVES%\ImageMagick-7.1.2-27-portable-Q16-x64.zip" (
+    tar -xf "%ARCHIVES%\ImageMagick-7.1.2-27-portable-Q16-x64.zip" -C "%ROOT%"
     if exist "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64" (
       copy nul "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64\.done" >nul
       echo    Installed.
     ) else (
-      echo    Failed to extract .7z. Install manually from:
+      echo    Failed to extract .zip. Install manually from:
       echo    https://imagemagick.org/script/download.php
     )
   ) else (

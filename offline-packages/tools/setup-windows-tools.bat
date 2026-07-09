@@ -192,27 +192,19 @@ if exist "!FF_DIR!\.done" goto ALREADY_FF
 
 :: ============================================================
 :: 7. ImageMagick — image processing (for image-dired)
-::    Downloaded as .7z; 7zr.exe (standalone 7-Zip extractor) is fetched
-::    first to handle extraction on Windows.
+::    Downloaded as .zip and extracted by Windows tar.
 :: ============================================================
 echo [7/16] ImageMagick (image processing)...
 set IM_DIR=%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64
 if exist "!IM_DIR!\.done" goto ALREADY_IM
   if exist "!IM_DIR!" rmdir /s /q "!IM_DIR!"
-  :: Download 7zr.exe (588 KB standalone 7-Zip extractor)
-  call :download "https://www.7-zip.org/a/7zr.exe" "%TMP%\7zr.exe"
-  set IMZIP=ImageMagick-7.1.2-27-portable-Q16-x64.7z
+  set IMZIP=ImageMagick-7.1.2-27-portable-Q16-x64.zip
   set IMURL=https://github.com/ImageMagick/ImageMagick/releases/download/7.1.2-27/!IMZIP!
   echo    Downloading from !IMURL!...
   call :download "!IMURL!" "%TMP%\!IMZIP!"
   if not exist "%TMP%\!IMZIP!" goto FAIL_IM
-  if exist "%TMP%\7zr.exe" (
-    "%TMP%\7zr.exe" x "%TMP%\!IMZIP!" -o"%ROOT%" -y >nul
-  ) else (
-    tar -xf "%TMP%\!IMZIP!" -C "%ROOT%" 2>nul
-  )
+  tar -xf "%TMP%\!IMZIP!" -C "%ROOT%"
   del "%TMP%\!IMZIP!" 2>nul
-  del "%TMP%\7zr.exe" 2>nul
   if exist "!IM_DIR!" (
     copy nul "!IM_DIR!\.done" >nul
     echo    ImageMagick installed.
