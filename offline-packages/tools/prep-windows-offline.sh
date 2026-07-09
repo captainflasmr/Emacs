@@ -284,18 +284,16 @@ if exist "%ROOT%\ffmpeg-*-essentials_build\.done" goto :skip_ffmpeg
 :skip_ffmpeg
 
 :install_imagemagick
-if exist "%ROOT%\ImageMagick-*-portable-Q16-x64\.done" goto :skip_imagemagick
+if exist "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64\.done" goto :skip_imagemagick
   echo [6/16] ImageMagick...
-  if exist "%ARCHIVES%\ImageMagick-*-portable-Q16-x64.7z" (
+  if exist "%ARCHIVES%\ImageMagick-7.1.2-27-portable-Q16-x64.7z" (
     if exist "%ARCHIVES%\7zr.exe" (
-      "%ARCHIVES%\7zr.exe" x "%ARCHIVES%\ImageMagick-*-portable-Q16-x64.7z" -o"%ROOT%" -y >nul
+      "%ARCHIVES%\7zr.exe" x "%ARCHIVES%\ImageMagick-7.1.2-27-portable-Q16-x64.7z" -o"%ROOT%" -y >nul
     ) else (
-      tar -xf "%ARCHIVES%\ImageMagick-*-portable-Q16-x64.7z" -C "%ROOT%" 2>nul
+      tar -xf "%ARCHIVES%\ImageMagick-7.1.2-27-portable-Q16-x64.7z" -C "%ROOT%" 2>nul
     )
-    for /d %%d in ("%ROOT%\ImageMagick-*-portable-Q16-x64") do (
-      copy nul "%%d\.done" >nul
-    )
-    if exist "%ROOT%\ImageMagick-*-portable-Q16-x64" (
+    if exist "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64" (
+      copy nul "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64\.done" >nul
       echo    Installed.
     ) else (
       echo    Failed to extract .7z. Install manually from:
