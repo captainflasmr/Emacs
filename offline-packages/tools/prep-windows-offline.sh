@@ -90,13 +90,30 @@ download \
   "${TOOLS_DIR}/archives/ffmpeg-release-essentials.zip" \
   || FAILED=$((FAILED + 1))
 
-# ---------- 6. ImageMagick (zip format — extracted by Windows tar) ----------
+# ---------- 6. ImageMagick (7z; pre-extracted to avoid 7z dep on Windows) ----------
 echo ""
-echo "[6/16] ImageMagick (zip)"
+echo "[6/16] ImageMagick (7z)"
 download \
-  "https://github.com/ImageMagick/ImageMagick/releases/download/7.1.2-27/ImageMagick-7.1.2-27-portable-Q16-x64.zip" \
-  "${TOOLS_DIR}/archives/ImageMagick-7.1.2-27-portable-Q16-x64.zip" \
+  "https://github.com/ImageMagick/ImageMagick/releases/download/7.1.2-27/ImageMagick-7.1.2-27-portable-Q16-x64.7z" \
+  "${TOOLS_DIR}/archives/ImageMagick-7.1.2-27-portable-Q16-x64.7z" \
   || FAILED=$((FAILED + 1))
+# Pre-extract on Linux so Windows install is a plain file copy
+if [ -f "${TOOLS_DIR}/archives/ImageMagick-7.1.2-27-portable-Q16-x64.7z" ]; then
+  echo "   Pre-extracting ImageMagick for offline install..."
+  mkdir -p "${TOOLS_DIR}/ImageMagick-7.1.2-27-portable-Q16-x64"
+  # Prefer p7zip if available; fall back to bsdtar (libarchive)
+  if command -v 7z &>/dev/null; then
+    7z x "${TOOLS_DIR}/archives/ImageMagick-7.1.2-27-portable-Q16-x64.7z" \
+      -o"${TOOLS_DIR}/ImageMagick-7.1.2-27-portable-Q16-x64" -y >/dev/null
+  elif command -v bsdtar &>/dev/null; then
+    bsdtar -xf "${TOOLS_DIR}/archives/ImageMagick-7.1.2-27-portable-Q16-x64.7z" \
+      -C "${TOOLS_DIR}/ImageMagick-7.1.2-27-portable-Q16-x64"
+  else
+    tar -xf "${TOOLS_DIR}/archives/ImageMagick-7.1.2-27-portable-Q16-x64.7z" \
+      -C "${TOOLS_DIR}/ImageMagick-7.1.2-27-portable-Q16-x64"
+  fi
+  echo "   Pre-extracted."
+fi
 
 # ---------- 7. CMake ----------
 echo ""
@@ -267,6 +284,7 @@ if exist "%ROOT%\ffmpeg-*-essentials_build\.done" goto :skip_ffmpeg
     mkdir "%TMP%\ffmpeg-extract" 2>nul
     tar -xf "%ARCHIVES%\ffmpeg-release-essentials.zip" -C "%TMP%\ffmpeg-extract"
     for /d %%d in ("%TMP%\ffmpeg-extract\ffmpeg-*-essentials_build") do (
+      if exist "%ROOT%\%%~nxd" rmdir /s /q "%ROOT%\%%~nxd"
       move "%%d" "%ROOT%\" >nul
     )
     rmdir /s /q "%TMP%\ffmpeg-extract" 2>nul
@@ -282,17 +300,22 @@ if exist "%ROOT%\ffmpeg-*-essentials_build\.done" goto :skip_ffmpeg
 :install_imagemagick
 if exist "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64\.done" goto :skip_imagemagick
   echo [6/16] ImageMagick...
-  if exist "%ARCHIVES%\ImageMagick-7.1.2-27-portable-Q16-x64.zip" (
-    tar -xf "%ARCHIVES%\ImageMagick-7.1.2-27-portable-Q16-x64.zip" -C "%ROOT%"
+  set "IM_PREEXTRACTED=%HERE%tools\ImageMagick-7.1.2-27-portable-Q16-x64"
+  if exist "!IM_PREEXTRACTED!" (
+    xcopy /E /I /Y "!IM_PREEXTRACTED!" "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64" >nul
+    copy nul "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64\.done" >nul
+    echo    Installed ^(from pre-extracted^).
+  ) else if exist "%ARCHIVES%\ImageMagick-7.1.2-27-portable-Q16-x64.7z" (
+    tar -xf "%ARCHIVES%\ImageMagick-7.1.2-27-portable-Q16-x64.7z" -C "%ROOT%"
     if exist "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64" (
       copy nul "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64\.done" >nul
       echo    Installed.
     ) else (
-      echo    Failed to extract .zip. Install manually from:
+      echo    Failed to extract .7z. Install manually from:
       echo    https://imagemagick.org/script/download.php
     )
   ) else (
-    echo    Skipped ^(archive not found^).
+    echo    Skipped ^(neither pre-extracted dir nor .7z archive found^).
   )
 :skip_imagemagick
 
@@ -327,9 +350,9 @@ if exist "%ROOT%\clang\.done" goto :skip_clang
 :install_ada
 if exist "%ROOT%\ada_language_server\.done" goto :skip_ada
   echo [9/16] Ada Language Server...
-  if exist "%ARCHIVES%\als-*-win32-x64.tar.gz" (
+  for %%f in ("%ARCHIVES%\als-*-win32-x64.tar.gz") do if exist "%%f" (
     mkdir "%ROOT%\ada_language_server" 2>nul
-    tar -xf "%ARCHIVES%\als-*-win32-x64.tar.gz" -C "%ROOT%\ada_language_server"
+    tar -xf "%%f" -C "%ROOT%\ada_language_server"
     if exist "%ROOT%\ada_language_server\*.debug" del "%ROOT%\ada_language_server\*.debug"
     copy nul "%ROOT%\ada_language_server\.done" >nul
     echo    Installed.
@@ -358,11 +381,18 @@ if exist "%ROOT%\protoc\.done" goto :skip_protoc
   echo [11/16] protoc...
   if exist "%ARCHIVES%\protoc-31.1-win64.zip" (
     mkdir "%ROOT%\protoc" 2>nul
-    tar -xf "%ARCHIVES%\protoc-31.1-win64.zip" -C "%TMP%" --strip-components=1
-    if exist "%TMP%\bin\protoc.exe" move "%TMP%\bin\protoc.exe" "%ROOT%\protoc\" >nul
-    if exist "%TMP%\include" rmdir /s /q "%TMP%\include" 2>nul
-    copy nul "%ROOT%\protoc\.done" >nul
-    echo    Installed.
+    mkdir "%TMP%\protoc-extract" 2>nul
+    tar -xf "%ARCHIVES%\protoc-31.1-win64.zip" -C "%TMP%\protoc-extract" 2>nul
+    for /r "%TMP%\protoc-extract" %%f in (protoc.exe) do (
+      if exist "%%f" move "%%f" "%ROOT%\protoc\" >nul
+    ) 2>nul
+    rmdir /s /q "%TMP%\protoc-extract" 2>nul
+    if exist "%ROOT%\protoc\protoc.exe" (
+      copy nul "%ROOT%\protoc\.done" >nul
+      echo    Installed.
+    ) else (
+      echo    Failed to extract. Try installing protoc manually.
+    )
   ) else (
     echo    Skipped ^(archive not found^).
   )

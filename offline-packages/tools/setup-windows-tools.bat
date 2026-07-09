@@ -192,13 +192,13 @@ if exist "!FF_DIR!\.done" goto ALREADY_FF
 
 :: ============================================================
 :: 7. ImageMagick — image processing (for image-dired)
-::    Downloaded as .zip and extracted by Windows tar.
+::    Downloaded as .7z and extracted by Windows tar.
 :: ============================================================
 echo [7/16] ImageMagick (image processing)...
 set IM_DIR=%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64
 if exist "!IM_DIR!\.done" goto ALREADY_IM
   if exist "!IM_DIR!" rmdir /s /q "!IM_DIR!"
-  set IMZIP=ImageMagick-7.1.2-27-portable-Q16-x64.zip
+  set IMZIP=ImageMagick-7.1.2-27-portable-Q16-x64.7z
   set IMURL=https://github.com/ImageMagick/ImageMagick/releases/download/7.1.2-27/!IMZIP!
   echo    Downloading from !IMURL!...
   call :download "!IMURL!" "%TMP%\!IMZIP!"
@@ -209,7 +209,7 @@ if exist "!IM_DIR!\.done" goto ALREADY_IM
     copy nul "!IM_DIR!\.done" >nul
     echo    ImageMagick installed.
   ) else (
-    echo    Failed to extract. Install manually from https://imagemagick.org/script/download.php
+    echo    Failed to extract (extract .7z). Install manually from https://imagemagick.org/script/download.php
   )
   goto END_IM
 :FAIL_IM
