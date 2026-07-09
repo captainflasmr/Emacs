@@ -421,7 +421,8 @@ if exist "%ROOT%\exiftool\.done" goto :skip_exiftool
   echo [16/16] exiftool...
   if exist "%ARCHIVES%\exiftool-13.59_64.zip" (
     mkdir "%ROOT%\exiftool" 2>nul
-    tar -xf "%ARCHIVES%\exiftool-13.59_64.zip" -C "%ROOT%\exiftool"
+    tar -xf "%ARCHIVES%\exiftool-13.59_64.zip" -C "%ROOT%\exiftool" --strip-components=1
+    if exist "%ROOT%\exiftool\exiftool(-k).exe" rename "%ROOT%\exiftool\exiftool(-k).exe" exiftool.exe
     copy nul "%ROOT%\exiftool\.done" >nul
     echo    Installed.
   ) else (

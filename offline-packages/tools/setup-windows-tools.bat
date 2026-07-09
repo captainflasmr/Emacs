@@ -428,6 +428,7 @@ if exist "!EXIF_DIR!\.done" goto ALREADY_EXIF
   if not exist "%TMP%\!EXIFZIP!" goto FAIL_EXIF
   mkdir "!EXIF_DIR!"
   tar -xf "%TMP%\!EXIFZIP!" -C "!EXIF_DIR!" --strip-components=1
+  if exist "!EXIF_DIR!\exiftool(-k).exe" rename "!EXIF_DIR!\exiftool(-k).exe" exiftool.exe
   del "%TMP%\!EXIFZIP!"
   copy nul "!EXIF_DIR!\.done" >nul
   echo    exiftool installed.
