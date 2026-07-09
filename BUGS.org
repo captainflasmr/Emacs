@@ -10,9 +10,7 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO windows Emacs in docker
-
-** TODO windows rsync -> robocopy
+** DOING windows rsync -> robocopy
 
 ** TODO try ghosttty.el
 

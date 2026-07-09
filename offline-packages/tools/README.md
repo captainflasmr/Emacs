@@ -51,6 +51,9 @@ the script handles platform-specific launchers for the rest.
 | `ada_language_server/` | Downloaded by `setup-windows-tools.bat` as `win64` ZIP | eglot (ada-mode) |
 | `buf/` | Downloaded by `setup-windows-tools.bat` as `Windows-x86_64.exe` | eglot (protobuf-mode) |
 | `csharp-ls/` | Installed via `dotnet tool install --global csharp-ls` | eglot (csharp-mode) |
+| `svn/` | Downloaded by `setup-windows-tools.bat` as SlikSVN ZIP | `svn` CLI version control |
+| `omnisharp/` | Downloaded by `setup-windows-tools.bat` as `omnisharp-win-x64.zip` | eglot (csharp-mode) alternative |
+| `exiftool/` | Downloaded by `setup-windows-tools.bat` as ZIP | Image metadata editing (`exiftool`) |
 | `npm/` | `.tgz` files are platform-independent | `npm install -g` |
 
 Run the script from the extracted toolkit directory after `setup.bat`:
@@ -69,5 +72,8 @@ setup-windows-tools.bat
 ├── ada_language_server/bin/ada_language_server ← eglot-server-programs entry
 ├── buf/bin/buf                                 ← eglot (protobuf-mode): `buf lsp serve`
 ├── csharp-ls/csharp-ls                         ← eglot (csharp-mode). Requires .NET 10 runtime.
+├── svn/bin/svn                                 ← svn CLI
+├── omnisharp/omnisharp                         ← eglot (csharp-mode) alternative
+├── exiftool/exiftool                           ← Image metadata editing
 └── kotlin-language-server/bin/kotlin-language-server ← eglot (kotlin-mode). Requires JRE.
 ```

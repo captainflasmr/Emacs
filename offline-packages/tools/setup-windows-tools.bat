@@ -5,7 +5,8 @@
 ::   PortableGit (coreutils: bash, find, grep, sed, awk, etc.)
 ::   csharp-ls, netcoredbg, ripgrep, ffmpeg, ImageMagick
 ::   JDTLS, kotlin-language-server, ada_language_server, buf
-::   hunspell, cmake, clang, Pandoc, OmniSharp, protoc, svn2git
+::   hunspell, cmake, clang, Pandoc, protoc, svn2git
+::   Apache-Subversion (svn), omnisharp-win-x64, exiftool
 ::
 :: Run AFTER setup.bat.  Installs into %APPDATA%\.emacs.d\bin\ by default.
 :: (matching Windows init.el `~/bin/...` paths).  Pass a different root:
@@ -41,7 +42,7 @@ echo.
 :: ============================================================
 :: 1. PortableGit — Git + coreutils (bash, find, grep, sed, etc.)
 :: ============================================================
-echo [1/13] PortableGit (Git + coreutils)...
+echo [1/16] PortableGit (Git + coreutils)...
 set GIT_DIR=%ROOT%\PortableGit
 if exist "!GIT_DIR!\.done" goto ALREADY_GIT
   if exist "!GIT_DIR!" rmdir /s /q "!GIT_DIR!"
@@ -66,7 +67,7 @@ if exist "!GIT_DIR!\.done" goto ALREADY_GIT
 :: ============================================================
 :: 2. ripgrep (rg) — fast code search in ~/bin/find/
 :: ============================================================
-echo [2/13] ripgrep (rg.exe)...
+echo [2/16] ripgrep (rg.exe)...
 set FIND_DIR=%ROOT%\find
 if not exist "!FIND_DIR!" mkdir "!FIND_DIR!"
 set RGZIP=ripgrep-14.1.1-x86_64-pc-windows-gnu.zip
@@ -93,7 +94,7 @@ if exist "!FIND_DIR!\rg.exe" goto ALREADY_RG
 :: ============================================================
 :: 3. Hunspell — spell checking dictionaries + binaries
 :: ============================================================
-echo [3/13] Hunspell (spell checker)...
+echo [3/16] Hunspell (spell checker)...
 set HUN_DIR=%ROOT%\hunspell
 if exist "!HUN_DIR!\.done" goto ALREADY_HUN
   if exist "!HUN_DIR!" rmdir /s /q "!HUN_DIR!"
@@ -116,7 +117,7 @@ if exist "!HUN_DIR!\.done" goto ALREADY_HUN
 :: ============================================================
 :: 4. netcoredbg — .NET debugger for dape
 :: ============================================================
-echo [4/13] netcoredbg (.NET debugger)...
+echo [4/16] netcoredbg (.NET debugger)...
 set NC_DIR=%ROOT%\netcoredbg
 if exist "!NC_DIR!\.done" goto ALREADY_NC
   if exist "!NC_DIR!" rmdir /s /q "!NC_DIR!"
@@ -140,7 +141,7 @@ if exist "!NC_DIR!\.done" goto ALREADY_NC
 :: ============================================================
 :: 5. csharp-ls — C# Language Server (via dotnet tool)
 :: ============================================================
-echo [5/13] csharp-ls (C# Language Server)...
+echo [5/16] csharp-ls (C# Language Server)...
 where dotnet >nul 2>nul
 if !errorlevel! neq 0 goto NO_DOTNET
   mkdir "%ROOT%\csharp-ls" 2>nul
@@ -163,7 +164,7 @@ if !errorlevel! neq 0 goto NO_DOTNET
 :: ============================================================
 :: 6. ffmpeg — video processing
 :: ============================================================
-echo [6/13] ffmpeg (video processing)...
+echo [6/16] ffmpeg (video processing)...
 set FF_DIR=%ROOT%\ffmpeg-7.1.1-essentials_build
 if exist "!FF_DIR!\.done" goto ALREADY_FF
   if exist "!FF_DIR!" rmdir /s /q "!FF_DIR!"
@@ -194,7 +195,7 @@ if exist "!FF_DIR!\.done" goto ALREADY_FF
 ::    Downloaded as .7z; 7zr.exe (standalone 7-Zip extractor) is fetched
 ::    first to handle extraction on Windows.
 :: ============================================================
-echo [7/13] ImageMagick (image processing)...
+echo [7/16] ImageMagick (image processing)...
 set IM_DIR=%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64
 if exist "!IM_DIR!\.done" goto ALREADY_IM
   if exist "!IM_DIR!" rmdir /s /q "!IM_DIR!"
@@ -229,7 +230,7 @@ if exist "!IM_DIR!\.done" goto ALREADY_IM
 :: ============================================================
 :: 8. CMake — build tool
 :: ============================================================
-echo [8/13] CMake (build tool)...
+echo [8/16] CMake (build tool)...
 set CMAKE_DIR=%ROOT%\cmake
 if exist "!CMAKE_DIR!\.done" goto ALREADY_CMAKE
   if exist "!CMAKE_DIR!" rmdir /s /q "!CMAKE_DIR!"
@@ -256,7 +257,7 @@ if exist "!CMAKE_DIR!\.done" goto ALREADY_CMAKE
 :: ============================================================
 :: 9. Clang — C/C++ language server + compiler
 :: ============================================================
-echo [9/13] Clang (C/C++ toolchain)...
+echo [9/16] Clang (C/C++ toolchain)...
 set CLANG_DIR=%ROOT%\clang
 if exist "!CLANG_DIR!\.done" goto ALREADY_CLANG
   if exist "!CLANG_DIR!" rmdir /s /q "!CLANG_DIR!"
@@ -283,7 +284,7 @@ if exist "!CLANG_DIR!\.done" goto ALREADY_CLANG
 :: 10. JDTLS + kotlin-language-server — Java-based servers
 ::     Already bundled in toolkit tools/ — copy them over
 :: ============================================================
-echo [10/13] JDTLS + kotlin-language-server (Java-based)...
+echo [10/16] JDTLS + kotlin-language-server (Java-based)...
 set TOOLKIT_TOOLS=%~dp0..\..\tools
 if exist "!TOOLKIT_TOOLS!\jdtls" (
   xcopy /E /I /Y "!TOOLKIT_TOOLS!\jdtls" "%ROOT%\.emacs.d\bin\jdtls\" >nul 2>nul
@@ -301,7 +302,7 @@ echo      kotlin-ls: https://github.com/fwcd/kotlin-language-server/releases
 :: ============================================================
 :: 11. ada_language_server
 :: ============================================================
-echo [11/13] ada_language_server...
+echo [11/16] ada_language_server...
 if exist "%ROOT%\ada_language_server\.done" goto ALREADY_ALS
   set ALSZIP=als-2026.3.202607051-win32-x64.tar.gz
   set ALSURL=https://github.com/AdaCore/ada_language_server/releases/download/2026.3.202607051/!ALSZIP!
@@ -325,7 +326,7 @@ if exist "%ROOT%\ada_language_server\.done" goto ALREADY_ALS
 :: ============================================================
 :: 12. buf — Protocol Buffers CLI+LSP
 :: ============================================================
-echo [12/13] buf (protobuf CLI+LSP)...
+echo [12/16] buf (protobuf CLI+LSP)...
 if exist "%ROOT%\buf\.done" goto ALREADY_BUF
   mkdir "%ROOT%\buf" 2>nul
   pushd "%ROOT%\buf"
@@ -347,7 +348,7 @@ if exist "%ROOT%\buf\.done" goto ALREADY_BUF
 :: ============================================================
 :: 13. protoc — Protocol Buffers compiler
 :: ============================================================
-echo [13/13] protoc (Protocol Buffers compiler)...
+echo [13/16] protoc (Protocol Buffers compiler)...
 set PROTOC_DIR=%ROOT%\protoc
 if exist "!PROTOC_DIR!\.done" goto ALREADY_PROTOC
   if exist "!PROTOC_DIR!" rmdir /s /q "!PROTOC_DIR!"
@@ -371,6 +372,81 @@ if exist "!PROTOC_DIR!\.done" goto ALREADY_PROTOC
   echo    Already installed.
 :END_PROTOC
 
+:: ============================================================
+:: 14. Apache-Subversion (svn)
+:: ============================================================
+echo [14/16] Apache-Subversion (svn CLI)...
+set SVN_DIR=%ROOT%\svn
+if exist "!SVN_DIR!\.done" goto ALREADY_SVN
+  if exist "!SVN_DIR!" rmdir /s /q "!SVN_DIR!"
+  set SVNZIP=sliksvn-win64-1.14.7.zip
+  set SVNURL=https://sliksvn.com/downloads/sliksvn/!SVNZIP!
+  echo    Downloading from !SVNURL!...
+  call :download "!SVNURL!" "%TMP%\!SVNZIP!"
+  if not exist "%TMP%\!SVNZIP!" goto FAIL_SVN
+  mkdir "!SVN_DIR!"
+  tar -xf "%TMP%\!SVNZIP!" -C "!SVN_DIR!" --strip-components=1
+  del "%TMP%\!SVNZIP!"
+  copy nul "!SVN_DIR!\.done" >nul
+  echo    Apache-Subversion installed.
+  goto END_SVN
+:FAIL_SVN
+  echo    Download failed. Install manually from https://sliksvn.com/
+  goto END_SVN
+:ALREADY_SVN
+  echo    Already installed.
+:END_SVN
+
+:: ============================================================
+:: 15. omnisharp-win-x64 — OmniSharp C# Language Server
+:: ============================================================
+echo [15/16] omnisharp-win-x64 (OmniSharp C# LSP)...
+set OMNISHARP_DIR=%ROOT%\omnisharp
+if exist "!OMNISHARP_DIR!\.done" goto ALREADY_OMNISHARP
+  if exist "!OMNISHARP_DIR!" rmdir /s /q "!OMNISHARP_DIR!"
+  set OMNIZIP=omnisharp-win-x64.zip
+  set OMNIURL=https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.39.11/!OMNIZIP!
+  echo    Downloading from !OMNIURL!...
+  call :download "!OMNIURL!" "%TMP%\!OMNIZIP!"
+  if not exist "%TMP%\!OMNIZIP!" goto FAIL_OMNISHARP
+  mkdir "!OMNISHARP_DIR!"
+  tar -xf "%TMP%\!OMNIZIP!" -C "!OMNISHARP_DIR!" --strip-components=1
+  del "%TMP%\!OMNIZIP!"
+  copy nul "!OMNISHARP_DIR!\.done" >nul
+  echo    omnisharp-win-x64 installed.
+  goto END_OMNISHARP
+:FAIL_OMNISHARP
+  echo    Download failed. Install from https://github.com/OmniSharp/omnisharp-roslyn/releases
+  goto END_OMNISHARP
+:ALREADY_OMNISHARP
+  echo    Already installed.
+:END_OMNISHARP
+
+:: ============================================================
+:: 16. exiftool — Image metadata editor
+:: ============================================================
+echo [16/16] exiftool (image metadata editor)...
+set EXIF_DIR=%ROOT%\exiftool
+if exist "!EXIF_DIR!\.done" goto ALREADY_EXIF
+  if exist "!EXIF_DIR!" rmdir /s /q "!EXIF_DIR!"
+  set EXIFZIP=exiftool-13.15.zip
+  set EXIFURL=https://exiftool.org/!EXIFZIP!
+  echo    Downloading from !EXIFURL!...
+  call :download "!EXIFURL!" "%TMP%\!EXIFZIP!"
+  if not exist "%TMP%\!EXIFZIP!" goto FAIL_EXIF
+  mkdir "!EXIF_DIR!"
+  tar -xf "%TMP%\!EXIFZIP!" -C "!EXIF_DIR!" --strip-components=1
+  del "%TMP%\!EXIFZIP!"
+  copy nul "!EXIF_DIR!\.done" >nul
+  echo    exiftool installed.
+  goto END_EXIF
+:FAIL_EXIF
+  echo    Download failed. Install from https://exiftool.org/
+  goto END_EXIF
+:ALREADY_EXIF
+  echo    Already installed.
+:END_EXIF
+
 goto :main
 
 :download
@@ -384,16 +460,14 @@ exit /b
 :main
 
 :: ============================================================
-:: Extra: Pandoc, OmniSharp — skipped, need manual install
+:: Extra: Pandoc — skipped, need manual install
 :: ============================================================
 echo.
 echo =================================================================
 echo Install these manually if needed:
 echo =================================================================
 echo   Pandoc:          https://pandoc.org/installing.html
-echo   OmniSharp:       https://github.com/OmniSharp/omnisharp-roslyn/releases
 echo   svn2git:         https://github.com/nirvdrum/svn2git
-echo   Apache SVN:      https://subversion.apache.org/packages.html
 echo   GnuWin32:        https://gnuwin32.sourceforge.net/
 echo   GNAT Ada:        https://www.adacore.com/download
 echo   Java 21+:        https://adoptium.net/
@@ -418,6 +492,9 @@ echo   ada_ls          -^> %ROOT%\ada_language_server
 echo   buf             -^> %ROOT%\buf
 echo   protoc          -^> %ROOT%\protoc
 echo   csharp-ls       -^> %ROOT%\csharp-ls  (if .NET SDK available)
+echo   svn             -^> %ROOT%\svn\bin
+echo   omnisharp       -^> %ROOT%\omnisharp
+echo   exiftool        -^> %ROOT%\exiftool
 echo.
 echo =================================================================
 echo PATH setup for Emacs (add to your Windows init.el):
@@ -438,7 +515,7 @@ echo             ,(concat bin-root "/clang/bin"^)
 echo             ,(concat bin-root "/cmake"^)
 echo             ,(concat bin-root "/protoc"^)
 echo             ,(concat bin-root "/ada_language_server"^)
-echo             ,(concat bin-root "/buf"^)
+echo             ,(concat bin-root "/buf"^)echo             ,(concat bin-root "/svn/bin"^)echo             ,(concat bin-root "/omnisharp"^)echo             ,(concat bin-root "/exiftool"^)
 echo             "C:/Program Files/Pandoc")))
 echo     (setenv "PATH" (concat (mapconcat 'identity xPaths ";") ";" (getenv "PATH"^)^))
 echo     (setq exec-path (append xPaths (parse-colon-path (getenv "PATH"^)^)^)^))

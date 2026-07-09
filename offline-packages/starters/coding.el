@@ -33,6 +33,9 @@
             ,(concat bin "/csharp-ls/tools/net9.0/any")
             ,(concat bin "/hunspell/bin")
             ,(concat bin "/find")
+            ,(concat bin "/svn/bin")
+            ,(concat bin "/omnisharp")
+            ,(concat bin "/exiftool")
             ,(concat bin "/ImageMagick-portable-Q16-x64")
             ,(concat bin "/ffmpeg-essentials/bin")
             ,(concat bin "/cwrsync/bin")
@@ -96,6 +99,15 @@
       (when (and (eq system-type 'windows-nt) csls-dll (file-exists-p csls-dll))
         (add-to-list 'eglot-server-programs
                      `((csharp-mode csharp-ts-mode) . ("dotnet" ,csls-dll))))
+      ;; Windows: omnisharp as alternative C# LSP
+      (let ((omnisharp (expand-file-name "bin/omnisharp/OmniSharp.exe" user-emacs-directory))
+            (omnisharp-linux (expand-file-name "bin/omnisharp/run" user-emacs-directory)))
+        (when (file-executable-p omnisharp)
+          (add-to-list 'eglot-server-programs
+                       `((csharp-mode csharp-ts-mode) . (,omnisharp "-lsp"))))
+        (when (file-executable-p omnisharp-linux)
+          (add-to-list 'eglot-server-programs
+                       `((csharp-mode csharp-ts-mode) . (,omnisharp-linux "--lsp")))))
       (when (file-executable-p kls)
         (add-to-list 'eglot-server-programs
                      `(kotlin-mode . (,kls)))))

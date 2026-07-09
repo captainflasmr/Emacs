@@ -52,7 +52,7 @@ FAILED=0
 
 # ---------- 1. PortableGit ----------
 echo ""
-echo "[1/13] PortableGit (Git + coreutils)"
+echo "[1/16] PortableGit (Git + coreutils)"
 mkdir -p "${TOOLS_DIR}/archives"
 download \
   "https://github.com/git-for-windows/git/releases/download/v2.50.0.windows.1/PortableGit-2.50.0-64-bit.7z.exe" \
@@ -61,7 +61,7 @@ download \
 
 # ---------- 2. ripgrep ----------
 echo ""
-echo "[2/13] ripgrep"
+echo "[2/16] ripgrep"
 mkdir -p "${TOOLS_DIR}/archives"
 download \
   "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-pc-windows-gnu.zip" \
@@ -70,13 +70,13 @@ download \
 
 # ---------- 3. Hunspell ----------
 echo ""
-echo "[3/13] Hunspell"
+echo "[3/16] Hunspell"
 echo "   Hunspell binary no longer available upstream; dictionary only."
 echo "   Install binaries manually from: https://github.com/iquiw/hunspell-binary/releases"
 
 # ---------- 4. netcoredbg ----------
 echo ""
-echo "[4/13] netcoredbg"
+echo "[4/16] netcoredbg"
 download \
   "https://github.com/Samsung/netcoredbg/releases/download/3.2.0-1092/netcoredbg-win64.zip" \
   "${TOOLS_DIR}/archives/netcoredbg-win64.zip" \
@@ -84,7 +84,7 @@ download \
 
 # ---------- 5. ffmpeg ----------
 echo ""
-echo "[5/13] ffmpeg"
+echo "[5/16] ffmpeg"
 download \
   "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" \
   "${TOOLS_DIR}/archives/ffmpeg-release-essentials.zip" \
@@ -92,7 +92,7 @@ download \
 
 # ---------- 6. ImageMagick (7z format — needs 7zr.exe to extract) ----------
 echo ""
-echo "[6/13] ImageMagick (7z)"
+echo "[6/16] ImageMagick (7z)"
 download \
   "https://www.7-zip.org/a/7zr.exe" \
   "${TOOLS_DIR}/archives/7zr.exe" \
@@ -104,7 +104,7 @@ download \
 
 # ---------- 7. CMake ----------
 echo ""
-echo "[7/13] CMake"
+echo "[7/16] CMake"
 download \
   "https://github.com/Kitware/CMake/releases/download/v4.2.0/cmake-4.2.0-windows-x86_64.zip" \
   "${TOOLS_DIR}/archives/cmake-4.2.0-windows-x86_64.zip" \
@@ -112,7 +112,7 @@ download \
 
 # ---------- 8. Clang/LLVM ----------
 echo ""
-echo "[8/13] Clang/LLVM"
+echo "[8/16] Clang/LLVM"
 download \
   "https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.0/LLVM-20.1.0-win64.exe" \
   "${TOOLS_DIR}/archives/LLVM-20.1.0-win64.exe" \
@@ -120,7 +120,7 @@ download \
 
 # ---------- 9. ada_language_server ----------
 echo ""
-echo "[9/13] Ada Language Server"
+echo "[9/16] Ada Language Server"
 download \
   "https://github.com/AdaCore/ada_language_server/releases/download/2026.3.202607051/als-2026.3.202607051-win32-x64.tar.gz" \
   "${TOOLS_DIR}/archives/als-2026.3.202607051-win32-x64.tar.gz" \
@@ -128,7 +128,7 @@ download \
 
 # ---------- 10. buf ----------
 echo ""
-echo "[10/13] buf (protobuf)"
+echo "[10/16] buf (protobuf)"
 download \
   "https://github.com/bufbuild/buf/releases/download/v1.50.0/buf-Windows-x86_64.exe" \
   "${TOOLS_DIR}/archives/buf-Windows-x86_64.exe" \
@@ -136,7 +136,7 @@ download \
 
 # ---------- 11. protoc ----------
 echo ""
-echo "[11/13] protoc"
+echo "[11/16] protoc"
 download \
   "https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protoc-31.1-win64.zip" \
   "${TOOLS_DIR}/archives/protoc-31.1-win64.zip" \
@@ -144,7 +144,7 @@ download \
 
 # ---------- 12. JDTLS (just the Windows launcher + config) ----------
 echo ""
-echo "[12/13] JDTLS (Eclipse JDT Language Server — Windows launcher)"
+echo "[12/16] JDTLS (Eclipse JDT Language Server — Windows launcher)"
 # The full JDTLS tarball includes the launcher; the JARs are already in the
 # Linux toolkit tools/ and work cross-platform.
 download \
@@ -154,12 +154,36 @@ download \
 
 # ---------- 13. kotlin-language-server (Windows launcher) ----------
 echo ""
-echo "[13/13] Kotlin Language Server (Windows launcher)"
+echo "[13/16] Kotlin Language Server (Windows launcher)"
 # The JARs are cross-platform and already in the Linux toolkit tools/;
 # download the full release for the .bat launcher.
 download \
   "https://github.com/fwcd/kotlin-language-server/releases/download/1.3.13/server.zip" \
   "${TOOLS_DIR}/archives/kotlin-language-server-server.zip" \
+  || FAILED=$((FAILED + 1))
+
+# ---------- 14. Apache-Subversion ----------
+echo ""
+echo "[14/16] Apache-Subversion (svn)"
+download \
+  "https://sliksvn.com/downloads/sliksvn/sliksvn-win64-1.14.7.zip" \
+  "${TOOLS_DIR}/archives/sliksvn-win64-1.14.7.zip" \
+  || FAILED=$((FAILED + 1))
+
+# ---------- 15. omnisharp-win-x64 ----------
+echo ""
+echo "[15/16] omnisharp-win-x64 (OmniSharp C# LSP)"
+download \
+  "https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.39.11/omnisharp-win-x64.zip" \
+  "${TOOLS_DIR}/archives/omnisharp-win-x64.zip" \
+  || FAILED=$((FAILED + 1))
+
+# ---------- 16. exiftool ----------
+echo ""
+echo "[16/16] exiftool"
+download \
+  "https://exiftool.org/exiftool-13.15.zip" \
+  "${TOOLS_DIR}/archives/exiftool-13.15.zip" \
   || FAILED=$((FAILED + 1))
 
 # ---------- Write the offline installer ----------
@@ -191,7 +215,7 @@ echo[
 
 :install_portablegit
 if exist "%ROOT%\PortableGit\.done" goto :skip_portablegit
-  echo [1/13] PortableGit...
+  echo [1/16] PortableGit...
   if exist "%ARCHIVES%\PortableGit-2.50.0-64-bit.7z.exe" (
     "%ARCHIVES%\PortableGit-2.50.0-64-bit.7z.exe" -o"%ROOT%\PortableGit" -y >nul
     copy nul "%ROOT%\PortableGit\.done" >nul
@@ -203,7 +227,7 @@ if exist "%ROOT%\PortableGit\.done" goto :skip_portablegit
 
 :install_ripgrep
 if exist "%ROOT%\find\rg.exe" goto :skip_ripgrep
-  echo [2/13] ripgrep...
+  echo [2/16] ripgrep...
   if exist "%ARCHIVES%\ripgrep-14.1.1-x86_64-pc-windows-gnu.zip" (
     mkdir "%ROOT%\find" 2>nul
     tar -xf "%ARCHIVES%\ripgrep-14.1.1-x86_64-pc-windows-gnu.zip" -C "%TMP%" --strip-components=1
@@ -216,7 +240,7 @@ if exist "%ROOT%\find\rg.exe" goto :skip_ripgrep
 
 :install_hunspell
 if exist "%ROOT%\hunspell\.done" goto :skip_hunspell
-  echo [3/13] Hunspell...
+  echo [3/16] Hunspell...
   if exist "%ARCHIVES%\hunspell-1.7.2-win32.zip" (
     mkdir "%ROOT%\hunspell" 2>nul
     tar -xf "%ARCHIVES%\hunspell-1.7.2-win32.zip" -C "%ROOT%\hunspell" --strip-components=1
@@ -229,7 +253,7 @@ if exist "%ROOT%\hunspell\.done" goto :skip_hunspell
 
 :install_netcoredbg
 if exist "%ROOT%\netcoredbg\.done" goto :skip_netcoredbg
-  echo [4/13] netcoredbg...
+  echo [4/16] netcoredbg...
   if exist "%ARCHIVES%\netcoredbg-win64.zip" (
     mkdir "%ROOT%\netcoredbg" 2>nul
     tar -xf "%ARCHIVES%\netcoredbg-win64.zip" -C "%ROOT%\netcoredbg"
@@ -242,7 +266,7 @@ if exist "%ROOT%\netcoredbg\.done" goto :skip_netcoredbg
 
 :install_ffmpeg
 if exist "%ROOT%\ffmpeg-*-essentials_build\.done" goto :skip_ffmpeg
-  echo [5/13] ffmpeg...
+  echo [5/16] ffmpeg...
   if exist "%ARCHIVES%\ffmpeg-release-essentials.zip" (
     mkdir "%TMP%\ffmpeg-extract" 2>nul
     tar -xf "%ARCHIVES%\ffmpeg-release-essentials.zip" -C "%TMP%\ffmpeg-extract"
@@ -261,7 +285,7 @@ if exist "%ROOT%\ffmpeg-*-essentials_build\.done" goto :skip_ffmpeg
 
 :install_imagemagick
 if exist "%ROOT%\ImageMagick-*-portable-Q16-x64\.done" goto :skip_imagemagick
-  echo [6/13] ImageMagick...
+  echo [6/16] ImageMagick...
   if exist "%ARCHIVES%\ImageMagick-*-portable-Q16-x64.7z" (
     if exist "%ARCHIVES%\7zr.exe" (
       "%ARCHIVES%\7zr.exe" x "%ARCHIVES%\ImageMagick-*-portable-Q16-x64.7z" -o"%ROOT%" -y >nul
@@ -284,7 +308,7 @@ if exist "%ROOT%\ImageMagick-*-portable-Q16-x64\.done" goto :skip_imagemagick
 
 :install_cmake
 if exist "%ROOT%\cmake\.done" goto :skip_cmake
-  echo [7/13] CMake...
+  echo [7/16] CMake...
   if exist "%ARCHIVES%\cmake-4.2.0-windows-x86_64.zip" (
     mkdir "%ROOT%\cmake" 2>nul
     tar -xf "%ARCHIVES%\cmake-4.2.0-windows-x86_64.zip" -C "%TMP%"
@@ -299,7 +323,7 @@ if exist "%ROOT%\cmake\.done" goto :skip_cmake
 
 :install_clang
 if exist "%ROOT%\clang\.done" goto :skip_clang
-  echo [8/13] Clang/LLVM...
+  echo [8/16] Clang/LLVM...
   if exist "%ARCHIVES%\LLVM-20.1.0-win64.exe" (
     mkdir "%ROOT%\clang" 2>nul
     "%ARCHIVES%\LLVM-20.1.0-win64.exe" /S /D="%ROOT%\clang"
@@ -312,7 +336,7 @@ if exist "%ROOT%\clang\.done" goto :skip_clang
 
 :install_ada
 if exist "%ROOT%\ada_language_server\.done" goto :skip_ada
-  echo [9/13] Ada Language Server...
+  echo [9/16] Ada Language Server...
   if exist "%ARCHIVES%\als-*-win32-x64.tar.gz" (
     mkdir "%ROOT%\ada_language_server" 2>nul
     tar -xf "%ARCHIVES%\als-*-win32-x64.tar.gz" -C "%ROOT%\ada_language_server"
@@ -326,7 +350,7 @@ if exist "%ROOT%\ada_language_server\.done" goto :skip_ada
 
 :install_buf
 if exist "%ROOT%\buf\.done" goto :skip_buf
-  echo [10/13] buf...
+  echo [10/16] buf...
   if exist "%ARCHIVES%\buf-Windows-x86_64.exe" (
     mkdir "%ROOT%\buf" 2>nul
     mkdir "%ROOT%\buf\bin" 2>nul
@@ -341,7 +365,7 @@ if exist "%ROOT%\buf\.done" goto :skip_buf
 
 :install_protoc
 if exist "%ROOT%\protoc\.done" goto :skip_protoc
-  echo [11/13] protoc...
+  echo [11/16] protoc...
   if exist "%ARCHIVES%\protoc-31.1-win64.zip" (
     mkdir "%ROOT%\protoc" 2>nul
     tar -xf "%ARCHIVES%\protoc-31.1-win64.zip" -C "%TMP%" --strip-components=1
@@ -355,7 +379,7 @@ if exist "%ROOT%\protoc\.done" goto :skip_protoc
 :skip_protoc
 
 :install_jdtls
-echo [12/13] JDTLS...
+echo [12/16] JDTLS...
 if exist "%ARCHIVES%\jdt-language-server-latest.tar.gz" (
   mkdir "%ROOT%\jdtls" 2>nul
   tar -xzf "%ARCHIVES%\jdt-language-server-latest.tar.gz" -C "%ROOT%\jdtls" --strip-components=1
@@ -366,7 +390,7 @@ if exist "%ARCHIVES%\jdt-language-server-latest.tar.gz" (
 :skip_jdtls
 
 :install_kotlin
-echo [13/13] Kotlin Language Server...
+echo [13/16] Kotlin Language Server...
 if exist "%ARCHIVES%\kotlin-language-server-server.zip" (
   mkdir "%ROOT%\kotlin-language-server" 2>nul
   tar -xf "%ARCHIVES%\kotlin-language-server-server.zip" -C "%ROOT%\kotlin-language-server"
@@ -375,6 +399,45 @@ if exist "%ARCHIVES%\kotlin-language-server-server.zip" (
   echo    Skipped ^(archive not found^).
 )
 :skip_kotlin
+
+:install_svn
+if exist "%ROOT%\svn\.done" goto :skip_svn
+  echo [14/16] Apache-Subversion (svn)...
+  if exist "%ARCHIVES%\sliksvn-win64-*.zip" (
+    mkdir "%ROOT%\svn" 2>nul
+    tar -xf "%ARCHIVES%\sliksvn-win64-*.zip" -C "%ROOT%\svn" --strip-components=1
+    copy nul "%ROOT%\svn\.done" >nul
+    echo    Installed.
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
+:skip_svn
+
+:install_omnisharp
+if exist "%ROOT%\omnisharp\.done" goto :skip_omnisharp
+  echo [15/16] omnisharp-win-x64 (OmniSharp C# LSP)...
+  if exist "%ARCHIVES%\omnisharp-win-x64.zip" (
+    mkdir "%ROOT%\omnisharp" 2>nul
+    tar -xf "%ARCHIVES%\omnisharp-win-x64.zip" -C "%ROOT%\omnisharp" --strip-components=1
+    copy nul "%ROOT%\omnisharp\.done" >nul
+    echo    Installed.
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
+:skip_omnisharp
+
+:install_exiftool
+if exist "%ROOT%\exiftool\.done" goto :skip_exiftool
+  echo [16/16] exiftool...
+  if exist "%ARCHIVES%\exiftool-*.zip" (
+    mkdir "%ROOT%\exiftool" 2>nul
+    tar -xf "%ARCHIVES%\exiftool-*.zip" -C "%ROOT%\exiftool" --strip-components=1
+    copy nul "%ROOT%\exiftool\.done" >nul
+    echo    Installed.
+  ) else (
+    echo    Skipped ^(archive not found^).
+  )
+:skip_exiftool
 
 :install_csharpls
 echo(

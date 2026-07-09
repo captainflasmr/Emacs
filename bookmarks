@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("selected-window-accent-mode"
+(("wallpaper"
+ (filename . "~/wallpaper/")
+ (front-context-string . ".\n  drwx------ 1")
+ (rear-context-string . "54 May 30 15:51 ")
+ (position . 59)
+ (last-modified 27207 35785 955665 33000))
+("selected-window-accent-mode"
  (filename . "~/source/repos/selected-window-accent-mode/")
  (front-context-string . "CHANGELOG.org\n  ")
  (rear-context-string . "0K Mar 26 08:32 ")

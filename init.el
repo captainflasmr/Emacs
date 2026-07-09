@@ -1363,8 +1363,8 @@ n" :prepend t :jump-to-captured t)
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 70)
-(add-to-list 'default-frame-alist '(alpha-background . 70))
+(set-frame-parameter nil 'alpha-background 80)
+(add-to-list 'default-frame-alist '(alpha-background . 80))
 
 ;; $ emacs --batch --eval '(progn (find-file "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld/emeld.el") (goto-char (point-min)) (condition-case nil (while (not (eobp)) (forward-sexp)) (error (message "Unbalanced at pos %d, line %d, col %d" (point) (line-number-at-pos) (current-column)))))' 2>&1
 ;; Unbalanced at pos 31818, line 693, col 62
