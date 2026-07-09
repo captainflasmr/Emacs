@@ -1,7 +1,7 @@
 ;;; -*- lisp-data -*-
-(("/home/jdyer/.emacs.d/") ("/home/jdyer/.emacs.d/Emacs-vanilla/")
+(("/home/jdyer/.emacs.d/") ("/home/jdyer/source/repos/stuff/")
+ ("/home/jdyer/.emacs.d/Emacs-vanilla/")
  ("/home/jdyer/.emacs.d/Emacs-DIYer/")
- ("/home/jdyer/source/repos/stuff/")
  ("/home/jdyer/.emacs.d/offline-packages/docs/setting-up-emacs-for-coding/")
  ("/home/jdyer/.config/") ("/home/jdyer/bin/")
  ("/home/jdyer/source/repos/Emacs-on-windows")

@@ -379,8 +379,8 @@ echo [14/16] Apache-Subversion (svn CLI)...
 set SVN_DIR=%ROOT%\svn
 if exist "!SVN_DIR!\.done" goto ALREADY_SVN
   if exist "!SVN_DIR!" rmdir /s /q "!SVN_DIR!"
-  set SVNZIP=sliksvn-win64-1.14.7.zip
-  set SVNURL=https://sliksvn.com/downloads/sliksvn/!SVNZIP!
+  set SVNZIP=Slik-Subversion-1.14.5-x64.zip
+  set SVNURL=https://sliksvn.com/pub/!SVNZIP!
   echo    Downloading from !SVNURL!...
   call :download "!SVNURL!" "%TMP%\!SVNZIP!"
   if not exist "%TMP%\!SVNZIP!" goto FAIL_SVN
@@ -429,8 +429,8 @@ echo [16/16] exiftool (image metadata editor)...
 set EXIF_DIR=%ROOT%\exiftool
 if exist "!EXIF_DIR!\.done" goto ALREADY_EXIF
   if exist "!EXIF_DIR!" rmdir /s /q "!EXIF_DIR!"
-  set EXIFZIP=exiftool-13.15.zip
-  set EXIFURL=https://exiftool.org/!EXIFZIP!
+  set EXIFZIP=exiftool-13.59_64.zip
+  set EXIFURL=https://sourceforge.net/projects/exiftool/files/!EXIFZIP!/download
   echo    Downloading from !EXIFURL!...
   call :download "!EXIFURL!" "%TMP%\!EXIFZIP!"
   if not exist "%TMP%\!EXIFZIP!" goto FAIL_EXIF

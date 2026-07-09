@@ -166,8 +166,8 @@ download \
 echo ""
 echo "[14/16] Apache-Subversion (svn)"
 download \
-  "https://sliksvn.com/downloads/sliksvn/sliksvn-win64-1.14.7.zip" \
-  "${TOOLS_DIR}/archives/sliksvn-win64-1.14.7.zip" \
+  "https://sliksvn.com/pub/Slik-Subversion-1.14.5-x64.zip" \
+  "${TOOLS_DIR}/archives/Slik-Subversion-1.14.5-x64.zip" \
   || FAILED=$((FAILED + 1))
 
 # ---------- 15. omnisharp-win-x64 ----------
@@ -182,8 +182,8 @@ download \
 echo ""
 echo "[16/16] exiftool"
 download \
-  "https://exiftool.org/exiftool-13.15.zip" \
-  "${TOOLS_DIR}/archives/exiftool-13.15.zip" \
+  "https://sourceforge.net/projects/exiftool/files/exiftool-13.59_64.zip/download" \
+  "${TOOLS_DIR}/archives/exiftool-13.59_64.zip" \
   || FAILED=$((FAILED + 1))
 
 # ---------- Write the offline installer ----------
@@ -403,9 +403,9 @@ if exist "%ARCHIVES%\kotlin-language-server-server.zip" (
 :install_svn
 if exist "%ROOT%\svn\.done" goto :skip_svn
   echo [14/16] Apache-Subversion (svn)...
-  if exist "%ARCHIVES%\sliksvn-win64-*.zip" (
+  if exist "%ARCHIVES%\Slik-Subversion-*-x64.zip" (
     mkdir "%ROOT%\svn" 2>nul
-    tar -xf "%ARCHIVES%\sliksvn-win64-*.zip" -C "%ROOT%\svn" --strip-components=1
+    tar -xf "%ARCHIVES%\Slik-Subversion-*-x64.zip" -C "%ROOT%\svn" --strip-components=1
     copy nul "%ROOT%\svn\.done" >nul
     echo    Installed.
   ) else (

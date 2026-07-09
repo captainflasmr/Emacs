@@ -51,7 +51,7 @@ the script handles platform-specific launchers for the rest.
 | `ada_language_server/` | Downloaded by `setup-windows-tools.bat` as `win64` ZIP | eglot (ada-mode) |
 | `buf/` | Downloaded by `setup-windows-tools.bat` as `Windows-x86_64.exe` | eglot (protobuf-mode) |
 | `csharp-ls/` | Installed via `dotnet tool install --global csharp-ls` | eglot (csharp-mode) |
-| `svn/` | Downloaded by `setup-windows-tools.bat` as SlikSVN ZIP | `svn` CLI version control |
+| `svn/` | Downloaded by `setup-windows-tools.bat` as SlikSVN ZIP (Slik-Subversion-1.14.5-x64.zip) | `svn` CLI version control |
 | `omnisharp/` | Downloaded by `setup-windows-tools.bat` as `omnisharp-win-x64.zip` | eglot (csharp-mode) alternative |
 | `exiftool/` | Downloaded by `setup-windows-tools.bat` as ZIP | Image metadata editing (`exiftool`) |
 | `npm/` | `.tgz` files are platform-independent | `npm install -g` |
