@@ -71,8 +71,26 @@ download \
 # ---------- 3. Hunspell ----------
 echo ""
 echo "[3/16] Hunspell"
-echo "   Hunspell binary no longer available upstream; dictionary only."
-echo "   Install binaries manually from: https://github.com/iquiw/hunspell-binary/releases"
+download \
+  "https://github.com/iquiw/hunspell-binary/releases/download/v1.7.3/hunspell-v1.7.3.7z" \
+  "${TOOLS_DIR}/archives/hunspell-v1.7.3.7z" \
+  || FAILED=$((FAILED + 1))
+# Pre-extract on Linux so Windows install is a plain file copy
+if [ -f "${TOOLS_DIR}/archives/hunspell-v1.7.3.7z" ]; then
+  echo "   Pre-extracting Hunspell for offline install..."
+  mkdir -p "${TOOLS_DIR}/hunspell"
+  if command -v 7z &>/dev/null; then
+    7z x "${TOOLS_DIR}/archives/hunspell-v1.7.3.7z" \
+      -o"${TOOLS_DIR}/hunspell" -y >/dev/null
+  elif command -v bsdtar &>/dev/null; then
+    bsdtar -xf "${TOOLS_DIR}/archives/hunspell-v1.7.3.7z" \
+      -C "${TOOLS_DIR}/hunspell"
+  else
+    tar -xf "${TOOLS_DIR}/archives/hunspell-v1.7.3.7z" \
+      -C "${TOOLS_DIR}/hunspell"
+  fi
+  echo "   Pre-extracted."
+fi
 
 # ---------- 4. netcoredbg ----------
 echo ""
@@ -254,14 +272,25 @@ if exist "%ROOT%\find\rg.exe" goto :skip_ripgrep
 :install_hunspell
 if exist "%ROOT%\hunspell\.done" goto :skip_hunspell
   echo [3/16] Hunspell...
-  if exist "%ARCHIVES%\hunspell-1.7.2-win32.zip" (
+  set "HUN_PREEXTRACTED=%HERE%tools\hunspell"
+  if exist "!HUN_PREEXTRACTED!" (
+    xcopy /E /I /Y "!HUN_PREEXTRACTED!" "%ROOT%\hunspell" >nul
+  ) else if exist "%ARCHIVES%\hunspell-v1.7.3.7z" (
     mkdir "%ROOT%\hunspell" 2>nul
-    tar -xf "%ARCHIVES%\hunspell-1.7.2-win32.zip" -C "%ROOT%\hunspell" --strip-components=1
-    copy nul "%ROOT%\hunspell\.done" >nul
-    echo    Installed.
+    tar -xf "%ARCHIVES%\hunspell-v1.7.3.7z" -C "%ROOT%\hunspell" --strip-components=1
   ) else (
-    echo    Skipped ^(archive not found^).
+    echo    Skipped ^(no pre-extracted dir or .7z archive found^).
+    goto :skip_hunspell
   )
+  :: Download English dictionary
+  if not exist "%ROOT%\hunspell\share\hunspell" mkdir "%ROOT%\hunspell\share\hunspell"
+  if not exist "%ROOT%\hunspell\share\hunspell\en_GB.dic" (
+    echo    Downloading dictionary...
+    powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.dic' -OutFile '%ROOT%\hunspell\share\hunspell\en_GB.dic'" 2>nul
+    powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.aff' -OutFile '%ROOT%\hunspell\share\hunspell\en_GB.aff'" 2>nul
+  )
+  copy nul "%ROOT%\hunspell\.done" >nul
+  echo    Installed.
 :skip_hunspell
 
 :install_netcoredbg

@@ -99,15 +99,25 @@ set HUN_DIR=%ROOT%\hunspell
 if exist "!HUN_DIR!\.done" goto ALREADY_HUN
   if exist "!HUN_DIR!" rmdir /s /q "!HUN_DIR!"
   mkdir "!HUN_DIR!"
-  pushd "!HUN_DIR!"
-  echo    Hunspell binary repo no longer available; installing dictionary only.
-  echo    Download hunspell binaries manually from https://github.com/iquiw/hunspell-binary/releases
+  set HUN7Z=hunspell-v1.7.3.7z
+  set HUNURL=https://github.com/iquiw/hunspell-binary/releases/download/v1.7.3/!HUN7Z!
+  echo    Downloading binaries from !HUNURL!...
+  call :download "!HUNURL!" "%TMP%\!HUN7Z!"
+  if exist "%TMP%\!HUN7Z!" (
+    tar -xf "%TMP%\!HUN7Z!" -C "!HUN_DIR!" --strip-components=1
+    del "%TMP%\!HUN7Z!" 2>nul
+    echo    Binaries installed.
+  ) else (
+    echo    Binary download failed. Install manually from:
+    echo    https://github.com/iquiw/hunspell-binary/releases
+  )
   :: Download English dictionary
+  pushd "!HUN_DIR!"
   if not exist "share\hunspell" mkdir "share\hunspell"
   call :download "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.dic" "share\hunspell\en_GB.dic"
   call :download "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.aff" "share\hunspell\en_GB.aff"
-  copy nul .done >nul
   popd
+  copy nul "!HUN_DIR!\.done" >nul
   echo    Hunspell installed.
   goto END_HUN
 :ALREADY_HUN
