@@ -399,7 +399,7 @@ if exist "%ROOT%\clang\.done" goto :skip_clang
   echo [8/16] Clang/LLVM...
   if exist "%ARCHIVES%\LLVM-20.1.0-win64.exe" (
     mkdir "%ROOT%\clang" 2>nul
-    "%ARCHIVES%\LLVM-20.1.0-win64.exe" /S /D="%ROOT%\clang"
+    "%ARCHIVES%\LLVM-20.1.0-win64.exe" /S /D=%ROOT%\clang
     copy nul "%ROOT%\clang\.done" >nul
     echo    Installed.
   ) else (

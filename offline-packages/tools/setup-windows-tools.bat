@@ -278,7 +278,7 @@ if exist "!CLANG_DIR!\.done" goto ALREADY_CLANG
   if not exist "%TMP%\!CLANGZIP!" goto FAIL_CLANG
   echo    Running LLVM installer (may need admin rights)...
   mkdir "!CLANG_DIR!" 2>nul
-  "%TMP%\!CLANGZIP!" /S /D="!CLANG_DIR!"
+  "%TMP%\!CLANGZIP!" /S /D=!CLANG_DIR!
   del "%TMP%\!CLANGZIP!"
   copy nul "!CLANG_DIR!\.done" >nul
   echo    Clang/LLVM installed.
