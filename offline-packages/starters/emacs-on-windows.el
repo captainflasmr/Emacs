@@ -338,4 +338,5 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
 
 (global-set-key (kbd "C-c w") selected-window-accent-map)
 
+(require 'image-dired)
 (use-package dired-image-thumbnail)
