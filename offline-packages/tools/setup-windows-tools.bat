@@ -395,8 +395,14 @@ if exist "!SVN_DIR!\.done" goto ALREADY_SVN
   call :download "!SVNURL!" "%TMP%\!SVNZIP!"
   if not exist "%TMP%\!SVNZIP!" goto FAIL_SVN
   mkdir "!SVN_DIR!"
-  tar -xf "%TMP%\!SVNZIP!" -C "!SVN_DIR!" --strip-components=1
-  del "%TMP%\!SVNZIP!"
+  mkdir "%TMP%\svn-extract"
+  tar -xf "%TMP%\!SVNZIP!" -C "%TMP%\svn-extract"
+  if exist "%TMP%\svn-extract\Slik-Subversion-1.14.5-x64.msi" (
+    mkdir "!SVN_DIR!\bin"
+    msiexec /a "%TMP%\svn-extract\Slik-Subversion-1.14.5-x64.msi" /qn TARGETDIR="!SVN_DIR!\bin"
+    rmdir /s /q "%TMP%\svn-extract"
+  )
+  del "%TMP%\!SVNZIP!" 2>nul
   copy nul "!SVN_DIR!\.done" >nul
   echo    Apache-Subversion installed.
   goto END_SVN
