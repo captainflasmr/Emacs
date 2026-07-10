@@ -10,8 +10,6 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** DOING windows rsync -> robocopy
-
 ** TODO try ghosttty.el
 
 ** TODO use M-c for something
