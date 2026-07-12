@@ -165,7 +165,7 @@ if !errorlevel! neq 0 goto NO_DOTNET
   mkdir "%ROOT%\csharp-ls" 2>nul
   pushd "%ROOT%\csharp-ls"
   dotnet tool install csharp-ls --tool-path "%ROOT%\csharp-ls" 2>nul
-  if exist "tools\net9.0\any\CSharpLanguageServer.dll" goto LS_INSTALLED
+  if exist "tools\net10.0\any\CSharpLanguageServer.dll" goto LS_INSTALLED
     echo    Trying global install...
     dotnet tool install --global csharp-ls 2>nul || echo    Already installed globally.
   goto LS_DONE

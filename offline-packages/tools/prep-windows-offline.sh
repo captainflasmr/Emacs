@@ -52,7 +52,7 @@ FAILED=0
 
 # ---------- 1. PortableGit ----------
 echo ""
-echo "[1/16] PortableGit (Git + coreutils)"
+echo "[1/17] PortableGit (Git + coreutils)"
 mkdir -p "${TOOLS_DIR}/archives"
 download \
   "https://github.com/git-for-windows/git/releases/download/v2.50.0.windows.1/PortableGit-2.50.0-64-bit.7z.exe" \
@@ -61,7 +61,7 @@ download \
 
 # ---------- 2. ripgrep ----------
 echo ""
-echo "[2/16] ripgrep"
+echo "[2/17] ripgrep"
 mkdir -p "${TOOLS_DIR}/archives"
 download \
   "https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-pc-windows-gnu.zip" \
@@ -70,7 +70,7 @@ download \
 
 # ---------- 3. Hunspell ----------
 echo ""
-echo "[3/16] Hunspell"
+echo "[3/17] Hunspell"
 download \
   "https://github.com/iquiw/hunspell-binary/releases/download/v1.7.3/hunspell-v1.7.3.7z" \
   "${TOOLS_DIR}/archives/hunspell-v1.7.3.7z" \
@@ -105,7 +105,7 @@ download \
 
 # ---------- 4. netcoredbg ----------
 echo ""
-echo "[4/16] netcoredbg"
+echo "[4/17] netcoredbg"
 download \
   "https://github.com/Samsung/netcoredbg/releases/download/3.2.0-1092/netcoredbg-win64.zip" \
   "${TOOLS_DIR}/archives/netcoredbg-win64.zip" \
@@ -113,7 +113,7 @@ download \
 
 # ---------- 5. ffmpeg ----------
 echo ""
-echo "[5/16] ffmpeg"
+echo "[5/17] ffmpeg"
 download \
   "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" \
   "${TOOLS_DIR}/archives/ffmpeg-release-essentials.zip" \
@@ -121,7 +121,7 @@ download \
 
 # ---------- 6. ImageMagick (7z; pre-extracted to avoid 7z dep on Windows) ----------
 echo ""
-echo "[6/16] ImageMagick (7z)"
+echo "[6/17] ImageMagick (7z)"
 download \
   "https://github.com/ImageMagick/ImageMagick/releases/download/7.1.2-27/ImageMagick-7.1.2-27-portable-Q16-x64.7z" \
   "${TOOLS_DIR}/archives/ImageMagick-7.1.2-27-portable-Q16-x64.7z" \
@@ -146,7 +146,7 @@ fi
 
 # ---------- 7. CMake ----------
 echo ""
-echo "[7/16] CMake"
+echo "[7/17] CMake"
 download \
   "https://github.com/Kitware/CMake/releases/download/v4.2.0/cmake-4.2.0-windows-x86_64.zip" \
   "${TOOLS_DIR}/archives/cmake-4.2.0-windows-x86_64.zip" \
@@ -154,7 +154,7 @@ download \
 
 # ---------- 8. Clang/LLVM ----------
 echo ""
-echo "[8/16] Clang/LLVM"
+echo "[8/17] Clang/LLVM"
 download \
   "https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.0/LLVM-20.1.0-win64.exe" \
   "${TOOLS_DIR}/archives/LLVM-20.1.0-win64.exe" \
@@ -162,31 +162,52 @@ download \
 
 # ---------- 9. ada_language_server ----------
 echo ""
-echo "[9/16] Ada Language Server"
+echo "[9/17] Ada Language Server"
 download \
   "https://github.com/AdaCore/ada_language_server/releases/download/2026.3.202607051/als-2026.3.202607051-win32-x64.tar.gz" \
   "${TOOLS_DIR}/archives/als-2026.3.202607051-win32-x64.tar.gz" \
   || FAILED=$((FAILED + 1))
 
-# ---------- 10. buf ----------
+# ---------- 10. csharp-ls ----------
 echo ""
-echo "[10/16] buf (protobuf)"
+echo "[10/17] csharp-ls (C# Language Server)"
+# Download the NuGet package directly
+download \
+  "https://www.nuget.org/api/v2/package/csharp-ls/0.25.0" \
+  "${TOOLS_DIR}/archives/csharp-ls-0.25.0.nupkg" \
+  || FAILED=$((FAILED + 1))
+# Pre-extract on Linux so Windows install is a plain file copy
+if [ -f "${TOOLS_DIR}/archives/csharp-ls-0.25.0.nupkg" ]; then
+  echo "   Pre-extracting csharp-ls for offline install..."
+  mkdir -p "${TOOLS_DIR}/csharp-ls"
+  if command -v unzip &>/dev/null; then
+    unzip -q "${TOOLS_DIR}/archives/csharp-ls-0.25.0.nupkg" -d "${TOOLS_DIR}/csharp-ls"
+  else
+    echo "   FAILED: unzip not available"
+    FAILED=$((FAILED + 1))
+  fi
+  echo "   Pre-extracted."
+fi
+
+# ---------- 11. buf ----------
+echo ""
+echo "[11/17] buf (protobuf)"
 download \
   "https://github.com/bufbuild/buf/releases/download/v1.50.0/buf-Windows-x86_64.exe" \
   "${TOOLS_DIR}/archives/buf-Windows-x86_64.exe" \
   || FAILED=$((FAILED + 1))
 
-# ---------- 11. protoc ----------
+# ---------- 12. protoc ----------
 echo ""
-echo "[11/16] protoc"
+echo "[12/17] protoc"
 download \
   "https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protoc-31.1-win64.zip" \
   "${TOOLS_DIR}/archives/protoc-31.1-win64.zip" \
   || FAILED=$((FAILED + 1))
 
-# ---------- 12. JDTLS (just the Windows launcher + config) ----------
+# ---------- 13. JDTLS (just the Windows launcher + config) ----------
 echo ""
-echo "[12/16] JDTLS (Eclipse JDT Language Server — Windows launcher)"
+echo "[13/17] JDTLS (Eclipse JDT Language Server — Windows launcher)"
 # The full JDTLS tarball includes the launcher; the JARs are already in the
 # Linux toolkit tools/ and work cross-platform.
 download \
@@ -194,9 +215,9 @@ download \
   "${TOOLS_DIR}/archives/jdt-language-server-latest.tar.gz" \
   || FAILED=$((FAILED + 1))
 
-# ---------- 13. kotlin-language-server (Windows launcher) ----------
+# ---------- 14. kotlin-language-server (Windows launcher) ----------
 echo ""
-echo "[13/16] Kotlin Language Server (Windows launcher)"
+echo "[14/17] Kotlin Language Server (Windows launcher)"
 # The JARs are cross-platform and already in the Linux toolkit tools/;
 # download the full release for the .bat launcher.
 download \
@@ -204,9 +225,9 @@ download \
   "${TOOLS_DIR}/archives/kotlin-language-server-server.zip" \
   || FAILED=$((FAILED + 1))
 
-# ---------- 14. Apache-Subversion ----------
+# ---------- 15. Apache-Subversion ----------
 echo ""
-echo "[14/16] Apache-Subversion (svn)"
+echo "[15/17] Apache-Subversion (svn)"
 download \
   "https://sliksvn.com/pub/Slik-Subversion-1.14.5-x64.zip" \
   "${TOOLS_DIR}/archives/Slik-Subversion-1.14.5-x64.zip" \
@@ -224,17 +245,17 @@ if [ -f "${TOOLS_DIR}/archives/Slik-Subversion-1.14.5-x64.zip" ]; then
   echo "   Pre-extracted."
 fi
 
-# ---------- 15. omnisharp-win-x64 ----------
+# ---------- 16. omnisharp-win-x64 ----------
 echo ""
-echo "[15/16] omnisharp-win-x64 (OmniSharp C# LSP)"
+echo "[16/17] omnisharp-win-x64 (OmniSharp C# LSP)"
 download \
   "https://github.com/OmniSharp/omnisharp-roslyn/releases/download/v1.39.11/omnisharp-win-x64.zip" \
   "${TOOLS_DIR}/archives/omnisharp-win-x64.zip" \
   || FAILED=$((FAILED + 1))
 
-# ---------- 16. exiftool ----------
+# ---------- 17. exiftool ----------
 echo ""
-echo "[16/16] exiftool"
+echo "[17/17] exiftool"
 download \
   "https://sourceforge.net/projects/exiftool/files/exiftool-13.59_64.zip/download" \
   "${TOOLS_DIR}/archives/exiftool-13.59_64.zip" \
@@ -269,7 +290,7 @@ echo[
 
 :install_portablegit
 if exist "%ROOT%\PortableGit\.done" goto :skip_portablegit
-  echo [1/16] PortableGit...
+  echo [1/17] PortableGit...
   if exist "%ARCHIVES%\PortableGit-2.50.0-64-bit.7z.exe" (
     "%ARCHIVES%\PortableGit-2.50.0-64-bit.7z.exe" -o"%ROOT%\PortableGit" -y >nul
     copy nul "%ROOT%\PortableGit\.done" >nul
@@ -281,7 +302,7 @@ if exist "%ROOT%\PortableGit\.done" goto :skip_portablegit
 
 :install_ripgrep
 if exist "%ROOT%\find\rg.exe" goto :skip_ripgrep
-  echo [2/16] ripgrep...
+  echo [2/17] ripgrep...
   if exist "%ARCHIVES%\ripgrep-14.1.1-x86_64-pc-windows-gnu.zip" (
     mkdir "%ROOT%\find" 2>nul
     tar -xf "%ARCHIVES%\ripgrep-14.1.1-x86_64-pc-windows-gnu.zip" -C "%TMP%" --strip-components=1
@@ -294,7 +315,7 @@ if exist "%ROOT%\find\rg.exe" goto :skip_ripgrep
 
 :install_hunspell
 if exist "%ROOT%\hunspell\.done" goto :skip_hunspell
-  echo [3/16] Hunspell...
+  echo [3/17] Hunspell...
   set "HUN_PREEXTRACTED=%HERE%tools\hunspell"
   if exist "!HUN_PREEXTRACTED!" (
     xcopy /E /I /Y "!HUN_PREEXTRACTED!" "%ROOT%\hunspell" >nul
@@ -326,7 +347,7 @@ if exist "%ROOT%\hunspell\.done" goto :skip_hunspell
 
 :install_netcoredbg
 if exist "%ROOT%\netcoredbg\.done" goto :skip_netcoredbg
-  echo [4/16] netcoredbg...
+  echo [4/17] netcoredbg...
   if exist "%ARCHIVES%\netcoredbg-win64.zip" (
     mkdir "%ROOT%\netcoredbg" 2>nul
     tar -xf "%ARCHIVES%\netcoredbg-win64.zip" -C "%ROOT%\netcoredbg"
@@ -339,7 +360,7 @@ if exist "%ROOT%\netcoredbg\.done" goto :skip_netcoredbg
 
 :install_ffmpeg
 if exist "%ROOT%\ffmpeg-*-essentials_build\.done" goto :skip_ffmpeg
-  echo [5/16] ffmpeg...
+  echo [5/17] ffmpeg...
   if exist "%ARCHIVES%\ffmpeg-release-essentials.zip" (
     mkdir "%TMP%\ffmpeg-extract" 2>nul
     tar -xf "%ARCHIVES%\ffmpeg-release-essentials.zip" -C "%TMP%\ffmpeg-extract"
@@ -359,7 +380,7 @@ if exist "%ROOT%\ffmpeg-*-essentials_build\.done" goto :skip_ffmpeg
 
 :install_imagemagick
 if exist "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64\.done" goto :skip_imagemagick
-  echo [6/16] ImageMagick...
+  echo [6/17] ImageMagick...
   set "IM_PREEXTRACTED=%HERE%tools\ImageMagick-7.1.2-27-portable-Q16-x64"
   if exist "!IM_PREEXTRACTED!" (
     xcopy /E /I /Y "!IM_PREEXTRACTED!" "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64" >nul
@@ -381,7 +402,7 @@ if exist "%ROOT%\ImageMagick-7.1.2-27-portable-Q16-x64\.done" goto :skip_imagema
 
 :install_cmake
 if exist "%ROOT%\cmake\.done" goto :skip_cmake
-  echo [7/16] CMake...
+  echo [7/17] CMake...
   if exist "%ARCHIVES%\cmake-4.2.0-windows-x86_64.zip" (
     mkdir "%ROOT%\cmake" 2>nul
     tar -xf "%ARCHIVES%\cmake-4.2.0-windows-x86_64.zip" -C "%TMP%"
@@ -396,7 +417,7 @@ if exist "%ROOT%\cmake\.done" goto :skip_cmake
 
 :install_clang
 if exist "%ROOT%\clang\.done" goto :skip_clang
-  echo [8/16] Clang/LLVM...
+  echo [8/17] Clang/LLVM...
   if exist "%ARCHIVES%\LLVM-20.1.0-win64.exe" (
     mkdir "%ROOT%\clang" 2>nul
     "%ARCHIVES%\LLVM-20.1.0-win64.exe" /S /D=%ROOT%\clang
@@ -409,7 +430,7 @@ if exist "%ROOT%\clang\.done" goto :skip_clang
 
 :install_ada
 if exist "%ROOT%\ada_language_server\.done" goto :skip_ada
-  echo [9/16] Ada Language Server...
+  echo [9/17] Ada Language Server...
   for %%f in ("%ARCHIVES%\als-*-win32-x64.tar.gz") do if exist "%%f" (
     mkdir "%ROOT%\ada_language_server" 2>nul
     tar -xf "%%f" -C "%ROOT%\ada_language_server"
@@ -421,9 +442,23 @@ if exist "%ROOT%\ada_language_server\.done" goto :skip_ada
   )
 :skip_ada
 
+:install_csharpls
+if exist "%ROOT%\csharp-ls\.done" goto :skip_csharpls
+  echo [10/17] csharp-ls (C# Language Server)...
+  set "CSLS_PREEXTRACTED=%HERE%tools\csharp-ls"
+  if exist "!CSLS_PREEXTRACTED!" (
+    xcopy /E /I /Y "!CSLS_PREEXTRACTED!" "%ROOT%\csharp-ls" >nul
+    copy nul "%ROOT%\csharp-ls\.done" >nul
+    echo    Installed ^(from pre-extracted^).
+  ) else (
+    echo    Skipped ^(no pre-extracted dir found^).
+  )
+  echo    Note: .NET SDK required to run csharp-ls
+:skip_csharpls
+
 :install_buf
 if exist "%ROOT%\buf\.done" goto :skip_buf
-  echo [10/16] buf...
+  echo [11/17] buf...
   if exist "%ARCHIVES%\buf-Windows-x86_64.exe" (
     mkdir "%ROOT%\buf" 2>nul
     mkdir "%ROOT%\buf\bin" 2>nul
@@ -438,7 +473,7 @@ if exist "%ROOT%\buf\.done" goto :skip_buf
 
 :install_protoc
 if exist "%ROOT%\protoc\.done" goto :skip_protoc
-  echo [11/16] protoc...
+  echo [12/17] protoc...
   if exist "%ARCHIVES%\protoc-31.1-win64.zip" (
     mkdir "%ROOT%\protoc" 2>nul
     mkdir "%TMP%\protoc-extract" 2>nul
@@ -459,7 +494,7 @@ if exist "%ROOT%\protoc\.done" goto :skip_protoc
 :skip_protoc
 
 :install_jdtls
-echo [12/16] JDTLS...
+echo [13/17] JDTLS...
 if exist "%ARCHIVES%\jdt-language-server-latest.tar.gz" (
   mkdir "%ROOT%\jdtls" 2>nul
   tar -xzf "%ARCHIVES%\jdt-language-server-latest.tar.gz" -C "%ROOT%\jdtls" --strip-components=1
@@ -470,7 +505,7 @@ if exist "%ARCHIVES%\jdt-language-server-latest.tar.gz" (
 :skip_jdtls
 
 :install_kotlin
-echo [13/16] Kotlin Language Server...
+echo [14/17] Kotlin Language Server...
 if exist "%ARCHIVES%\kotlin-language-server-server.zip" (
   mkdir "%ROOT%\kotlin-language-server" 2>nul
   tar -xf "%ARCHIVES%\kotlin-language-server-server.zip" -C "%ROOT%\kotlin-language-server"
@@ -482,7 +517,7 @@ if exist "%ARCHIVES%\kotlin-language-server-server.zip" (
 
 :install_svn
 if exist "%ROOT%\svn\.done" goto :skip_svn
-  echo [14/16] Apache-Subversion (svn)...
+  echo [15/17] Apache-Subversion (svn)...
   set "SVN_PREEXTRACTED=%HERE%tools\svn"
   if exist "!SVN_PREEXTRACTED!" (
     xcopy /E /I /Y "!SVN_PREEXTRACTED!" "%ROOT%\svn" >nul
@@ -505,7 +540,7 @@ if exist "%ROOT%\svn\.done" goto :skip_svn
 
 :install_omnisharp
 if exist "%ROOT%\omnisharp\.done" goto :skip_omnisharp
-  echo [15/16] omnisharp-win-x64 (OmniSharp C# LSP)...
+  echo [16/17] omnisharp-win-x64 (OmniSharp C# LSP)...
   if exist "%ARCHIVES%\omnisharp-win-x64.zip" (
     mkdir "%ROOT%\omnisharp" 2>nul
     tar -xf "%ARCHIVES%\omnisharp-win-x64.zip" -C "%ROOT%\omnisharp" --strip-components=1
@@ -518,7 +553,7 @@ if exist "%ROOT%\omnisharp\.done" goto :skip_omnisharp
 
 :install_exiftool
 if exist "%ROOT%\exiftool\.done" goto :skip_exiftool
-  echo [16/16] exiftool...
+  echo [17/17] exiftool...
   if exist "%ARCHIVES%\exiftool-13.59_64.zip" (
     mkdir "%ROOT%\exiftool" 2>nul
     tar -xf "%ARCHIVES%\exiftool-13.59_64.zip" -C "%ROOT%\exiftool" --strip-components=1
@@ -529,10 +564,6 @@ if exist "%ROOT%\exiftool\.done" goto :skip_exiftool
     echo    Skipped ^(archive not found^).
   )
 :skip_exiftool
-
-:install_csharpls
-echo(
-echo [extra] csharp-ls requires .NET SDK: dotnet tool install --global csharp-ls
 
 echo(
 echo =================================================================
