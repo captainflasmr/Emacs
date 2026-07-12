@@ -93,15 +93,23 @@ if [ -f "${TOOLS_DIR}/archives/hunspell-v1.7.3.7z" ]; then
 fi
 # Download English dictionary alongside pre-extracted binaries
 echo "   Downloading English dictionary..."
+# Bundle dictionaries in a dedicated dir so the offline installer can copy
+# them regardless of which hunspell extraction path is taken.
+mkdir -p "${TOOLS_DIR}/dictionaries"
 mkdir -p "${TOOLS_DIR}/hunspell/share/hunspell"
 download \
   "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.dic" \
-  "${TOOLS_DIR}/hunspell/share/hunspell/en_GB.dic" \
+  "${TOOLS_DIR}/dictionaries/en_GB.dic" \
   || FAILED=$((FAILED + 1))
 download \
   "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.aff" \
-  "${TOOLS_DIR}/hunspell/share/hunspell/en_GB.aff" \
+  "${TOOLS_DIR}/dictionaries/en_GB.aff" \
   || FAILED=$((FAILED + 1))
+# Also place copies inside the pre-extracted hunspell dir
+if [ -f "${TOOLS_DIR}/dictionaries/en_GB.dic" ]; then
+  cp "${TOOLS_DIR}/dictionaries/en_GB.dic" "${TOOLS_DIR}/hunspell/share/hunspell/en_GB.dic" 2>/dev/null || true
+  cp "${TOOLS_DIR}/dictionaries/en_GB.aff" "${TOOLS_DIR}/hunspell/share/hunspell/en_GB.aff" 2>/dev/null || true
+fi
 
 # ---------- 4. netcoredbg ----------
 echo ""
@@ -326,12 +334,17 @@ if exist "%ROOT%\hunspell\.done" goto :skip_hunspell
     echo    Skipped ^(no pre-extracted dir or .7z archive found^).
     goto :skip_hunspell
   )
-  :: Download English dictionary
+  :: Install pre-bundled English dictionary (no internet required)
   if not exist "%ROOT%\hunspell\share\hunspell" mkdir "%ROOT%\hunspell\share\hunspell"
+  set "DICT_BUNDLE=%HERE%tools\dictionaries"
   if not exist "%ROOT%\hunspell\share\hunspell\en_GB.dic" (
-    echo    Downloading dictionary...
-    powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.dic' -OutFile '%ROOT%\hunspell\share\hunspell\en_GB.dic'" 2>nul
-    powershell -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/en-GB/index.aff' -OutFile '%ROOT%\hunspell\share\hunspell\en_GB.aff'" 2>nul
+    if exist "!DICT_BUNDLE!\en_GB.dic" (
+      copy /Y "!DICT_BUNDLE!\en_GB.dic" "%ROOT%\hunspell\share\hunspell\en_GB.dic" >nul
+      copy /Y "!DICT_BUNDLE!\en_GB.aff" "%ROOT%\hunspell\share\hunspell\en_GB.aff" >nul
+      echo    Dictionaries copied from bundle.
+    ) else (
+      echo    WARNING: No bundled dictionary found.
+    )
   )
   :: Copy dictionaries to C:\Hunspell\ (in hunspell's built-in search path)
   if not exist "C:\Hunspell" mkdir "C:\Hunspell"
