@@ -75,7 +75,7 @@
             ,(concat bin "/PortableGit/usr/bin")
             ,(concat bin "/netcoredbg")
             ,(concat bin "/csharp-ls/tools/net9.0/any")
-            ,(concat bin "/hunspell/bin")
+            ,(concat bin "/hunspell/Hunspell/bin")
             ,(concat bin "/find")
             ,(concat bin "/clang/bin")
             ,(concat bin "/cmake/bin")
