@@ -30,7 +30,7 @@
             ,(concat bin "/PortableGit/bin")
             ,(concat bin "/PortableGit/usr/bin")
             ,(concat bin "/netcoredbg")
-            ,(concat bin "/csharp-ls/tools/net9.0/any")
+            ,(concat bin "/csharp-ls/tools/net10.0/any")
             ,(concat bin "/hunspell/bin")
             ,(concat bin "/find")
             ,(concat bin "/clang/bin")
@@ -84,8 +84,8 @@
            (csls  (expand-file-name "csharp-ls/csharp-ls" bin))
            (kls   (expand-file-name "kotlin-language-server/bin/kotlin-language-server" bin))
            ;; Windows-specific: csharp-ls is a .NET tool, launched via dotnet + DLL
-           (csls-dll (car (file-expand-wildcards
-                           (expand-file-name "csharp-ls/tools/net9.0/any/CSharpLanguageServer.dll" bin)))))
+            (csls-dll (car (file-expand-wildcards
+                            (expand-file-name "csharp-ls/tools/*/any/CSharpLanguageServer.dll" bin)))))
       (when (file-executable-p jdtls)
         (add-to-list 'eglot-server-programs
                      `((java-mode java-ts-mode) .

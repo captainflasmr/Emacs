@@ -74,7 +74,7 @@
             ,(concat bin "/PortableGit/bin")
             ,(concat bin "/PortableGit/usr/bin")
             ,(concat bin "/netcoredbg")
-            ,(concat bin "/csharp-ls/tools/net9.0/any")
+            ,(concat bin "/csharp-ls/tools/net10.0/any")
             ,(concat bin "/hunspell/Hunspell/bin")
             ,(concat bin "/find")
             ,(concat bin "/clang/bin")
@@ -124,8 +124,8 @@
 ;; MIMESIS Visual Solution Build System for Emacs
 ;; Adapted for modular architecture with IGM, MSS, DM, VDS, IGC components
 (let* ((bin (expand-file-name "bin" user-emacs-directory))
-       (csls-dll (car (file-expand-wildcards
-                       (expand-file-name "csharp-ls/tools/net9.0/any/CSharpLanguageServer.dll" bin)))))
+        (csls-dll (car (file-expand-wildcards
+                        (expand-file-name "csharp-ls/tools/*/any/CSharpLanguageServer.dll" bin)))))
   (setq eglot-server-programs
         `((csharp-mode . ("dotnet" ,csls-dll)))))
 
