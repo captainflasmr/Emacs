@@ -1505,3 +1505,87 @@ n" :prepend t :jump-to-captured t)
             (when (facep 'fringe)
               (set-face-background 'fringe (face-background 'default)))))
 
+(defun opencode-open-session-terminal (session-id directory)
+  "Open a terminal at DIRECTORY running opencode connected to SESSION-ID."
+  (let* ((default-directory (if (and directory (file-directory-p directory))
+                                (file-name-as-directory directory)
+                              (expand-file-name "~")))
+         ;; Detect terminal: prioritizes foot (common on Sway), then fallback options
+         (terminal (cond ((executable-find "foot") "foot")
+                         ((executable-find "ghostty") "ghostty")
+                         ((executable-find "alacritty") "alacritty")
+                         ((executable-find "wezterm") "wezterm")
+                         (t "xterm")))
+         ;; Format command arguments based on terminal syntax
+         (args (cond
+                ((string= terminal "foot") (list "-D" default-directory "opencode" "--session" session-id))
+                ((string= terminal "ghostty") (list "--working-directory" default-directory "-e" "opencode" "--session" session-id))
+                ((string= terminal "wezterm") (list "start" "--cwd" default-directory "opencode" "--session" session-id))
+                (t (list "-e" "opencode" "--session" session-id)))))
+    
+    (message "Launching %s for OpenCode session %s..." terminal session-id)
+    (apply #'start-process (concat "opencode-" session-id) nil terminal args)))
+
+(defun opencode-list-sessions-native ()
+  "Query the local OpenCode SQLite database and format active sessions with links."
+  (interactive)
+  (let* ((db-path (expand-file-name "~/.local/share/opencode/opencode.db"))
+         (buf (get-buffer-create "*OpenCode Sessions*")))
+    (if (not (file-exists-p db-path))
+        (error "OpenCode database not found at %s" db-path)
+      (unless (fboundp 'sqlite-open)
+        (error "Native SQLite support is not available in this Emacs build"))
+      
+      (let* ((db (sqlite-open db-path))
+             (query "SELECT id, time_created, time_updated, title, directory, path 
+                     FROM session 
+                     WHERE parent_id IS NULL 
+                     ORDER BY time_updated DESC LIMIT 10;")
+             (rows (sqlite-select db query)))
+        (sqlite-close db)
+        
+        (with-current-buffer buf
+          (read-only-mode -1)
+          (erase-buffer)
+          (insert "=== OPENCODE ACTIVE SESSIONS ===\n")
+          (insert "Click on a [Connect] link to launch the session in a terminal.\n\n")
+          (if (null rows)
+              (insert "No active sessions found.\n")
+            (dolist (row rows)
+              (let* ((id (nth 0 row))
+                     (created-raw (nth 1 row))
+                     (updated-raw (nth 2 row))
+                     (title (or (nth 3 row) "Untitled Session"))
+                     (directory (nth 4 row))
+                     (path (nth 5 row))
+                     (project-root (cond
+                                    ((and directory (not (string-empty-p directory))) directory)
+                                    ((and path (not (string-empty-p path))) path)
+                                    (t "Unknown Workspace")))
+                     
+                     (created-str (if (numberp created-raw)
+                                      (format-time-string "%Y-%m-%d %H:%M:%S" (seconds-to-time (/ created-raw 1000.0)))
+                                    "Unknown"))
+                     (updated-str (if (numberp updated-raw)
+                                      (format-time-string "%Y-%m-%d %H:%M:%S" (seconds-to-time (/ updated-raw 1000.0)))
+                                    "Unknown")))
+                (insert (format "Session ID:   %s " id))
+                
+                ;; Insert clickable [Connect] button
+                (let ((start (point)))
+                  (insert "[Connect]")
+                  (make-button start (point)
+                               'action (lambda (_) (opencode-open-session-terminal id project-root))
+                               'follow-link t
+                               'help-echo "Click to launch session in a new terminal"))
+                (insert "\n")
+                
+                (insert (format "Title:        %s\n" title))
+                (insert (format "Project Root: %s\n" project-root))
+                (insert (format "Created:      %s\n" created-str))
+                (insert (format "Updated:      %s\n\n" updated-str)))))
+          (ansi-color-apply-on-region (point-min) (point-max))
+          (read-only-mode 1))
+        (display-buffer buf)))))
+
+(global-set-key (kbd "M-c") #'opencode-list-sessions-native)
