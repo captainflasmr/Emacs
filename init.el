@@ -1505,29 +1505,32 @@ n" :prepend t :jump-to-captured t)
             (when (facep 'fringe)
               (set-face-background 'fringe (face-background 'default)))))
 
+(require 'transient)
+(require 'json)
+
+;;; 1. Process launcher helper
 (defun opencode-open-session-terminal (session-id directory)
   "Open a terminal at DIRECTORY running opencode connected to SESSION-ID."
   (let* ((default-directory (if (and directory (file-directory-p directory))
                                 (file-name-as-directory directory)
                               (expand-file-name "~")))
-         ;; Detect terminal: prioritizes foot (common on Sway), then fallback options
          (terminal (cond ((executable-find "foot") "foot")
                          ((executable-find "ghostty") "ghostty")
                          ((executable-find "alacritty") "alacritty")
                          ((executable-find "wezterm") "wezterm")
                          (t "xterm")))
-         ;; Format command arguments based on terminal syntax
          (args (cond
                 ((string= terminal "foot") (list "-D" default-directory "opencode" "--session" session-id))
                 ((string= terminal "ghostty") (list "--working-directory" default-directory "-e" "opencode" "--session" session-id))
                 ((string= terminal "wezterm") (list "start" "--cwd" default-directory "opencode" "--session" session-id))
                 (t (list "-e" "opencode" "--session" session-id)))))
-    
     (message "Launching %s for OpenCode session %s..." terminal session-id)
     (apply #'start-process (concat "opencode-" session-id) nil terminal args)))
 
-(defun opencode-list-sessions-native ()
-  "Query the local OpenCode SQLite database and format active sessions with links."
+;;; 2. Robust native session listing (with JSON/data parsing & filtering support)
+(cl-defun opencode-list-sessions-native (&optional title-filter)
+  "Query the local OpenCode SQLite database and format active sessions.
+If TITLE-FILTER is provided, filters results matching the session title."
   (interactive)
   (let* ((db-path (expand-file-name "~/.local/share/opencode/opencode.db"))
          (buf (get-buffer-create "*OpenCode Sessions*")))
@@ -1537,10 +1540,24 @@ n" :prepend t :jump-to-captured t)
         (error "Native SQLite support is not available in this Emacs build"))
       
       (let* ((db (sqlite-open db-path))
-             (query "SELECT id, time_created, time_updated, title, directory, path 
-                     FROM session 
-                     WHERE parent_id IS NULL 
-                     ORDER BY time_updated DESC LIMIT 10;")
+             ;; Base query selecting the JSON 'data' column for parsing the last message payload
+             (query-base "
+               SELECT 
+                 s.id, 
+                 s.time_created, 
+                 s.time_updated, 
+                 s.title, 
+                 s.directory, 
+                 s.path,
+                 (SELECT model FROM message WHERE session_id = s.id AND model IS NOT NULL LIMIT 1) as resolved_model,
+                 (SELECT agent FROM message WHERE session_id = s.id AND agent IS NOT NULL LIMIT 1) as resolved_agent,
+                 (SELECT data FROM message WHERE session_id = s.id ORDER BY time_created DESC LIMIT 1) as last_msg
+               FROM session s
+               WHERE s.parent_id IS NULL ")
+             ;; Apply filter if requested
+             (query (if (and title-filter (not (string-empty-p title-filter)))
+                        (concat query-base "AND s.title LIKE " (sqlite-quote-value (concat "%" title-filter "%")) " ORDER BY s.time_updated DESC LIMIT 20;")
+                      (concat query-base "ORDER BY s.time_updated DESC LIMIT 20;")))
              (rows (sqlite-select db query)))
         (sqlite-close db)
         
@@ -1548,9 +1565,13 @@ n" :prepend t :jump-to-captured t)
           (read-only-mode -1)
           (erase-buffer)
           (insert "=== OPENCODE ACTIVE SESSIONS ===\n")
-          (insert "Click on a [Connect] link to launch the session in a terminal.\n\n")
+          (if title-filter
+              (insert (format "Filtered by title query: \"%s\"\n" title-filter))
+            (insert "Click on a [Connect] link to launch the session in a terminal.\n"))
+          (insert (make-string 50 ?=) "\n\n")
+          
           (if (null rows)
-              (insert "No active sessions found.\n")
+              (insert "No matching sessions found.\n")
             (dolist (row rows)
               (let* ((id (nth 0 row))
                      (created-raw (nth 1 row))
@@ -1558,20 +1579,37 @@ n" :prepend t :jump-to-captured t)
                      (title (or (nth 3 row) "Untitled Session"))
                      (directory (nth 4 row))
                      (path (nth 5 row))
+                     (model (or (nth 6 row) "default"))
+                     (agent (or (nth 7 row) "primary"))
+                     (last-msg-raw (nth 8 row))
+                     
                      (project-root (cond
                                     ((and directory (not (string-empty-p directory))) directory)
                                     ((and path (not (string-empty-p path))) path)
                                     (t "Unknown Workspace")))
                      
+                     ;; Safely parse the JSON payload stored inside the 'data' column
+                     (msg-snippet
+                      (if (and last-msg-raw (not (string-empty-p last-msg-raw)))
+                          (condition-case nil
+                              (let* ((parsed (json-parse-string last-msg-raw :object-type 'alist :array-type 'list))
+                                     (parts (cdr (assoc 'parts parsed)))
+                                     (first-part (car parts))
+                                     (text-val (or (cdr (assoc 'text first-part)) "")))
+                                (if (> (length text-val) 60)
+                                    (concat (substring text-val 0 57) "...")
+                                  text-val))
+                            (error "Unparseable raw payload"))
+                        "No messages yet"))
+                     
                      (created-str (if (numberp created-raw)
-                                      (format-time-string "%Y-%m-%d %H:%M:%S" (seconds-to-time (/ created-raw 1000.0)))
+                                      (format-time-string "%Y-%m-%d %H:%M" (seconds-to-time (/ created-raw 1000.0)))
                                     "Unknown"))
                      (updated-str (if (numberp updated-raw)
-                                      (format-time-string "%Y-%m-%d %H:%M:%S" (seconds-to-time (/ updated-raw 1000.0)))
+                                      (format-time-string "%Y-%m-%d %H:%M" (seconds-to-time (/ updated-raw 1000.0)))
                                     "Unknown")))
-                (insert (format "Session ID:   %s " id))
                 
-                ;; Insert clickable [Connect] button
+                (insert (format "Session ID:   %s " id))
                 (let ((start (point)))
                   (insert "[Connect]")
                   (make-button start (point)
@@ -1582,10 +1620,35 @@ n" :prepend t :jump-to-captured t)
                 
                 (insert (format "Title:        %s\n" title))
                 (insert (format "Project Root: %s\n" project-root))
-                (insert (format "Created:      %s\n" created-str))
-                (insert (format "Updated:      %s\n\n" updated-str)))))
+                (insert (format "Agent/Model:  %s (%s)\n" agent model))
+                (insert (format "Last Message: \"%s\"\n" msg-snippet))
+                (insert (format "Activity:     Created %s | Updated %s\n" created-str updated-str))
+                (insert (make-string 50 ?-) "\n"))))
           (ansi-color-apply-on-region (point-min) (point-max))
           (read-only-mode 1))
         (display-buffer buf)))))
 
-(global-set-key (kbd "M-c") #'opencode-list-sessions-native)
+;;; 3. Specialized search actions
+(defun opencode-occur-all-titles ()
+  "Instantly show all session titles in an Occur buffer without prompting."
+  (interactive)
+  (let ((buf (get-buffer "*OpenCode Sessions*")))
+    (unless buf
+      ;; Fallback: generate the buffer first if it doesn't exist
+      (opencode-list-sessions-native)
+      (setq buf (get-buffer "*OpenCode Sessions*")))
+    (with-current-buffer buf
+      ;; Match all lines starting with "Title:"
+      (occur "^Title:[[:space:]]+.*"))))
+
+;;; 4. The Transient Dispatcher
+(transient-define-prefix opencode-dispatch ()
+  "Transient menu for OpenCode session management."
+  ["Manage Sessions"
+   ("l" "List Active (Recent)" opencode-list-sessions-native)
+   ("o" "Occur on Buffer Titles" opencode-occur-all-titles)]
+  ["Quit"
+   ("q" "Quit Menu" transient-quit-one)])
+
+;;; 5. Bind Menu to M-c
+(global-set-key (kbd "M-c") #'opencode-dispatch)
