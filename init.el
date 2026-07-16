@@ -278,13 +278,13 @@ n" :prepend t :jump-to-captured t)
         "https://opencode.ai/workspace/wrk_01KQ0AFJ2GSES8D7J3CRMAW8B8/go")
   (setq ollama-buddy-opencode-session-token 
         "Fe26.2**314c635ffa48dbd4f81553efa5605ac419b102dbfe621e5902efd5bbda9ea426*jdixt0qMDKLPrmLzKTrEnA*ZB9JeXsxqujAs2NJlp52zshH-0BFZZx-eGuvC5dceCKDI77bMItxiyug9gyuOdFuKF44AvyYyJwYLYRybD1eXZXsCDWHmI_nNz0pV0Bdtbay0YWryinJUZSvmUastDNe-t15b8xLBnVzpb-g3ugkyz1vIqTM9-YonQ9r6mV0BgwRLeCcJvHrdc0XkJ1sEqjWYTPIEvGRAfub0o0XUDkwUm0NoF_oAewYGOm02m4y9-g_ZAaxpug_8IIqOKLVoyaTaXx3eKsIyNjrRzkjFUeWX7DUZF25mtuwglJ-ZthyId50bFb0BiVI75LE6W3OS1kPQ6VlMqxYmI6_gJ93hla4Qw*1808589715821*7f39437238687e955f9eb5a1922dff7d499de599ae629d53608c8d45c555379c*6ymCS_3rePNS61-jiI3cJ4BCUKhGNNQYbv75Z697v4k")
-  
+
   (require 'ollama-buddy-annotate nil t)
-  
+
   ;; acp2ollama tesitng
   ;; (setq ollama-buddy-port 12345)
   ;; (setq ollama-buddy-host "localhost")
-  
+
   ;; cloud / web-search keys (not provider-managed)
   (setq ollama-buddy-cloud-api-key
         (auth-source-pick-first-password :host "ollama-buddy-cloud" :user "apikey"))
@@ -293,7 +293,7 @@ n" :prepend t :jump-to-captured t)
   (setq ollama-buddy-cloud-session-token "YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0-IFgyNTUxOSBqcS9mTW45SEtVS050KzAwNHpxMWFWL0tWR1F1RVc3Q1QrekgrcmQvN2c0ClA3bWhhMER1MXlXYVVrb2trQnJOTUNQZkdWYTAxd1dvZTN1bGlWQXBBVUUKLS0tIGRNTDNQSGVxWUdJZXlmMjE0UHAwVVdGRnJCRzNzeHZFMUtKd05lSEN3VzgKnQ2wx2bYbVHYNrtHMs_3U2WRtYdWOsgpg8-cblC4qwaNgzlJnwPpQ7LRyD92HX9JtH7cQIOCeHwu43y38X17busj8g5JHnGjOVczzNeR65w6VBRsDf_ol65GO_K2UTzZqNh0Bpgxv0RtuhW7mSUMXTOsmPqg2YtuyiZjfdC_tTtfG7Oli__1Av9r4A==")
 
   (setq ollama-buddy-max-history-length 999)
-  
+
   ;; ;; Generic provider registration (replaces individual require files)
   ;; (require 'ollama-buddy-provider)
 
@@ -302,7 +302,7 @@ n" :prepend t :jump-to-captured t)
   ;;  :prefix "l:"
   ;;  :endpoint "http://localhost:1234/v1/chat/completions"
   ;;  :models-endpoint "http://localhost:1234/v1/models")
-  
+
   ;; (ollama-buddy-provider-create
   ;;  :name "OpenAI" :prefix "a:"
   ;;  :api-key (lambda () (auth-source-pick-first-password
@@ -1652,3 +1652,11 @@ If TITLE-FILTER is provided, filters results matching the session title."
 
 ;;; 5. Bind Menu to M-c
 (global-set-key (kbd "M-c") #'opencode-dispatch)
+
+;; (use-package ollama-buddy
+;;   :load-path "~/source/repos/ollama-buddy"
+;;   :ensure
+;;   :bind ("C-c o" . ollama-buddy-role-transient-menu)
+;;   :custom (ollama-buddy-default-model "gemma4:31b"))
+
+(use-package gnuplot)
