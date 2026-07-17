@@ -421,8 +421,7 @@ n" :prepend t :jump-to-captured t)
 
 (add-to-list 'auto-mode-alist '("\\.cshtml\\'" . html-mode))
 
-(use-package ibuffer
-  :bind (:map ibuffer-mode-map ("M-o" . nil)))
+(use-package ibuffer)
 
 ;; (use-package dape
 ;;   :init
