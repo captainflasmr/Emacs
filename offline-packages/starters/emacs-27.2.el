@@ -88,8 +88,7 @@
   (selected-window-accent-tab-accent t)
   (selected-window-accent-smart-borders nil))
 
-(with-eval-after-load 'selected-window-accent-mode
-  (global-set-key (kbd "C-c w") selected-window-accent-map))
+(define-key my-overrides-mode-map (kbd "C-c w") selected-window-accent-map)
 
 ;;
 ;; -> simply-annotate — overlay notes on any file
@@ -97,7 +96,7 @@
 (use-package simply-annotate
   :hook (find-file-hook . simply-annotate-mode)
   :config
-  (global-set-key (kbd "M-s") simply-annotate-command-map)
+  (define-key my-overrides-mode-map (kbd "M-s") simply-annotate-command-map)
   (setq simply-annotate-inline-position 'above)
   (setq simply-annotate-tint-amount 20)
   (setq simply-annotate-inline-pointer-above "┗━▶")
@@ -116,8 +115,8 @@
 ;;
 (use-package transmute
   :demand t
-  :bind (("C-c I" . transmute-menu))
   :config
+  (define-key my-overrides-mode-map (kbd "C-c I") #'transmute-menu)
   (with-eval-after-load 'image-dired
     (transmute-setup-thumbnail-keys)))
 
@@ -145,3 +144,5 @@
   (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
   (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
   (setq diary-file "~/DCIM/content/diary.org"))
+
+(use-package gnuplot)

@@ -224,8 +224,7 @@
         ;; :inlayHintProvider                ; Inlay hints
         ))
 
-(use-package ibuffer
-  :bind (:map ibuffer-mode-map ("M-o" . nil)))
+(use-package ibuffer)
 
 (setq recentf-max-menu-items 40)
 (setq recentf-max-saved-items 40)
@@ -336,7 +335,7 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
   (selected-window-accent-custom-color "#c1c1c1")
   (selected-window-accent-mode-style 'default))
 
-(global-set-key (kbd "C-c w") selected-window-accent-map)
+(define-key my-overrides-mode-map (kbd "C-c w") selected-window-accent-map)
 
 (require 'image-dired)
 (use-package dired-image-thumbnail)
