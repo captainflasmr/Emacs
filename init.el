@@ -43,7 +43,7 @@
   (selected-window-accent-use-pywal t)
   (selected-window-accent-smart-borders nil))
 
-(global-set-key (kbd "C-c w") selected-window-accent-map)
+(define-key my-overrides-mode-map (kbd "C-c w") selected-window-accent-map)
 
 ;;
 ;; -> org-agenda
@@ -642,7 +642,7 @@ n" :prepend t :jump-to-captured t)
                   (select-window my/mu4e--focus-window 'norecord)
                   (setq my/mu4e--focus-window nil))))
 
-  (global-set-key (kbd "C-c m") #'mu4e)
+  (define-key my-overrides-mode-map (kbd "C-c m") #'mu4e)
 
   (define-key mu4e-headers-mode-map (kbd "f") #'mu4e-headers-view-message)
 
@@ -1088,7 +1088,7 @@ n" :prepend t :jump-to-captured t)
                    ("c" "clean site…"  org-bootstrap-publish-clean-site)
                    ("f" "flush cache…" org-bootstrap-publish-flush-site)]])
 
-  (global-set-key (kbd "C-c W") #'my/obp-menu))
+  (define-key my-overrides-mode-map (kbd "C-c W") #'my/obp-menu))
 
 (org-bootstrap-publish-use-site 'emacs)
 
@@ -1177,20 +1177,20 @@ n" :prepend t :jump-to-captured t)
                                      (my/media-run (format "web publish %s" site))))
       ("wa" "web publish all"      (lambda () (interactive) (my/media-run "web publish all")))]])
 
-  (global-set-key (kbd "C-c M") #'my/media-menu))
+  (define-key my-overrides-mode-map (kbd "C-c M") #'my/media-menu))
 
 ;; -> media-management-end
 
 (use-package htmlize
   :demand t)
 
-(add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/transmute")
-(require 'transmute)
-(global-set-key (kbd "C-c I") #'transmute-menu)
-
-(with-eval-after-load 'image-dired
-  (require 'transmute)
-  (transmute-setup-thumbnail-keys))
+(use-package transmute
+  :load-path "~/.emacs.d/offline-packages/local-packages/transmute"
+  :demand t
+  :config
+  (define-key my-overrides-mode-map (kbd "C-c I") #'transmute-menu)
+  (with-eval-after-load 'image-dired
+    (transmute-setup-thumbnail-keys)))
 
 (use-package demap
   :demand t
@@ -1463,7 +1463,7 @@ n" :prepend t :jump-to-captured t)
   :load-path "~/source/repos/simply-annotate"
   :hook (find-file-hook . simply-annotate-mode)
   :config
-  (global-set-key (kbd "M-s") simply-annotate-command-map)
+  (define-key my-overrides-mode-map (kbd "M-s") simply-annotate-command-map)
   (require 'posframe)
   (setq simply-annotate-inline-position 'margin-right)
   (setq simply-annotate-tint-amount 50)
@@ -1650,7 +1650,7 @@ If TITLE-FILTER is provided, filters results matching the session title."
    ("q" "Quit Menu" transient-quit-one)])
 
 ;;; 5. Bind Menu to M-c
-(global-set-key (kbd "M-c") #'opencode-dispatch)
+(define-key my-overrides-mode-map (kbd "M-c") #'opencode-dispatch)
 
 ;; (use-package ollama-buddy
 ;;   :load-path "~/source/repos/ollama-buddy"
