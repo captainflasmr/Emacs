@@ -3,16 +3,15 @@
 #+email: captainflasmr@gmail.com
 #+language: en
 #+options: ':t toc:nil author:nil email:nil num:nil title:nil
-#+todo: TODO DOING | DONE
 #+startup: showall
 
 This document contains the current bugs/improvements, this is just for me mainly but does include any Issues reported.
 
 * Bugs/Improvements
 
-** TODO try ghosttty.el
+** TODO [[https://chrismaiorana.com/org-gantt/][Org mode as a gantt chart generator - Chris Maiorana]]
 
-** TODO use M-c for something
+** DOING use M-c for something - opencode
 
 ** TODO archives not aligning with thunderbird
 
