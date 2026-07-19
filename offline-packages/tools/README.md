@@ -61,6 +61,50 @@ Run the script from the extracted toolkit directory after `setup.bat`:
 setup-windows-tools.bat
 ```
 
+## mg (Micro GNU/Emacs) — source tarball
+
+[mg](https://github.com/troglobit/mg) v4.0 source (~457 KB) at `mg/mg-4.0.tar.gz`.
+Extract and build:
+
+```bash
+cd ~/.emacs.d/bin/mg
+tar xzf mg-4.0.tar.gz
+cd mg-4.0
+./configure && make && sudo make install
+```
+
+Cross-compile for Windows:
+```bash
+./configure --host=x86_64-w64-mingw32 --without-curses
+make
+# produces mg.exe (needs termios shim or MSYS2/Cygwin runtime)
+```
+
+## MicroEmacs (JASSPA) — standalone lightweight Emacs clone
+
+Single-file portable executables, no installation needed. Extracted from the
+[official release](https://github.com/bjasspa/jasspa/releases/tag/me_20260601).
+
+| Platform | Binary | Path |
+|----------|--------|------|
+| Linux (console) | `mesc` | `jasspa-me/linux/console/bin/linux6-intel64/mesc` |
+| Linux (GUI, X11) | `mesw` | `jasspa-me/linux/gui/bin/linux6-intel64/mesw` |
+| Windows (console) | `mesc.exe` | `jasspa-me/windows/console/bin/windows100-intel32/mesc.exe` |
+| Windows (GUI) | `mesw.exe` | `jasspa-me/windows/gui/bin/windows100-intel32/mesw.exe` |
+
+Run directly:
+```bash
+~/.emacs.d/bin/jasspa-me/linux/console/bin/linux6-intel64/mesc
+```
+
+Or symlink into PATH:
+```bash
+ln -s ~/.emacs.d/bin/jasspa-me/linux/console/bin/linux6-intel64/mesc ~/bin/me
+```
+
+On Windows, `setup.bat` installs everything under `%USERPROFILE%\.emacs.d\bin\`;
+run `mesc.exe` or `mesw.exe` from there.
+
 ## Layout expected by `starters/coding.el`
 
 ```

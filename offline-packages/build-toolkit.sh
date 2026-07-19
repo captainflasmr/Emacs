@@ -275,6 +275,22 @@ if [[ -d "$DOCS_SRC" ]] \
     | tar -C "${STAGING}/docs" -xf -
 fi
 
+# --- Standalone tools (MicroEmacs, mg) ---
+# Bundled as platform-specific binaries. setup.sh installs them to
+# ~/.emacs.d/bin/ on the target so they are always available from PATH.
+TOOLS_SRC="${SCRIPT_DIR}/tools"
+TOOLS_INCLUDE=(jasspa-me mg)
+if [[ -d "$TOOLS_SRC" ]]; then
+  for tool in "${TOOLS_INCLUDE[@]}"; do
+    if [[ -d "${TOOLS_SRC}/${tool}" ]] \
+       && find "${TOOLS_SRC}/${tool}" -mindepth 1 -print -quit | grep -q .; then
+      echo ">> Bundling tools/${tool}..."
+      mkdir -p "${STAGING}/tools"
+      cp -a "${TOOLS_SRC}/${tool}" "${STAGING}/tools/"
+    fi
+  done
+fi
+
 # --- Optional GNU Emacs source tarball ---
 # Pulled from / cached in sources/ (shared with fetch-source.sh). A download
 # failure (offline machine, corporate TLS interception, etc.) is non-fatal —
@@ -427,6 +443,14 @@ if [[ -d "${HERE}/docs" ]]; then
   echo ">> Installing docs/ to ${EMACS_D}/docs"
   mkdir -p "${EMACS_D}/docs"
   cp -a "${HERE}/docs/." "${EMACS_D}/docs/"
+fi
+
+# Install standalone tools (MicroEmacs, mg) if bundled.
+if [[ -d "${HERE}/tools" ]]; then
+  BIN_DIR="${EMACS_D}/bin"
+  echo ">> Installing tools/ to ${BIN_DIR}"
+  mkdir -p "${BIN_DIR}"
+  cp -a "${HERE}/tools/." "${BIN_DIR}/"
 fi
 
 # Report on optional Emacs source.
@@ -602,6 +626,14 @@ if exist "%HERE%docs" (
   echo ^>^> Installing docs to %EMACS_D%\docs
   if not exist "%EMACS_D%\docs" mkdir "%EMACS_D%\docs"
   xcopy "%HERE%docs\." "%EMACS_D%\docs\" /E /I /H /Y >nul
+)
+
+:: Install standalone tools (MicroEmacs, mg) if bundled.
+if exist "%HERE%tools" (
+  set "BIN_DIR=%EMACS_D%\bin"
+  echo ^>^> Installing tools to !BIN_DIR!
+  if not exist "!BIN_DIR!" mkdir "!BIN_DIR!"
+  xcopy "%HERE%tools\." "!BIN_DIR!\" /E /I /H /Y >nul
 )
 
 :: Report on optional Emacs source.
@@ -945,7 +977,12 @@ fi
                   \( -type d -o -name '*.el' \) | wc -l)"
     echo "Local pkgs:    ${_lp_count} entries under local-packages/"
   fi
-  echo "Tools:         separate — use tools/prep-linux-offline.sh or tools/prep-windows-offline.sh"
+  if [[ -d "${STAGING}/tools" ]]; then
+    _t_size="$(du -sh "${STAGING}/tools" | cut -f1)"
+    echo "Tools:         ${_t_size} bundled under tools/ (MicroEmacs, mg)"
+  else
+    echo "Tools:         none bundled"
+  fi
   if [[ -d "${STAGING}/docs" ]]; then
     _d_count="$(find "${STAGING}/docs" -maxdepth 1 -mindepth 1 | wc -l)"
     echo "Docs:          ${_d_count} entries under docs/"
