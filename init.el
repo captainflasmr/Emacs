@@ -18,7 +18,7 @@
 
 (setq url-queue-timeout 3)
 
-(unless (package-installed-p 'use-package)
+;; (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 (setq use-package-verbose t)
 (setq use-package-always-ensure t)
@@ -171,9 +171,6 @@ n" :prepend t :jump-to-captured t)
 ;; -> keys-navigation
 ;;
 
-(define-key my-jump-keymap (kbd "k")
-            (lambda () (interactive)
-              (find-file (concat user-emacs-directory "README.org"))))
 (define-key my-jump-keymap (kbd "a")
             (lambda () (interactive)
               (find-file "~/DCIM/content/emacs.org")))
@@ -371,6 +368,11 @@ n" :prepend t :jump-to-captured t)
   ;; dired integration
   (with-eval-after-load 'dired
     (define-key dired-mode-map (kbd "C-c C-a") #'ollama-buddy-dired-attach-marked-files)))
+
+;;
+;; -> gantt
+;;
+(load (expand-file-name "gantt" user-emacs-directory))
 
 ;;
 ;; -> other
