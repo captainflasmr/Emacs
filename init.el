@@ -18,7 +18,7 @@
 
 (setq url-queue-timeout 3)
 
-;; (unless (package-installed-p 'use-package)
+(unless (package-installed-p 'use-package)
   (package-install 'use-package))
 (setq use-package-verbose t)
 (setq use-package-always-ensure t)
@@ -43,7 +43,7 @@
   (selected-window-accent-use-pywal t)
   (selected-window-accent-smart-borders nil))
 
-(define-key my-overrides-mode-map (kbd "C-c w") selected-window-accent-map)
+;; (define-key my-overrides-mode-map (kbd "C-c w") selected-window-accent-map)
 
 ;;
 ;; -> org-agenda
@@ -1454,7 +1454,7 @@ n" :prepend t :jump-to-captured t)
    ])
 
 (with-eval-after-load 'outline-indent
-  (define-key outline-indent-minor-mode-map (kbd "C-c o") #'outline-indent-transient)
+  ;; (define-key outline-indent-minor-mode-map (kbd "C-c o") #'outline-indent-transient)
   ;; Global fold/unfold across every outline-indent buffer (web-mode muscle memory).
   (define-key outline-indent-minor-mode-map (kbd "C-c C-f") #'outline-cycle)
   ;; TAB (C-i in GUI) toggles fold at point, same as C-c C-f.
@@ -1652,7 +1652,7 @@ If TITLE-FILTER is provided, filters results matching the session title."
    ("q" "Quit Menu" transient-quit-one)])
 
 ;;; 5. Bind Menu to M-c
-(define-key my-overrides-mode-map (kbd "M-c") #'opencode-dispatch)
+;; (define-key my-overrides-mode-map (kbd "M-c") #'opencode-dispatch)
 
 ;; (use-package ollama-buddy
 ;;   :load-path "~/source/repos/ollama-buddy"
