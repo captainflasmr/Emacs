@@ -10,27 +10,31 @@ Keybindings that are either unbound or bound to rarely-used default commands.  G
 
 These are default Emacs bindings for commands most people seldom invoke:
 
-| Key | Current binding               | Notes                        |
-|-----|-------------------------------|------------------------------|
-| M-c | capitalize-word               | word transformation          |
-| M-r | move-to-window-line-top-bottom| window scrolling             |
-| M-t | transpose-words               | prose editing                |
-| M-~ | not-modified                  | rarely used                  |
-| M-| | shell-command-on-region       | pipe region to shell         |
+| Key | Current binding                | Notes                                                                    |                      |
+|-----+--------------------------------+--------------------------------------------------------------------------+----------------------|
+| M-r | move-to-window-line-top-bottom | window scrolling; overridden in eshell/shell modes (Emacs-DIYer/init.el) |                      |
+| M-t | transpose-words                | prose editing                                                            |                      |
+| M-~ | not-modified                   | rarely used                                                              |                      |
+| M-  |                                | shell-command-on-region                                                  | pipe region to shell |
 
 ** C-c <letter> — free slots
 
 None of these are currently bound:
 
-  C-c b    C-c d    C-c e    C-c n    C-c r
-  C-c t    C-c u    C-c v    C-c x
+  C-c n    C-c r    C-c t    C-c x
+
+/! C-c b -> my/copy-buffer-to-kill-ring (Emacs-vanilla/init.el:310)
+/! C-c d -> my/dired-duplicate-file (Emacs-vanilla/init.el:2009, dired-mode-map)
+/! C-c e -> my/export-menu (Emacs-vanilla/init.el:3073)
+/! C-c v -> dwim-convert (Emacs-vanilla/init.el:2898)
+/! C-c u -> my/dired-du (Emacs-vanilla/init.el:2010, dired-mode-map)
 
 * Global keys explicitly unbound
 
 | Key   | Notes                               |
 |-------+-------------------------------------|
 | C-t   | freed for package use (dired C-t *) |
-| C-h h | explicitly unset                    |
+| C-h h | explicitly unset (in Emacs-vanilla) |
 
 * Mode-local nil unbindings
 
@@ -43,18 +47,16 @@ These were explicitly set to =nil= to free the keys:
 | M-j   | diff-mode-map         | Emacs-vanilla/init.el          |
 | M-k   | diff-mode-map         | Emacs-vanilla/init.el          |
 | M-s   | eshell-mode-map       | Emacs-DIYer/init.el            |
-| M-o   | ibuffer-mode-map      | init.el                        |
 | C-M-i | flyspell-mode-map     | Emacs-DIYer/init.el            |
-| M-w   | magit-status-mode-map | init.el (C-w is global prefix) |
+| C-w   | magit-status-mode-map | init.el (C-w is global prefix) |
 
 * Existing prefix maps (free sub-keys available)
 
-| Prefix | Map variable                | File                  |
-|--------+-----------------------------+-----------------------|
-| M-l    | my-jump-keymap              | Emacs-vanilla/init.el |
-| C-w    | my-window-map               | Emacs-vanilla/init.el |
-| C-q    | my-win-keymap               | Emacs-vanilla/init.el |
-| C-z    | my-win-keymap               | Emacs-vanilla/init.el |
-| M-s    | simply-annotate-command-map | init.el               |
-| C-c w  | selected-window-accent-map  | init.el               |
-| C-c z  | emeld prefix                | init.el               |
+| Prefix | Map variable                | File                                                                        |
+|--------+-----------------------------+-----------------------------------------------------------------------------|
+| M-l    | my-jump-keymap              | Emacs-vanilla/init.el                                                       |
+| C-w    | my-window-map               | Emacs-vanilla/init.el                                                       |
+| C-z    | my-win-keymap               | Emacs-vanilla/init.el                                                       |
+| M-s    | simply-annotate-command-map | init.el                                                                     |
+| C-c w  | (commented out)             | init.el (line 46); overridden by my/kill-ring-save in Emacs-vanilla/init.el |
+| C-c z  | emeld prefix                | init.el                                                                     |
