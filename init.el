@@ -181,6 +181,7 @@ n" :prepend t :jump-to-captured t)
 
 (when (eq system-type 'gnu/linux)
   (define-key my-jump-keymap (kbd "c") (lambda () (interactive) (find-file "~/DCIM/content/aaa--calendar.org")))
+  (define-key my-jump-keymap (kbd "f") (lambda () (interactive) (find-file "~/nas")))
   (define-key my-jump-keymap (kbd "m") (lambda () (interactive) (find-file "~/DCIM/Camera")))
   (define-key my-jump-keymap (kbd "j") (lambda () (interactive) (find-file "~/DCIM/content/aaa--todo.org")))
   (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
@@ -368,11 +369,6 @@ n" :prepend t :jump-to-captured t)
   ;; dired integration
   (with-eval-after-load 'dired
     (define-key dired-mode-map (kbd "C-c C-a") #'ollama-buddy-dired-attach-marked-files)))
-
-;;
-;; -> gantt
-;;
-(load (expand-file-name "gantt" user-emacs-directory))
 
 ;;
 ;; -> other
