@@ -9,9 +9,7 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO [[https://chrismaiorana.com/org-gantt/][Org mode as a gantt chart generator - Chris Maiorana]]
-
-** DOING use M-c for something - opencode
+** TODO add gantt from org
 
 ** TODO archives not aligning with thunderbird
 
