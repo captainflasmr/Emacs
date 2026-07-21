@@ -1,0 +1,35 @@
+; -*- emf -*-
+; Add your own macros and definitions to this file.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; The default key binding for Home/End is the beginning and end of the file.
+; Remove comments to change the default binding to the  end of the line
+; Alternatively enable Rebind Home keys in user-setup > Start-Up
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;global-bind-key beginning-of-line       "home"
+;global-bind-key end-of-line             "end"
+define-macro split-and-switch
+  split-window-horizontally
+  next-window
+!emacro
+define-macro down-some
+  5 forward-line
+!emacro
+define-macro up-some
+  5 backward-line
+!emacro
+global-bind-key undo "C-/"
+global-bind-key split-and-switch "A-;"
+global-bind-key next-window "A-o"
+global-bind-key kill-region "C-x C-k"
+global-bind-key delete-window "A-0"
+global-bind-key favorites "C-c o"
+global-bind-key copy-region "C-c w"
+global-bind-key find-file "C-x d"
+global-bind-key save-buffer "A-a"
+global-bind-key occur "A-c"
+global-bind-key file-browser "C-x m"
+global-bind-key file-browser-close "C-x q"
+global-bind-key reread-file "C-x g"
+global-bind-key down-some "A-j"
+global-bind-key up-some "A-k"
