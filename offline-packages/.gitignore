@@ -18,6 +18,8 @@ linux-tools-offline-*.tar.gz
 tools/*
 !tools/.gitkeep
 !tools/README.md
+!tools/README.org
 !tools/setup-windows-tools.bat
 !tools/prep-windows-offline.sh
 !tools/prep-linux-offline.sh
+!tools/jasspa-me
