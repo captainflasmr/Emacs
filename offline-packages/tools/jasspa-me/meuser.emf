@@ -33,3 +33,33 @@ global-bind-key file-browser-close "C-x q"
 global-bind-key reread-file "C-x g"
 global-bind-key down-some "A-j"
 global-bind-key up-some "A-k"
+define-macro my-file-browser
+  find-file
+  buffer-bind-key "file-tool-menu" "w"
+!emacro
+global-bind-key "my-file-browser" "C-x d"
+global-bind-key comment-line "C-;"
+define-macro copy-region-and-deselect
+  copy-region
+  -1 show-region
+!emacro
+global-bind-key "copy-region-and-deselect" "C-c w"
+global-bind-key delete-other-windows "C-c c"
+define-macro my-select-whole-buffer
+  beginning-of-buffer
+  set-mark
+  end-of-buffer
+!emacro
+define-macro my-copy-whole-buffer
+  beginning-of-buffer
+  set-mark
+  end-of-buffer
+  copy-region
+  -1 show-region
+!emacro
+global-bind-key my-copy-whole-buffer "C-c b"
+define-macro my-dirlst-up-dir
+  dirlst-up-dir
+  buffer-bind-key "file-tool-menu" "w"
+!emacro
+global-bind-key my-dirlst-up-dir "A-e"
