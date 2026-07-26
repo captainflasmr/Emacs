@@ -9,6 +9,8 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
+** DOING create desktop to run jasspa
+
 ** TODO add gantt from org
 
 ** TODO archives not aligning with thunderbird
