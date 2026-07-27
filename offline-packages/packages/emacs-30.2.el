@@ -13,6 +13,7 @@ diff-hl
 doom-themes
 dumb-jump
 ef-themes
+gnuplot
 gruvbox-theme
 highlight-indent-guides
 htmlize
@@ -34,3 +35,4 @@ web-mode
 yaml-mode
 kotlin-mode
 powershell
+zig-mode

@@ -11,6 +11,7 @@ csv-mode
 diff-hl
 doom-themes
 dumb-jump
+gnuplot
 gruvbox-theme
 highlight-indent-guides
 htmlize
@@ -29,3 +30,4 @@ timu-spacegrey-theme
 typescript-mode
 web-mode
 yaml-mode
+zig-mode
