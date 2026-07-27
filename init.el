@@ -1657,3 +1657,5 @@ If TITLE-FILTER is provided, filters results matching the session title."
 ;;   :custom (ollama-buddy-default-model "gemma4:31b"))
 
 (use-package gnuplot)
+
+(use-package zig-mode)
