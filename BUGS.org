@@ -9,6 +9,8 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
+** TODO M-n and M-p considerations
+
 ** DOING create desktop to run jasspa
 
 ** TODO add gantt from org
