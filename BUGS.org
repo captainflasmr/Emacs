@@ -9,6 +9,8 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
+** TODO scroll lock to work better
+
 ** DOING create text editor
 
 ** TODO M-n and M-p considerations
