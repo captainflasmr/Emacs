@@ -49,7 +49,7 @@ FAILED=0
 
 # ---------- 1. JDTLS ----------
 echo ""
-echo "[1/7] JDTLS (Eclipse JDT Language Server)"
+echo "[1/8] JDTLS (Eclipse JDT Language Server)"
 mkdir -p "${TOOLS_DIR}/archives"
 download \
   "https://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz" \
@@ -58,7 +58,7 @@ download \
 
 # ---------- 2. netcoredbg ----------
 echo ""
-echo "[2/7] netcoredbg"
+echo "[2/8] netcoredbg"
 download \
   "https://github.com/Samsung/netcoredbg/releases/download/3.2.0-1092/netcoredbg-linux-amd64.tar.gz" \
   "${TOOLS_DIR}/archives/netcoredbg-linux-amd64.tar.gz" \
@@ -66,14 +66,14 @@ download \
 
 # ---------- 3. csharp-ls — no pre-built Linux binary ----------
 echo ""
-echo "[3/7] csharp-ls (requires .NET SDK on target)"
+echo "[3/8] csharp-ls (requires .NET SDK on target)"
 echo "   No pre-built Linux binary available."
 echo "   Install on the target via: dotnet tool install --global csharp-ls"
 echo "   NuGet: https://www.nuget.org/packages/csharp-ls"
 
 # ---------- 4. ada_language_server ----------
 echo ""
-echo "[4/7] Ada Language Server"
+echo "[4/8] Ada Language Server"
 download \
   "https://github.com/AdaCore/ada_language_server/releases/download/2026.3.202607051/als-2026.3.202607051-linux-x64.tar.gz" \
   "${TOOLS_DIR}/archives/als-2026.3.202607051-linux-x64.tar.gz" \
@@ -81,7 +81,7 @@ download \
 
 # ---------- 5. buf ----------
 echo ""
-echo "[5/7] buf"
+echo "[5/8] buf"
 download \
   "https://github.com/bufbuild/buf/releases/download/v1.50.0/buf-Linux-x86_64.tar.gz" \
   "${TOOLS_DIR}/archives/buf-Linux-x86_64.tar.gz" \
@@ -89,7 +89,7 @@ download \
 
 # ---------- 6. kotlin-language-server ----------
 echo ""
-echo "[6/7] Kotlin Language Server"
+echo "[6/8] Kotlin Language Server"
 download \
   "https://github.com/fwcd/kotlin-language-server/releases/download/1.3.13/server.zip" \
   "${TOOLS_DIR}/archives/kotlin-language-server-server.zip" \
@@ -97,7 +97,7 @@ download \
 
 # ---------- 7. npm/typescript ----------
 echo ""
-echo "[7/7] TypeScript + typescript-language-server"
+echo "[7/8] TypeScript + typescript-language-server"
 download \
   "https://registry.npmjs.org/typescript/-/typescript-5.8.3.tgz" \
   "${TOOLS_DIR}/archives/typescript-5.8.3.tgz" \
@@ -105,6 +105,16 @@ download \
 download \
   "https://registry.npmjs.org/typescript-language-server/-/typescript-language-server-4.3.4.tgz" \
   "${TOOLS_DIR}/archives/typescript-language-server-4.3.4.tgz" \
+  || FAILED=$((FAILED + 1))
+
+# ---------- 8. exiftool ----------
+echo ""
+echo "[8/8] exiftool (Image-ExifTool) — Perl script + lib tree"
+# exiftool is a Perl script; SLES/RHEL ship perl in the base pattern so no
+# runtime dependency. See https://exiftool.org/ for the latest version.
+download \
+  "https://sourceforge.net/projects/exiftool/files/Image-ExifTool-13.59.tar.gz/download" \
+  "${TOOLS_DIR}/archives/Image-ExifTool-13.59.tar.gz" \
   || FAILED=$((FAILED + 1))
 
 # ---------- Write the offline installer ----------
@@ -139,7 +149,7 @@ installed() {
 }
 
 # 1. JDTLS
-echo "[1/7] JDTLS..."
+echo "[1/8] JDTLS..."
 if ! installed "jdtls/.installed"; then
   if [[ -f "${ARCHIVES}/jdt-language-server-latest.tar.gz" ]]; then
     mkdir -p "${ROOT}/jdtls"
@@ -150,7 +160,7 @@ if ! installed "jdtls/.installed"; then
 fi
 
 # 2. netcoredbg
-echo "[2/7] netcoredbg..."
+echo "[2/8] netcoredbg..."
 if ! installed "netcoredbg/.installed"; then
   if [[ -f "${ARCHIVES}/netcoredbg-linux-amd64.tar.gz" ]]; then
     mkdir -p "${ROOT}/netcoredbg"
@@ -162,12 +172,12 @@ if ! installed "netcoredbg/.installed"; then
 fi
 
 # 3. csharp-ls — requires .NET SDK on target
-echo "[3/7] csharp-ls..."
+echo "[3/8] csharp-ls..."
 echo "   No pre-built Linux binary bundled. Install on target:"
 echo "   dotnet tool install --global csharp-ls"
 
 # 4. ada_language_server
-echo "[4/7] Ada Language Server..."
+echo "[4/8] Ada Language Server..."
 if ! installed "ada_language_server/.installed"; then
   if [[ -f "${ARCHIVES}/als-2026.3.202607051-linux-x64.tar.gz" ]]; then
     mkdir -p "${ROOT}/ada_language_server"
@@ -179,7 +189,7 @@ if ! installed "ada_language_server/.installed"; then
 fi
 
 # 5. buf
-echo "[5/7] buf..."
+echo "[5/8] buf..."
 if ! installed "buf/.installed"; then
   if [[ -f "${ARCHIVES}/buf-Linux-x86_64.tar.gz" ]]; then
     mkdir -p "${ROOT}/buf/bin"
@@ -191,7 +201,7 @@ if ! installed "buf/.installed"; then
 fi
 
 # 6. kotlin-language-server
-echo "[6/7] Kotlin Language Server..."
+echo "[6/8] Kotlin Language Server..."
 if ! installed "kotlin-language-server/.installed"; then
   if [[ -f "${ARCHIVES}/kotlin-language-server-server.zip" ]]; then
     mkdir -p "${ROOT}/kotlin-language-server"
@@ -203,7 +213,7 @@ if ! installed "kotlin-language-server/.installed"; then
 fi
 
 # 7. npm/typescript
-echo "[7/7] TypeScript..."
+echo "[7/8] TypeScript..."
 if ! installed "npm/.installed"; then
   if [[ -f "${ARCHIVES}/typescript-5.8.3.tgz" ]]; then
     mkdir -p "${ROOT}/npm"
@@ -214,6 +224,18 @@ if ! installed "npm/.installed"; then
   else echo "   Skipped (archive not found)."; fi
 fi
 
+# 8. exiftool
+echo "[8/8] exiftool..."
+if ! installed "exiftool/.installed"; then
+  if [[ -f "${ARCHIVES}/Image-ExifTool-13.59.tar.gz" ]]; then
+    mkdir -p "${ROOT}/exiftool"
+    tar -xzf "${ARCHIVES}/Image-ExifTool-13.59.tar.gz" -C "${ROOT}/exiftool" --strip-components=1
+    chmod +x "${ROOT}/exiftool/exiftool" 2>/dev/null || true
+    touch "${ROOT}/exiftool/.installed"
+    echo "   Installed. (Perl script + lib tree; requires perl on PATH)"
+  else echo "   Skipped (archive not found)."; fi
+fi
+
 echo ""
 echo "========================================================================"
 echo "Installation complete!"
@@ -221,7 +243,7 @@ echo "Tools installed to: ${ROOT}"
 echo "========================================================================"
 echo ""
 echo "Add to your PATH:"
-echo "  export PATH=\"\${PATH}:${ROOT}/jdtls/bin:${ROOT}/netcoredbg:${ROOT}/csharp-ls:${ROOT}/ada_language_server/bin:${ROOT}/buf/bin:${ROOT}/kotlin-language-server/bin\""
+echo "  export PATH=\"\${PATH}:${ROOT}/jdtls/bin:${ROOT}/netcoredbg:${ROOT}/csharp-ls:${ROOT}/ada_language_server/bin:${ROOT}/buf/bin:${ROOT}/kotlin-language-server/bin:${ROOT}/exiftool\""
 echo ""
 INSTALLEOF
 chmod +x "${STAGING}/install-offline.sh"

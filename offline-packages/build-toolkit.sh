@@ -279,7 +279,7 @@ fi
 # Bundled as platform-specific binaries. setup.sh installs them to
 # ~/.emacs.d/bin/ on the target so they are always available from PATH.
 TOOLS_SRC="${SCRIPT_DIR}/tools"
-TOOLS_INCLUDE=(jasspa-me mg)
+TOOLS_INCLUDE=(jasspa-me mg exiftool)
 if [[ -d "$TOOLS_SRC" ]]; then
   for tool in "${TOOLS_INCLUDE[@]}"; do
     if [[ -d "${TOOLS_SRC}/${tool}" ]] \

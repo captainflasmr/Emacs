@@ -132,6 +132,17 @@
 ;;
 ;; -> transmute — media management utilities (image, video, audio)
 ;;
+;; On GNU/Linux, make a bundled exiftool under ~/.emacs.d/bin/exiftool
+;; discoverable by `executable-find' (transmute treats exiftool as a hard
+;; dependency with no fallback, unlike trash-put). Mirrors the Linux PATH
+;; block in init-starter-coding.el.
+(when (and (eq system-type 'gnu/linux)
+           (file-directory-p
+            (expand-file-name "bin/exiftool" user-emacs-directory)))
+  (let ((p (expand-file-name "bin/exiftool" user-emacs-directory)))
+    (setenv "PATH" (concat p path-separator (getenv "PATH")))
+    (add-to-list 'exec-path p)))
+
 (use-package transmute
   :demand t
   :config

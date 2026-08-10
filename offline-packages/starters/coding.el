@@ -54,6 +54,22 @@
     (setq exec-path (append xPaths (split-string sysPath ";") (list "." exec-directory)))))
 
 ;;
+;; -> linux PATH — mirror the Windows block above so bundled tools under
+;; ~/.emacs.d/bin/ (populated from offline-packages/tools/) are discoverable
+;; by `executable-find' on GNU/Linux too (e.g. exiftool for transmute, which
+;; treats it as a hard dependency with no fallback).
+;;
+(when (eq system-type 'gnu/linux)
+  (let ((bin (expand-file-name "bin" user-emacs-directory)))
+    (dolist (sub '("exiftool" "jdtls/bin" "netcoredbg"
+                   "ada_language_server/bin" "buf/bin"
+                   "kotlin-language-server/bin" "csharp-ls" "omnisharp"))
+      (let ((p (expand-file-name sub bin)))
+        (when (file-directory-p p)
+          (setenv "PATH" (concat p path-separator (getenv "PATH")))
+          (add-to-list 'exec-path p))))))
+
+;;
 ;; -> performance — LSP servers emit lots of stdout
 ;;
 (setq read-process-output-max (* 1024 1024))      ; 1 MB, up from 4 KB default

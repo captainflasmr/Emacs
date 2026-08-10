@@ -17,8 +17,9 @@ eglot / dape automatically.
 | ~csharp-ls/~                                       | ~106 MB | ~dotnet tool install csharp-ls --tool-path tools/csharp-ls~                    | eglot (csharp-mode). Requires .NET 10 runtime on target (check ~dotnet --list-runtimes~).              |
 | ~kotlin-language-server/~                          | ~90 MB  | https://github.com/fwcd/kotlin-language-server/releases/latest (~server.zip~)  | eglot (kotlin-mode). Requires a JRE on the target (~java --version~). Windows ~.bat~ launcher dropped. |
 | ~npm/typescript-*.tgz~                             | ~5 MB   | ~npm pack typescript typescript-language-server~                               | ~npm install -g~ on the target                                                                         |
+| ~exiftool/~                                          | ~6 MB   | https://sourceforge.net/projects/exiftool/files/Image-ExifTool-13.59.tar.gz/download                              | transmute (image metadata; Perl script + =lib/= tree, needs =perl= on target)                          |
 
-Total ~420 MB.
+Total ~426 MB.
 
 ** Re-fetching
 
@@ -27,6 +28,18 @@ detection is path-based (~file-executable-p~) so version changes within a
 subdir don't require starter edits. The java-debug JAR is matched by glob
 (~com.microsoft.java.debug.plugin-*.jar~) so dropping a newer one alongside
 is fine.
+
+For =exiftool=, the tarball extracts to =Image-ExifTool-<ver>/=; strip the top
+component so the layout is =exiftool/exiftool= + =exiftool/lib/= (the script
+locates its =lib/= relative to =$0=, so it works when invoked via PATH):
+#+begin_src bash
+cd tools
+curl -L -o Image-ExifTool-13.59.tar.gz https://sourceforge.net/projects/exiftool/files/Image-ExifTool-13.59.tar.gz/download
+mkdir -p exiftool
+tar -xzf Image-ExifTool-13.59.tar.gz --strip-components=1 -C exiftool
+chmod +x exiftool/exiftool
+rm Image-ExifTool-13.59.tar.gz
+#+end_src
 
 ** What's not here (and why)
 

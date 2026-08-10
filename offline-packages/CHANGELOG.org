@@ -10,6 +10,17 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-07-31>
+
+Bundle exiftool for Linux + Linux =exec-path= wiring
+
+- =transmute= treats =exiftool= as a hard dependency (33 call sites, no =executable-find= guard), but the offline toolkit only bundled =exiftool= for Windows (via =setup-windows-tools.bat=) and only wired =~/.emacs.d/bin/= onto =exec-path= under =(eq system-type 'windows-nt)=. On air-gapped Linux (e.g. SLES SP4, where =perl-Image-ExifTool= lives in PackageHub/SDK which an unregistered box can't reach), =transmute= image conversion failed with =exiftool: command not found=.
+- =build-toolkit.sh=: added =exiftool= to =TOOLS_INCLUDE= so a populated =tools/exiftool/= rides the main toolkit tarball; =setup.sh= already copies =tools/= to =~/.emacs.d/bin/=.
+- =tools/prep-linux-offline.sh=: added an =exiftool= fetch step (=Image-ExifTool-13.59.tar.gz= from SourceForge — a Perl script + =lib/= tree, SLES ships =perl= in the base pattern) and a matching install step in =install-offline.sh= (extract with =--strip-components=1= to =~/.emacs.d/bin/exiftool/=).
+- =starters/coding.el=: added a GNU/Linux =exec-path=/=PATH= block mirroring the Windows one, so bundled =bin/= subdirs (=exiftool=, =jdtls/bin=, etc.) are discoverable by =executable-find= on Linux too.
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=: added a small GNU/Linux =exec-path= ensure for =~/.emacs.d/bin/exiftool= next to the =transmute= =use-package= block, so =transmute= users who don't load =coding.el= are still covered.
+- =tools/README.org=: documented the =exiftool/= Linux bundle (provenance, layout, extract command).
+
 ** <2026-05-29>
 
 Replaced treemacs with the local =emeld-sidebar=
