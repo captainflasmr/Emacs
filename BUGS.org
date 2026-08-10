@@ -9,15 +9,13 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO try zoxide
+** TODO M-n and M-p considerations
 
-** TODO add repeat to windows navigation
+** DOING try zoxide
 
 ** TODO scroll lock to work better
 
 ** DOING create text editor
-
-** TODO M-n and M-p considerations
 
 ** DOING create desktop to run jasspa
 
