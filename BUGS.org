@@ -9,6 +9,8 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
+** TODO try zoxide
+
 ** TODO add repeat to windows navigation
 
 ** TODO scroll lock to work better
