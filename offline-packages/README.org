@@ -135,7 +135,7 @@ tools/
 └── netcoredbg
 #+end_example
 
-=build-toolkit.sh= copies =tools/= into the toolkit (preserving executable bits); =setup.sh= installs it to =~/.emacs.d/bin/= on the target, backing up any existing =bin/= into =~/.emacs.d/.backups/<STAMP>/=. The coding companion starter looks for =~/.emacs.d/bin/jdtls/bin/jdtls= automatically.
+=build-toolkit.sh= copies =tools/= into the toolkit (preserving executable bits) /when =--tools= is passed/; =setup.sh= installs it to =~/.emacs.d/bin/= on the target, backing up any existing =bin/= into =~/.emacs.d/.backups/<STAMP>/=. The coding companion starter looks for =~/.emacs.d/bin/jdtls/bin/jdtls= automatically.
 
 Add =~/.emacs.d/bin= to =PATH=, or reference binaries by absolute path from your own =eglot-server-programs=.
 
@@ -232,7 +232,7 @@ Flags:
 | =-s=, =--with-source VER=  | Bundle =emacs-VER.tar.xz=; =auto= reads LATEST_STABLE |
 | =--xz=                     | Use xz -9e (.tar.xz) instead of default gzip     |
 | =--smoke-test=             | Run the post-staging "boot init.el" check         |
-| =--tools=                  | Include tools/ drop-zone (default: off)            |
+| =--tools=                  | Include tools/ drop-zone (jasspa-me, mg, exiftool; default: off) |
 | =-l=, =--list=             | List available targets and exit                  |
 | =-h=, =--help=             | Show help                                        |
 
@@ -255,7 +255,7 @@ emacs-offline-toolkit-<VER>-<OS>-<ARCH>-<STAMP>/
 ├── Emacs-vanilla/          ← literate config (READMEs, init.el, scripts)
 ├── Emacs-DIYer/            ← literate config (READMEs, init.el, dictionary)
 ├── local-packages/         ← self-written / locally-patched packages (if any)
-├── tools/                  ← non-Emacs binaries (language servers, debug adapters)
+├── tools/                  ← optional: standalone binaries (--tools: jasspa-me, mg, exiftool)
 ├── docs/                   ← reference docs (coding guide, cheat sheets)
 ├── init-starter.el         ← optional starter snippet (not auto-loaded)
 ├── init-starter-coding.el  ← optional coding companion (not auto-loaded)
@@ -264,36 +264,39 @@ emacs-offline-toolkit-<VER>-<OS>-<ARCH>-<STAMP>/
 
 =Emacs-vanilla= and =Emacs-DIYer= are pulled fresh from the =main= branches of =captainflasmr/Emacs-vanilla= and =captainflasmr/Emacs-DIYer= on GitHub. Pass =--local-configs= to copy from =~/.emacs.d/<d>/= instead (for testing uncommitted edits).
 
-Excluded from =Emacs-vanilla/= and =Emacs-DIYer/= to keep the toolkit small:
+Excluded from =Emacs-vanilla/=, =Emacs-DIYer/= and =local-packages/= to keep the toolkit small:
 
 - =.git=, =.gitignore=, =.gitmodules=, =.github=, =.claude=
 - =*.elc=, =*~=, =.#*=, =#*#=
 - =eln-cache=, =auto-save-list=
+- =.zig-cache= (Zig incremental build caches)
 
 ** Size
 
-Default compression is gzip. Pass =--xz= for =xz -9e= (extreme preset) for a smaller tarball at the cost of more RAM and time during compression. Typical sizes:
+Default compression is gzip. Pass =--xz= for =xz -9e= (extreme preset) for a smaller tarball at the cost of more RAM and time during compression. Sizes vary with =local-packages/= contents (e.g. the =james= Zig project adds its =zig-out/= + =zig-pkg/=); typical:
 
 | Target               | Mirror | Configs | Total (no source) | Total (+source) |
 |----------------------+--------+---------+-------------------+-----------------|
 | Emacs 27.2 (14 pkgs) | ~600 KB | ~700 KB | ~1–2 MB          | ~55–65 MB       |
 | Emacs 30.2 (28 pkgs) | ~1.7 MB | ~700 KB | ~2–3 MB          | ~55–65 MB       |
 
-The =tools/= drop-zone (language servers, debug adapters) dominates the total — ~420 MB uncompressed, ~150 MB compressed. A default (no-tools) tarball is ~2–3 MB; add =--tools= for ~150–200 MB.
+The =tools/= drop-zone is /omitted by default/ (~25 MB uncompressed =jasspa-me= / =mg= / =exiftool= binaries, ~15–20 MB in the tarball); add =--tools= to include it.
 
-** --tools (including language servers)
+** --tools (MicroEmacs, mg, exiftool)
 
-The =tools/= drop-zone (language servers, debug adapters) is /omitted by default/ because it dominates the tarball (~420 MB uncompressed, ~150 MB compressed). Pass =--tools= to =create-install.sh= or =build-toolkit.sh= to include it:
+The =tools/= drop-zone (currently =jasspa-me=, =mg=, =exiftool=) is /omitted by default/ to keep the tarball lean (~25 MB uncompressed). Pass =--tools= to =create-install.sh= or =build-toolkit.sh= to include it:
 
 #+begin_src sh
-# Big initial install with language servers
+# Full toolkit including the standalone editor binaries + exiftool
 ./create-install.sh 30.2 --tools
 
-# Smaller incremental/update tarball (default, no tools)
+# Smaller default tarball (no tools)
 ./create-install.sh 30.2
 #+end_src
 
-The resulting filename gets a =-tools= suffix when included, for disambiguation. On the target, =setup.sh= guards the tools install with =if [[ -d tools ]]=, so an absent =tools/= leaves the existing =~/.emacs.d/bin/= untouched — package churn ships, binaries stay put. Typical size: ~3 MB without tools, ~150 MB with them.
+The resulting filename gets a =-tools= suffix when included, for disambiguation. On the target, =setup.sh= guards the tools install with =if [[ -d tools ]]=, so an absent =tools/= leaves the existing =~/.emacs.d/bin/= untouched — package churn ships, binaries stay put.
+
+=build-toolkit.sh= also excludes build junk from bundled directories: =.git=, =*.elc=, =eln-cache=, and Zig incremental build caches (=.zig-cache=, e.g. the =local-packages/james= project) never make it into the tarball.
 
 * Deploying on the offline target (step 3)
 

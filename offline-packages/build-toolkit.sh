@@ -21,6 +21,10 @@
 #                           instead of pulling fresh from GitHub.
 #       --xz                Use xz -9e (.tar.xz) instead of gzip (.tar.gz).
 #                           Smaller output, needs more RAM for compression.
+#       --tools             Include tools/ drop-zone (jasspa-me, mg, exiftool).
+#                           Default: off — the toolkit is built without them
+#                           and gets a plain filename; with --tools the name
+#                           gains a "-tools" suffix.
 #       --smoke-test        Run the post-staging "boot rendered init.el" check
 #                           (disabled by default; only useful when the target
 #                           emacs-<VER> binary is available on this machine).
@@ -41,6 +45,7 @@ TARGET=""
 LOCAL_CONFIGS=0
 USE_XZ=0
 SMOKE_TEST=0
+INCLUDE_TOOLS=0
 
 # Literate config sources — fetched from GitHub main by default.
 VANILLA_REPO="captainflasmr/Emacs-vanilla"
@@ -97,6 +102,7 @@ while [[ $# -gt 0 ]]; do
     -s|--with-source) WITH_SOURCE=1; EMACS_SOURCE_VERSION="$2"; shift 2 ;;
     --local-configs)  LOCAL_CONFIGS=1; shift ;;
     --xz)             USE_XZ=1; shift ;;
+    --tools)          INCLUDE_TOOLS=1; shift ;;
     --smoke-test)     SMOKE_TEST=1; shift ;;
     -l|--list)        list_targets; exit 0 ;;
     -h|--help)        usage; exit 0 ;;
@@ -139,7 +145,9 @@ if [[ "$WITH_SOURCE" -eq 1 && "$EMACS_SOURCE_VERSION" == "auto" ]]; then
   fi
 fi
 STAMP="$(date +%Y%m%dT%H%M%S)"
-TOOLKIT_NAME="emacs-offline-toolkit-${EMACS_VERSION}-${OS_SLUG}-${ARCH}-${STAMP}"
+TOOLS_SUFFIX=""
+[[ "$INCLUDE_TOOLS" -eq 1 ]] && TOOLS_SUFFIX="-tools"
+TOOLKIT_NAME="emacs-offline-toolkit-${EMACS_VERSION}-${OS_SLUG}-${ARCH}${TOOLS_SUFFIX}-${STAMP}"
 STAGING="${OUT_DIR}/.${TOOLKIT_NAME}-staging-$$"
 mkdir -p "$STAGING"
 trap 'rm -rf "$STAGING"' EXIT
@@ -180,6 +188,7 @@ _tar_excludes=(
   --exclude='.claude' --exclude='.github'
   --exclude='*.elc' --exclude='*~' --exclude='.#*' --exclude='#*#'
   --exclude='eln-cache' --exclude='auto-save-list'
+  --exclude='.zig-cache'
 )
 
 if [[ "$LOCAL_CONFIGS" -eq 1 ]]; then
@@ -275,12 +284,13 @@ if [[ -d "$DOCS_SRC" ]] \
     | tar -C "${STAGING}/docs" -xf -
 fi
 
-# --- Standalone tools (MicroEmacs, mg) ---
-# Bundled as platform-specific binaries. setup.sh installs them to
-# ~/.emacs.d/bin/ on the target so they are always available from PATH.
+# --- Standalone tools (MicroEmacs, mg, exiftool) ---
+# Optional — omitted by default to keep the tarball small. Pass --tools to
+# bundle them; setup.sh installs them to ~/.emacs.d/bin/ on the target so
+# they are always available from PATH.
 TOOLS_SRC="${SCRIPT_DIR}/tools"
 TOOLS_INCLUDE=(jasspa-me mg exiftool)
-if [[ -d "$TOOLS_SRC" ]]; then
+if [[ "$INCLUDE_TOOLS" -eq 1 ]] && [[ -d "$TOOLS_SRC" ]]; then
   for tool in "${TOOLS_INCLUDE[@]}"; do
     if [[ -d "${TOOLS_SRC}/${tool}" ]] \
        && find "${TOOLS_SRC}/${tool}" -mindepth 1 -print -quit | grep -q .; then
@@ -289,6 +299,9 @@ if [[ -d "$TOOLS_SRC" ]]; then
       cp -a "${TOOLS_SRC}/${tool}" "${STAGING}/tools/"
     fi
   done
+elif [[ -d "$TOOLS_SRC" ]] \
+     && find "$TOOLS_SRC" -mindepth 1 -maxdepth 1 -print -quit | grep -q .; then
+  echo ">> tools/ present but NOT bundled — pass --tools to include them"
 fi
 
 # --- Optional GNU Emacs source tarball ---
@@ -979,9 +992,9 @@ fi
   fi
   if [[ -d "${STAGING}/tools" ]]; then
     _t_size="$(du -sh "${STAGING}/tools" | cut -f1)"
-    echo "Tools:         ${_t_size} bundled under tools/ (MicroEmacs, mg)"
+    echo "Tools:         ${_t_size} bundled under tools/ (--tools, MicroEmacs, mg, exiftool)"
   else
-    echo "Tools:         none bundled"
+    echo "Tools:         none bundled (pass --tools to include)"
   fi
   if [[ -d "${STAGING}/docs" ]]; then
     _d_count="$(find "${STAGING}/docs" -maxdepth 1 -mindepth 1 | wc -l)"

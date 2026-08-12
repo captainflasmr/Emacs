@@ -10,6 +10,7 @@ csv-mode
 dape
 demap
 diff-hl
+doc-view-follow
 doom-themes
 dumb-jump
 ef-themes

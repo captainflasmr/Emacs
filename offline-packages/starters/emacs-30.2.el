@@ -108,6 +108,15 @@
 
 
 ;;
+;; -> doc-view-follow — sync pages between windows showing the same document
+;; (doc-view-mode / pdf-view-mode). Split the window and both panes navigate
+;; in lockstep — handy for a side-by-side "book view".
+;;
+(use-package doc-view-follow
+  :config (global-doc-view-follow-mode 1))
+
+
+;;
 ;; -> package-lint — M-x package-lint-current-buffer to audit your own packages
 ;;
 (use-package package-lint)

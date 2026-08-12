@@ -10,6 +10,22 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-08-12>
+
+=--tools= is now opt-in; drop Zig build junk from the toolkit
+
+- =build-toolkit.sh=: tools/ drop-zone (=jasspa-me=, =mg=, =exiftool=) is no longer bundled unconditionally — pass =--tools= to include it, and the tarball name gains a =-tools= suffix (=emacs-offline-toolkit-<VER>-<OS>-<ARCH>-tools-<STAMP>=).  Default build ships no tools; a hint is printed when tools/ exists but was skipped.
+- =create-install.sh=: added =--tools= pass-through to the =build-toolkit.sh= chain.
+- =build-toolkit.sh=: added =.zig-cache= to the bundle excludes — the =local-packages/james= project carried a ~366 MB incremental Zig build cache into every tarball (the main reason a "lean" build was ~90 MB).  =zig-out/= and =zig-pkg/= still ship so a prebuilt james binary and its fetched deps remain available on air-gapped targets.
+- =README.org=: rewrote the stale =--tools= section (it still described the long-gone language-server drop-zone) and updated size guidance.
+
+** <2026-08-12>
+
+Bundled =doc-view-follow= (sync document pages between windows)
+
+- Added =doc-view-follow= to =packages/emacs-30.1.el= and =emacs-30.2.el= (GNU ELPA, v0.3.2). It requires Emacs 29.1+, so 27.x / 28.x manifests are left untouched — the mirror builder logs and skips incompatible packages anyway.
+- =starters/emacs-30.2.el=: added a =use-package= block enabling =global-doc-view-follow-mode=, so split windows showing the same PS/PDF/DVI/DjVu keep their pages in lockstep (a "book view").
+
 ** <2026-07-31>
 
 Bundle exiftool for Linux + Linux =exec-path= wiring
