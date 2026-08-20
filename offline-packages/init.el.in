@@ -94,17 +94,6 @@ Failures (e.g. package requires a newer Emacs) are logged, not fatal."
   (my/ensure-package pkg))
 
 ;;
-;; -> dired-z (local package, see local-packages/)
-;;
-(use-package dired-z
-  :load-path "~/.emacs.d/local-packages/dired-z"
-  :demand t
-  :bind (:map my-jump-keymap
-         ("z" . dired-z-jump))
-  :config
-  (dired-z-dired-mode 1))
-
-;;
 ;; -> custom-faces
 ;;
 (condition-case err
