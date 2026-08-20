@@ -156,6 +156,18 @@ n" :prepend t :jump-to-captured t)
 ;; The "g" (Gallery) capture template is now in transmute.el
 
 ;;
+;; -> org-table-fit
+;;
+;; org 9.7 removed the org-table-map prefix keymap (C-c | is now a
+;; direct binding), so these live on the free C-c t prefix.
+
+(use-package org-table-fit
+  :load-path "~/source/repos/org-table-fit"
+  :bind (:map org-mode-map
+              ("C-c t f" . org-table-fit-window)
+              ("C-c t u" . org-table-fit-unwrap)))
+
+;;
 ;; -> use-package
 ;;
 (use-package async)
@@ -262,7 +274,7 @@ n" :prepend t :jump-to-captured t)
   ("C-c O" . ollama-buddy-transient-menu)
   :config
   ;; overall default model
-  (setq ollama-buddy-default-model "deepseek-v3.1:671b-cloud")
+  (setq ollama-buddy-default-model "u:gemma4:31b-cloud")
 
   ;;
   ;; Opencode
@@ -271,7 +283,7 @@ n" :prepend t :jump-to-captured t)
   ;; ~/.authinfo:  machine ollama-buddy-opencode login apikey password <KEY>
   (setq ollama-buddy-opencode-api-key
         (auth-source-pick-first-password
-         :host "opencode-go" :user "apikey"))
+         :host "opencode-go-old" :user "apikey"))
   (setq ollama-buddy-opencode-usage-url 
         "https://opencode.ai/workspace/wrk_01KQ0AFJ2GSES8D7J3CRMAW8B8/go")
   (setq ollama-buddy-opencode-session-token 
@@ -359,12 +371,19 @@ n" :prepend t :jump-to-captured t)
   (setq ollama-buddy-completion-model "qwen3-coder-next:cloud")
 
   ;; setup default custom menu for preferred models
-  (ollama-buddy-update-menu-entry 'refactor-code     :model "minimax-m2.1:cloud")
-  (ollama-buddy-update-menu-entry 'git-commit        :model "glm-4.7:cloud")
-  (ollama-buddy-update-menu-entry 'describe-code     :model "minimax-m2.1:cloud")
-  (ollama-buddy-update-menu-entry 'dictionary-lookup :model "minimax-m2.1:cloud")
-  (ollama-buddy-update-menu-entry 'synonym           :model "minimax-m2.1:cloud")
-  (ollama-buddy-update-menu-entry 'proofread         :model "minimax-m2.1:cloud")
+  ;; (ollama-buddy-update-menu-entry 'refactor-code     :model "n:kimi-k2.6")
+  ;; (ollama-buddy-update-menu-entry 'git-commit        :model "n:deepseek-v4-flash")
+  ;; (ollama-buddy-update-menu-entry 'describe-code     :model "n:kimi-k2.6")
+  ;; (ollama-buddy-update-menu-entry 'dictionary-lookup :model "n:mimo-v2.5")
+  ;; (ollama-buddy-update-menu-entry 'synonym           :model "n:mimo-v2.5")
+  ;; (ollama-buddy-update-menu-entry 'proofread         :model "n:minimax-m2.7")
+
+  (ollama-buddy-update-menu-entry 'refactor-code     :model "n:deepseek-v4-flash")
+  (ollama-buddy-update-menu-entry 'git-commit        :model "n:deepseek-v4-flash")
+  (ollama-buddy-update-menu-entry 'describe-code     :model "n:deepseek-v4-flash")
+  (ollama-buddy-update-menu-entry 'dictionary-lookup :model "n:deepseek-v4-flash")
+  (ollama-buddy-update-menu-entry 'synonym           :model "n:deepseek-v4-flash")
+  (ollama-buddy-update-menu-entry 'proofread         :model "n:deepseek-v4-flash")
 
   ;; dired integration
   (with-eval-after-load 'dired
@@ -1450,7 +1469,7 @@ n" :prepend t :jump-to-captured t)
    ])
 
 (with-eval-after-load 'outline-indent
-  ;; (define-key outline-indent-minor-mode-map (kbd "C-c o") #'outline-indent-transient)
+  (define-key outline-indent-minor-mode-map (kbd "C-c o") #'outline-indent-transient)
   ;; Global fold/unfold across every outline-indent buffer (web-mode muscle memory).
   (define-key outline-indent-minor-mode-map (kbd "C-c C-f") #'outline-cycle)
   ;; TAB (C-i in GUI) toggles fold at point, same as C-c C-f.
@@ -1485,8 +1504,6 @@ n" :prepend t :jump-to-captured t)
 
 (with-eval-after-load 'simply-annotate
   (add-hook 'dired-mode-hook #'simply-annotate-dired-mode))
-
-(load-theme 'doom-Iosvkem t)
 
 (custom-set-faces
  '(mode-line-buffer-id ((t (:foreground "#EEEEFF" :weight bold)))))
@@ -1659,3 +1676,9 @@ If TITLE-FILTER is provided, filters results matching the session title."
 (use-package gnuplot)
 
 (use-package zig-mode)
+
+(setq tab-bar-auto-width-max '((120) 20))
+
+(load-theme 'doom-badger t)
+
+
