@@ -174,24 +174,16 @@ n" :prepend t :jump-to-captured t)
 (use-package i3wm-config-mode)
 (use-package yaml-mode)
 
-(use-package ox-hugo
-  :demand t
-  :config
-  (setq org-hugo-front-matter-format "yaml"))
-
 ;;
 ;; -> keys-navigation
 ;;
-
-(define-key my-jump-keymap (kbd "a")
-            (lambda () (interactive)
-              (find-file "~/DCIM/content/emacs.org")))
 
 ;;
 ;; -> linux specific
 ;;
 
 (when (eq system-type 'gnu/linux)
+  (define-key my-jump-keymap (kbd "a") (lambda () (interactive) (find-file "~/DCIM/content/emacs.org")))
   (define-key my-jump-keymap (kbd "c") (lambda () (interactive) (find-file "~/DCIM/content/aaa--calendar.org")))
   (define-key my-jump-keymap (kbd "f") (lambda () (interactive) (find-file "~/nas")))
   (define-key my-jump-keymap (kbd "m") (lambda () (interactive) (find-file "~/DCIM/Camera")))
@@ -423,8 +415,6 @@ n" :prepend t :jump-to-captured t)
   (dired-video-thumbnail-mark-border-width 5)
   :custom-face
   (dired-video-thumbnail-mark ((t (:foreground "orange")))))
-
-;; (my/sync-ui-accent-color "orange")
 
 (defun insert-default-background-color ()
   "Insert the default background color at point."
@@ -1687,15 +1677,6 @@ If TITLE-FILTER is provided, filters results matching the session title."
    ("o" "Occur on Buffer Titles" opencode-occur-all-titles)]
   ["Quit"
    ("q" "Quit Menu" transient-quit-one)])
-
-;;; 5. Bind Menu to M-c
-;; (define-key my-overrides-mode-map (kbd "M-c") #'opencode-dispatch)
-
-;; (use-package ollama-buddy
-;;   :load-path "~/source/repos/ollama-buddy"
-;;   :ensure
-;;   :bind ("C-c o" . ollama-buddy-role-transient-menu)
-;;   :custom (ollama-buddy-default-model "gemma4:31b"))
 
 (use-package gnuplot)
 
