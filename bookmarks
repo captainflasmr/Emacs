@@ -2,7 +2,37 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("wallpaper"
+(("bank-buddy"
+ (filename . "~/source/repos/bank-buddy/")
+ (front-context-string . "bank-buddy-cat-m")
+ (rear-context-string . "3K Apr 14  2025 ")
+ (position . 144)
+ (last-modified 27266 54235 375768 661000))
+("finance"
+ (filename . "~/DCIM/Documents/finance/")
+ (front-context-string . "2022-12-30--stat")
+ (rear-context-string . "3K Jan 16  2026 ")
+ (position . 143)
+ (last-modified 27266 45765 911166 703000))
+("org-refile-last-stored"
+ (filename . "~/DCIM/content/aaa--todo.org")
+ (front-context-string . "** DOING mercer ")
+ (rear-context-string . "ds email\n* 2026\n")
+ (position . 1169)
+ (last-modified 27244 28164 383994 89000))
+("james"
+ (filename . "~/source/repos/james/")
+ (front-context-string . ".git\n  -rw-r--r-")
+ (rear-context-string . "38 Aug  1 18:24 ")
+ (position . 318)
+ (last-modified 27246 11409 385886 26000))
+("meuser"
+ (filename . "~/.config/jasspa/meuser/")
+ (front-context-string . "meuser.eff\n  -rw")
+ (rear-context-string . "60 Jul 24 18:25 ")
+ (position . 142)
+ (last-modified 27236 30706 807176 747000))
+("wallpaper"
  (filename . "~/wallpaper/")
  (front-context-string . ".\n  drwx------ 1")
  (rear-context-string . "54 May 30 15:51 ")
@@ -118,10 +148,10 @@
  (last-modified 27125 57540 94473 207000))
 ("org-capture-last-stored"
  (filename . "~/DCIM/content/linux.org")
- (front-context-string . "* TODO Hardware-")
+ (front-context-string . "* TODO Mesh-netw")
  (rear-context-string . "x:@open_source:\n")
  (position . 359)
- (last-modified 27204 46421 811746 974000))
+ (last-modified 27270 53996 919771 317000))
 ("Emacs-DIYer"
  (filename . "~/.emacs.d/Emacs-DIYer/")
  (front-context-string . "CHANGELOG.org\n  ")

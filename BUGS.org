@@ -9,16 +9,12 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO add more compact tables, now like agent-shell
+** DOING add more compact tables, now like agent-shell
 
 ** TODO add gantt from org
 
-** TODO M-n and M-p considerations
-
-** DOING try zoxide
+** DOING M-n and M-p considerations
 
 ** TODO scroll lock to work better
 
 ** TODO archives not aligning with thunderbird
-
-** DOING Modify for Windows deployment

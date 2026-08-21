@@ -767,8 +767,7 @@ n" :prepend t :jump-to-captured t)
                  forge gruvbox-theme htmlize i3wm-config-mode
                  kotlin-mode magit org-social ox-hugo package-lint
                  protobuf-mode timu-caribbean-theme timu-rouge-theme
-                 timu-spacegrey-theme web-mode yaml-mode
-                 ztree))
+                 timu-spacegrey-theme web-mode yaml-mode))
  '(warning-suppress-log-types '((frameset)))
  '(warning-suppress-types '((frameset))))
 
@@ -1351,8 +1350,6 @@ n" :prepend t :jump-to-captured t)
 
 (use-package markdown-mode)
 
-(setq ztree-indent-step 2)
-
 (add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/emeld")
 (require 'emeld)
 
@@ -1474,6 +1471,33 @@ n" :prepend t :jump-to-captured t)
   (define-key outline-indent-minor-mode-map (kbd "C-c C-f") #'outline-cycle)
   ;; TAB (C-i in GUI) toggles fold at point, same as C-c C-f.
   (define-key outline-indent-minor-mode-map (kbd "C-i") #'outline-cycle))
+
+(defun my/elisp-outline-level ()
+  "Outline level of the heading at point.
+Section headers (\";; -> ...\" and \";;; ...\") are level 1,
+definitions and top-level forms are level 2."
+  (if (looking-at "^(def\\|^(cl-def\\|^(use-package\\|^(with-eval-after-load")
+      2
+    1))
+
+(defun my/elisp-outline-fold-setup ()
+  "Make section headers and top-level forms foldable in elisp buffers.
+`outline-indent' derives heading levels from indentation alone, so in a
+flat elisp file every non-blank line is a level-1 heading: the subtree
+of a comment header ends at the very next line and has nothing to hide.
+Fall back to regexp-driven headings instead: \";; -> ...\" and \";;;\"
+comment headers fold their section, definitions fold to the next one."
+  (setq-local outline-regexp
+              "^;;;\\|^;; +-> \\|^(def\\|^(cl-def\\|^(use-package\\|^(with-eval-after-load")
+  (kill-local-variable 'outline-search-function)
+  (setq-local outline-level #'my/elisp-outline-level))
+
+(add-hook 'emacs-lisp-mode-hook #'my/elisp-outline-fold-setup)
+(add-hook 'outline-indent-minor-mode-hook
+          (lambda ()
+            (when (and outline-indent-minor-mode
+                       (derived-mode-p 'emacs-lisp-mode))
+              (my/elisp-outline-fold-setup))))
 
 (use-package simply-annotate
   :demand t
