@@ -25,6 +25,7 @@ modus-themes
 outline-indent
 ollama-buddy
 package-lint
+plantuml-mode
 protobuf-mode
 selected-window-accent-mode
 simply-annotate

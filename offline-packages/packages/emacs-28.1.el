@@ -21,6 +21,7 @@ powershell
 magit
 markdown-mode
 outline-indent
+plantuml-mode
 protobuf-mode
 selected-window-accent-mode
 simply-annotate

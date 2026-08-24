@@ -67,6 +67,13 @@
   :hook (html-mode . web-mode)
   :bind (:map web-mode-map ("M-;" . nil)))
 
+(use-package plantuml-mode
+  :mode ("\\.puml\\'" "\\.plantuml\\'" "\\.iuml\\'")
+  :custom
+  (plantuml-jar-path "~/.emacs.d/local-packages/ox-plantuml-gantt/plantuml.jar")
+  (plantuml-default-exec-mode 'jar)
+  (plantuml-output-type "png"))
+
 (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
 (add-to-list 'auto-mode-alist '("\\.cshtml\\'" . html-mode))
 (add-to-list 'auto-mode-alist '("/sway/config\\'" . i3wm-config-mode))
