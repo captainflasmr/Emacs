@@ -11,7 +11,7 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 ** DOING add more compact tables, now like agent-shell
 
-** TODO add gantt from org
+** DOING add gantt from org
 
 ** DOING M-n and M-p considerations
 
