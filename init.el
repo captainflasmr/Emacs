@@ -162,7 +162,8 @@ n" :prepend t :jump-to-captured t)
 ;; direct binding), so these live on the free C-c t prefix.
 
 (use-package org-table-fit
-  :load-path "~/source/repos/org-table-fit"
+  :load-path "~/.emacs.d/offline-packages/local-packages/org-table-fit"
+  :demand t
   :bind (:map org-mode-map
               ("C-c t f" . org-table-fit-window)
               ("C-c t u" . org-table-fit-unwrap)))
