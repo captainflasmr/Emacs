@@ -176,6 +176,20 @@ n" :prepend t :jump-to-captured t)
 (use-package yaml-mode)
 
 ;;
+;; -> plantuml
+;;
+(use-package plantuml-mode
+  :mode ("\\.puml\\'" "\\.plantuml\\'" "\\.iuml\\'")
+  :custom
+  (plantuml-jar-path "~/.emacs.d/plantuml.jar")
+  (plantuml-default-exec-mode 'jar)
+  (plantuml-output-type "png"))
+
+(use-package ox-plantuml-gantt
+  :load-path "~/.emacs.d/offline-packages/local-packages/ox-plantuml-gantt"
+  :after org)
+
+;;
 ;; -> keys-navigation
 ;;
 
@@ -813,12 +827,17 @@ n" :prepend t :jump-to-captured t)
   :bind ("C-c q" . qemu-manager-list))
 
 (use-package eglot
-  :ensure t
-  :config
-  (add-to-list 'eglot-server-programs
-               `(java-mode . ("/home/jdyer/.emacs.d/bin/jdtls/bin/jdtls"
-                              :initializationOptions
-                              (:bundles ["/home/jdyer/.emacs.d/bin/jdtls/com.microsoft.java.debug.plugin-0.53.2.jar"]))))
+   :ensure t
+   :hook (nxml-mode . eglot-ensure)
+   :config
+   (add-to-list 'eglot-server-programs
+                `(java-mode . ("/home/jdyer/.emacs.d/bin/jdtls/bin/jdtls"
+                               :initializationOptions
+                               (:bundles ["/home/jdyer/.emacs.d/bin/jdtls/com.microsoft.java.debug.plugin-0.53.2.jar"]))))
+
+   (add-to-list 'eglot-server-programs
+                '(nxml-mode . ("java" "-jar"
+                               "/home/jdyer/Downloads/org.eclipse.lemminx-uber.jar")))
 
   ;; Disable resource-intensive features for the target system
   (setq eglot-ignored-server-capabilities
@@ -1495,7 +1514,13 @@ comment headers fold their section, definitions fold to the next one."
   :load-path "~/source/repos/simply-annotate"
   :hook (find-file-hook . simply-annotate-mode)
   :config
-  (define-key my-overrides-mode-map (kbd "M-s") simply-annotate-command-map)
+  (let ((my-ms-map (make-sparse-keymap)))
+    (set-keymap-parent my-ms-map simply-annotate-command-map)
+    (define-key my-ms-map (kbd "u")
+                (lambda () (interactive) (my/tab-bar-push-window -1)))
+    (define-key my-ms-map (kbd "i")
+                (lambda () (interactive) (my/tab-bar-push-window 1)))
+    (define-key my-overrides-mode-map (kbd "M-s") my-ms-map))
   (require 'posframe)
   (setq simply-annotate-inline-position 'margin-right)
   (setq simply-annotate-tint-amount 50)
@@ -1685,6 +1710,6 @@ If TITLE-FILTER is provided, filters results matching the session title."
 
 (setq tab-bar-auto-width-max '((120) 20))
 
-(load-theme 'doom-badger t)
+(load-theme 'doom-ayu-dark t)
 
-
+(define-key my-win-keymap (kbd "m") #'diff-minimap-toggle)
