@@ -2,7 +2,25 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("bank-buddy"
+(("ox-plantuml-gantt"
+ (filename . "~/.emacs.d/offline-packages/local-packages/ox-plantuml-gantt/")
+ (front-context-string)
+ (rear-context-string . "5K Aug 24 12:43 ")
+ (position . 331)
+ (last-modified 27276 12924 422476 993000))
+("org-table-fit"
+ (filename . "~/.emacs.d/offline-packages/local-packages/org-table-fit/")
+ (front-context-string . "org-table-fit.el")
+ (rear-context-string . "4K Aug 24 09:26 ")
+ (position . 256)
+ (last-modified 27276 92 913574 508000))
+("wallpaper-halloween"
+ (filename . "~/wallpaper/wallpaper-halloween/")
+ (front-context-string . "drew-q5EGoKHQEe8")
+ (rear-context-string . "9K Aug 23 13:35 ")
+ (position . 879)
+ (last-modified 27275 220 185652 537000))
+("bank-buddy"
  (filename . "~/source/repos/bank-buddy/")
  (front-context-string . "bank-buddy-cat-m")
  (rear-context-string . "3K Apr 14  2025 ")
@@ -52,10 +70,10 @@
  (last-modified 27183 43238 280919 319000))
 ("bootstrap"
  (filename . "~/bin/bootstrap/")
- (front-context-string . "packages\n  -rw-r")
- (rear-context-string . "30 Jun 14 15:38 ")
- (position . 215)
- (last-modified 27182 58140 49226 106000))
+ (front-context-string . "sync-from-nas.sh")
+ (rear-context-string . "8K Aug 15 17:01 ")
+ (position . 398)
+ (last-modified 27274 61878 808379 439000))
 ("project-overview"
  (filename . "~/.emacs.d/offline-packages/local-packages/project-overview/")
  (front-context-string . "project-overview")
