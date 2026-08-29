@@ -1713,3 +1713,19 @@ If TITLE-FILTER is provided, filters results matching the session title."
 (load-theme 'doom-ayu-dark t)
 
 (define-key my-win-keymap (kbd "m") #'diff-minimap-toggle)
+
+;;
+;; -> tab-line-core
+;;
+;; Inline per-window buffer tabs, rendered just below the tab-bar.
+;; Toggle with C-z i (my-win-keymap).
+(setq tab-line-tabs-function #'tab-line-tabs-buffer-groups)
+(setq tab-line-close-button-show nil)
+(setq tab-line-new-button-show nil)
+(setq tab-line-separator nil)
+(global-tab-line-mode 1)
+(define-key my-win-keymap (kbd "i")
+            (lambda () (interactive) (global-tab-line-mode 'toggle)))
+;; M-U / M-I switch tab-line buffers (M-u / M-i switch tab-bar tabs).
+(define-key my-overrides-mode-map (kbd "M-U") #'tab-line-switch-to-prev-tab)
+(define-key my-overrides-mode-map (kbd "M-I") #'tab-line-switch-to-next-tab)
