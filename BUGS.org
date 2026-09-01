@@ -9,6 +9,8 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
+** TODO fix TAB completion
+
 ** DOING add more compact tables, now like agent-shell
 
 ** DOING add gantt from org
