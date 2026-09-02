@@ -518,7 +518,7 @@ n" :prepend t :jump-to-captured t)
   (setq dired-image-thumbnail-auto-accept t)
   (setq dired-image-thumbnail-sort-by 'date)
   (setq dired-image-thumbnail-sort-order 'descending)
-  (setq dired-image-thumbnail-window-layout 'left-right)
+  (setq dired-image-thumbnail-window-layout 'thumb-only)
   (setq dired-image-thumbnail-window-ratio 0.6)
   :bind
   (:map dired-mode-map
@@ -1386,8 +1386,8 @@ n" :prepend t :jump-to-captured t)
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 80)
-(add-to-list 'default-frame-alist '(alpha-background . 80))
+(set-frame-parameter nil 'alpha-background 90)
+(add-to-list 'default-frame-alist '(alpha-background . 90))
 
 ;; $ emacs --batch --eval '(progn (find-file "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld/emeld.el") (goto-char (point-min)) (condition-case nil (while (not (eobp)) (forward-sexp)) (error (message "Unbalanced at pos %d, line %d, col %d" (point) (line-number-at-pos) (current-column)))))' 2>&1
 ;; Unbalanced at pos 31818, line 693, col 62
@@ -1710,7 +1710,7 @@ If TITLE-FILTER is provided, filters results matching the session title."
 
 (setq tab-bar-auto-width-max '((120) 20))
 
-(load-theme 'doom-ayu-dark t)
+(load-theme 'doom-dracula t)
 
 (define-key my-win-keymap (kbd "m") #'diff-minimap-toggle)
 
