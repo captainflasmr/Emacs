@@ -518,8 +518,6 @@ n" :prepend t :jump-to-captured t)
   (setq dired-image-thumbnail-auto-accept t)
   (setq dired-image-thumbnail-sort-by 'date)
   (setq dired-image-thumbnail-sort-order 'descending)
-  (setq dired-image-thumbnail-window-layout 'thumb-only)
-  (setq dired-image-thumbnail-window-ratio 0.6)
   :bind
   (:map dired-mode-map
         ("C-t d" . dired-image-thumbnail)  ; m for modern/enhanced

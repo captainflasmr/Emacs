@@ -2,7 +2,19 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("ox-plantuml-gantt"
+(("image-dired"
+ (filename . "~/.emacs.d/image-dired/")
+ (front-context-string . "  -rw------- 1 2")
+ (rear-context-string . "Sep  3 10:34 ..\n")
+ (position . 108)
+ (last-modified 27289 16313 198756 422000))
+("kate"
+ (filename . "~/DCIM/Documents/kate/")
+ (front-context-string . "20250502_161140.")
+ (rear-context-string . "4K May  2  2025 ")
+ (position . 140)
+ (last-modified 27286 38282 143025 928000))
+("ox-plantuml-gantt"
  (filename . "~/.emacs.d/offline-packages/local-packages/ox-plantuml-gantt/")
  (front-context-string)
  (rear-context-string . "5K Aug 24 12:43 ")
