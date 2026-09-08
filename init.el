@@ -1588,7 +1588,9 @@ comment headers fold their section, definitions fold to the next one."
 
 ;;; 2. Robust native session listing (with JSON/data parsing & filtering support)
 (cl-defun opencode-list-sessions-native (&optional title-filter)
-  "Query the local OpenCode SQLite database and format active sessions.
+  "Query the local OpenCode SQLite database and render sessions as Org.
+Each session becomes a level-1 headline with a properties drawer, so
+folding, `org-goto', `imenu', sparse trees and `org-occur' work natively.
 If TITLE-FILTER is provided, filters results matching the session title."
   (interactive)
   (let* ((db-path (expand-file-name "~/.local/share/opencode/opencode.db"))
@@ -1634,115 +1636,104 @@ If TITLE-FILTER is provided, filters results matching the session title."
         (sqlite-close db)
         
         (with-current-buffer buf
-          (read-only-mode -1)
-          (erase-buffer)
-          (insert (propertize "OpenCode Sessions\n" 'face 'bold))
-          (if title-filter
-              (insert (propertize (format "Filter: \"%s\"  •  %d match(es), most recent first\n"
-                                          title-filter (length rows))
-                                  'face 'shadow))
-            (insert (propertize "Most recent first  •  click [Connect] to open in a terminal\n"
-                                'face 'shadow)))
-          (insert (propertize (make-string 72 ?─) 'face 'shadow) "\n\n")
+          (let ((inhibit-read-only t))
+            (erase-buffer)
+            (insert "#+TITLE: OpenCode Sessions\n")
+            (insert "#+STARTUP: overview\n")
+            (if title-filter
+                (insert (format "#+SUBTITLE: Filter %S — %d match(es), most recent first\n\n"
+                                title-filter (length rows)))
+              (insert "#+SUBTITLE: Most recent first — TAB folds, org-goto / imenu jumps, Connect opens a terminal\n\n"))
 
-          (if (null rows)
-              (insert (propertize "No matching sessions found.\n" 'face 'warning))
-            (let ((n 0))
-              (dolist (row rows)
-                (setq n (1+ n))
-                (let* ((id (nth 0 row))
-                       (created-raw (nth 1 row))
-                       (updated-raw (nth 2 row))
-                       (title (or (nth 3 row) "Untitled Session"))
-                       (directory (nth 4 row))
-                       (path (nth 5 row))
-                       (model (or (nth 6 row) "default"))
-                       (agent (or (nth 7 row) "primary"))
-                       (last-msg-raw (nth 8 row))
+            (if (null rows)
+                (insert "No matching sessions found.\n")
+              (let ((n 0))
+                (dolist (row rows)
+                  (setq n (1+ n))
+                  (let* ((id (nth 0 row))
+                         (created-raw (nth 1 row))
+                         (updated-raw (nth 2 row))
+                         (title-raw (or (nth 3 row) "Untitled Session"))
+                         ;; Headlines, properties and tables must stay single-line.
+                         (title (string-trim
+                                 (replace-regexp-in-string "[ \t\n]+" " " title-raw)))
+                         (directory (nth 4 row))
+                         (path (nth 5 row))
+                         (model (or (nth 6 row) "default"))
+                         (agent (or (nth 7 row) "primary"))
+                         (last-msg-raw (nth 8 row))
 
-                       (project-root (cond
-                                      ((and directory (not (string-empty-p directory))) directory)
-                                      ((and path (not (string-empty-p path))) path)
-                                      (t "Unknown Workspace")))
-                       (project-short (if (string= project-root "Unknown Workspace")
-                                          project-root
-                                        (abbreviate-file-name project-root)))
+                         (project-root (cond
+                                        ((and directory (not (string-empty-p directory))) directory)
+                                        ((and path (not (string-empty-p path))) path)
+                                        (t "Unknown Workspace")))
+                         (project-short (if (string= project-root "Unknown Workspace")
+                                            project-root
+                                          (abbreviate-file-name project-root)))
 
-                       ;; SQL already extracted the text; normalise whitespace.
-                       (msg-snippet
-                        (if (and last-msg-raw (not (string-empty-p last-msg-raw)))
-                            (let ((text (string-trim
-                                         (replace-regexp-in-string "[ \t\n]+" " " last-msg-raw))))
-                              (if (> (length text) 100)
-                                  (concat (substring text 0 97) "...")
-                                text))
-                          "No messages yet"))
+                         ;; SQL already extracted the text; normalise whitespace.
+                         (msg-snippet
+                          (if (and last-msg-raw (not (string-empty-p last-msg-raw)))
+                              (let ((text (string-trim
+                                           (replace-regexp-in-string "[ \t\n]+" " " last-msg-raw))))
+                                (if (> (length text) 400)
+                                    (concat (substring text 0 397) "...")
+                                  text))
+                            "No messages yet"))
 
-                       (created-str (if (numberp created-raw)
-                                        (format-time-string "%Y-%m-%d %H:%M"
-                                                            (seconds-to-time (/ created-raw 1000.0)))
-                                      "Unknown"))
-                       (updated-str (if (numberp updated-raw)
-                                        (format-time-string "%Y-%m-%d %H:%M"
-                                                            (seconds-to-time (/ updated-raw 1000.0)))
-                                      "Unknown")))
+                         (created-str (if (numberp created-raw)
+                                          (format-time-string "%Y-%m-%d %H:%M"
+                                                              (seconds-to-time (/ created-raw 1000.0)))
+                                        "Unknown"))
+                         (updated-str (if (numberp updated-raw)
+                                          (format-time-string "%Y-%m-%d %H:%M"
+                                                              (seconds-to-time (/ updated-raw 1000.0)))
+                                        "Unknown")))
 
-                  ;; Numbered title header with inline [Connect] button.
-                  (insert (propertize (format "%2d. " n) 'face 'shadow))
-                  (insert (propertize title 'face 'bold))
-                  (insert "  ")
-                  (let ((start (point)))
-                    (insert "[Connect]")
-                    (make-button start (point)
-                                 'action (lambda (_) (opencode-open-session-terminal id project-root))
-                                 'follow-link t
-                                 'face 'success
-                                 'mouse-face 'highlight
-                                 'help-echo (format "Launch session %s in a new terminal" id)))
-                  (insert "\n")
-
-                  ;; Aligned detail lines: dim labels, plain values.
-                  (insert (propertize "    Session:    " 'face 'shadow)
-                          (propertize id 'face 'font-lock-comment-face) "\n")
-                  (insert (propertize "    Title:      " 'face 'shadow) title "\n")
-                  (insert (propertize "    Directory:  " 'face 'shadow) project-short "\n")
-                  (insert (propertize "    Agent:      " 'face 'shadow)
-                          (format "%s • %s\n" agent model))
-                  (insert (propertize "    Last:       " 'face 'shadow)
-                          (propertize (concat "\"" msg-snippet "\"") 'face 'font-lock-doc-face)
-                          "\n")
-                  (insert (propertize "    Activity:   " 'face 'shadow)
-                          (format "Created %s  •  Updated %s\n" created-str updated-str))
-                  (insert (propertize (make-string 72 ?─) 'face 'shadow) "\n\n")))))
-          (ansi-color-apply-on-region (point-min) (point-max))
-          (read-only-mode 1)
-          ;; Keep point/cursor at the top whenever the buffer is (re)built.
-          (goto-char (point-min)))
+                    ;; Each session is a level-1 Org headline so folding,
+                    ;; org-goto, imenu, sparse trees, etc. work natively.
+                    ;; The numeric prefix also guards against TODO-keyword
+                    ;; or tag misparses in free-form session titles.
+                    (insert (format "* %2d. %s\n" n title))
+                    (insert ":PROPERTIES:\n")
+                    (insert (format ":SESSION_ID: %s\n" id))
+                    (insert (format ":DIRECTORY: %s\n" project-root))
+                    (insert (format ":AGENT: %s\n" agent))
+                    (insert (format ":MODEL: %s\n" model))
+                    (insert (format ":CREATED: %s\n" created-str))
+                    (insert (format ":UPDATED: %s\n" updated-str))
+                    (insert ":END:\n")
+                    (insert (format "- Directory :: %s\n" project-short))
+                    (insert (format "- Agent :: %s (%s)\n" agent model))
+                    (insert (format "- Activity :: Created %s, Updated %s\n"
+                                    created-str updated-str))
+                    (insert (format "- Session :: %s\n" id))
+                    (insert (format "- Connect :: [[elisp:(opencode-open-session-terminal %s %s)][Open in terminal]]\n"
+                                    (prin1-to-string id)
+                                    (prin1-to-string project-root)))
+                    (insert "- Last ::\n")
+                    (insert "#+BEGIN_QUOTE\n")
+                    (insert msg-snippet "\n")
+                    (insert "#+END_QUOTE\n\n")))))
+            (org-mode)
+            ;; Honour #+STARTUP even if the user overrides
+            ;; `org-startup-folded' globally.
+            (when (fboundp 'org-overview)
+              (ignore-errors (org-overview)))
+            (read-only-mode 1)
+            ;; Keep point/cursor at the top whenever the buffer is (re)built.
+            (goto-char (point-min))))
         ;; Display the buffer, focus its window, and park point at the top.
         (let ((win (display-buffer buf)))
           (when (window-live-p win)
             (select-window win)
             (set-window-point win (point-min))))))))
 
-;;; 3. Specialized search actions
-(defun opencode-occur-all-titles ()
-  "Instantly show all session titles in an Occur buffer without prompting."
-  (interactive)
-  (let ((buf (get-buffer "*OpenCode Sessions*")))
-    (unless buf
-      ;; Fallback: generate the buffer first if it doesn't exist
-      (opencode-list-sessions-native)
-      (setq buf (get-buffer "*OpenCode Sessions*")))
-    (with-current-buffer buf
-      ;; Match indented "Title:" detail lines (e.g. "    Title:      foo").
-      (occur "^[ \t]*Title:[[:space:]]+.*"))))
-
-;;; 4. The Transient Dispatcher
+;;; 3. The Transient Dispatcher
 (transient-define-prefix opencode-dispatch ()
   "Transient menu for OpenCode session management."
   ["Manage Sessions"
-   ("l" "List Active (Recent)" opencode-list-sessions-native)
-   ("o" "Occur on Buffer Titles" opencode-occur-all-titles)]
+   ("l" "List Active (Recent)" opencode-list-sessions-native)]
   ["Quit"
    ("q" "Quit Menu" transient-quit-one)])
 
