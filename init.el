@@ -164,9 +164,15 @@ n" :prepend t :jump-to-captured t)
 (use-package org-table-fit
   :load-path "~/.emacs.d/offline-packages/local-packages/org-table-fit"
   :demand t
+  :hook (org-mode . org-table-fit-overlay-mode)
   :bind (:map org-mode-map
               ("C-c t f" . org-table-fit-window)
-              ("C-c t u" . org-table-fit-unwrap)))
+              ("C-c t i" . org-table-fit-window)
+              ("C-c t t" . org-table-fit-overlay-mode)
+              ("C-c t u" . org-table-fit-unwrap)
+              ("C-c t r" . org-table-fit-toggle-reveal-on-point))
+  :config
+  (setq org-table-fit-overlay-reveal-on-point nil))
 
 ;;
 ;; -> use-package
@@ -1559,6 +1565,7 @@ comment headers fold their section, definitions fold to the next one."
 
 (require 'transient)
 (require 'json)
+(require 'ansi-color)
 
 ;;; 1. Process launcher helper
 (defun opencode-open-session-terminal (session-id directory)
@@ -1592,93 +1599,130 @@ If TITLE-FILTER is provided, filters results matching the session title."
         (error "Native SQLite support is not available in this Emacs build"))
       
       (let* ((db (sqlite-open db-path))
-             ;; Base query selecting the JSON 'data' column for parsing the last message payload
+             ;; Model/agent live inside message.data (JSON); message text
+             ;; lives in the separate `part' table as type:"text" rows.
              (query-base "
-               SELECT 
-                 s.id, 
-                 s.time_created, 
-                 s.time_updated, 
-                 s.title, 
-                 s.directory, 
+               SELECT
+                 s.id,
+                 s.time_created,
+                 s.time_updated,
+                 s.title,
+                 s.directory,
                  s.path,
-                 (SELECT model FROM message WHERE session_id = s.id AND model IS NOT NULL LIMIT 1) as resolved_model,
-                 (SELECT agent FROM message WHERE session_id = s.id AND agent IS NOT NULL LIMIT 1) as resolved_agent,
-                 (SELECT data FROM message WHERE session_id = s.id ORDER BY time_created DESC LIMIT 1) as last_msg
+                 (SELECT json_extract(m.data,'$.modelID') || ' (' || json_extract(m.data,'$.providerID') || ')'
+                  FROM message m
+                  WHERE m.session_id = s.id AND json_extract(m.data,'$.modelID') IS NOT NULL
+                  ORDER BY m.time_created DESC LIMIT 1) as resolved_model,
+                 (SELECT json_extract(m.data,'$.agent')
+                  FROM message m
+                  WHERE m.session_id = s.id AND json_extract(m.data,'$.agent') IS NOT NULL
+                  ORDER BY m.time_created DESC LIMIT 1) as resolved_agent,
+                 (SELECT json_extract(p.data,'$.text')
+                  FROM part p
+                  WHERE p.session_id = s.id AND json_extract(p.data,'$.type') = 'text'
+                  ORDER BY p.time_created DESC LIMIT 1) as last_msg
                FROM session s
                WHERE s.parent_id IS NULL ")
-             ;; Apply filter if requested
-             (query (if (and title-filter (not (string-empty-p title-filter)))
-                        (concat query-base "AND s.title LIKE " (sqlite-quote-value (concat "%" title-filter "%")) " ORDER BY s.time_updated DESC LIMIT 20;")
+             ;; Apply filter if requested (? is bound to a LIKE pattern).
+             (filtered (and title-filter (not (string-empty-p title-filter))))
+             (query (if filtered
+                        (concat query-base
+                                "AND s.title LIKE ? ORDER BY s.time_updated DESC LIMIT 20;")
                       (concat query-base "ORDER BY s.time_updated DESC LIMIT 20;")))
-             (rows (sqlite-select db query)))
+             (rows (sqlite-select db query
+                                  (and filtered (vector (concat "%" title-filter "%"))))))
         (sqlite-close db)
         
         (with-current-buffer buf
           (read-only-mode -1)
           (erase-buffer)
-          (insert "=== OPENCODE ACTIVE SESSIONS ===\n")
+          (insert (propertize "OpenCode Sessions\n" 'face 'bold))
           (if title-filter
-              (insert (format "Filtered by title query: \"%s\"\n" title-filter))
-            (insert "Click on a [Connect] link to launch the session in a terminal.\n"))
-          (insert (make-string 50 ?=) "\n\n")
-          
+              (insert (propertize (format "Filter: \"%s\"  •  %d match(es), most recent first\n"
+                                          title-filter (length rows))
+                                  'face 'shadow))
+            (insert (propertize "Most recent first  •  click [Connect] to open in a terminal\n"
+                                'face 'shadow)))
+          (insert (propertize (make-string 72 ?─) 'face 'shadow) "\n\n")
+
           (if (null rows)
-              (insert "No matching sessions found.\n")
-            (dolist (row rows)
-              (let* ((id (nth 0 row))
-                     (created-raw (nth 1 row))
-                     (updated-raw (nth 2 row))
-                     (title (or (nth 3 row) "Untitled Session"))
-                     (directory (nth 4 row))
-                     (path (nth 5 row))
-                     (model (or (nth 6 row) "default"))
-                     (agent (or (nth 7 row) "primary"))
-                     (last-msg-raw (nth 8 row))
-                     
-                     (project-root (cond
-                                    ((and directory (not (string-empty-p directory))) directory)
-                                    ((and path (not (string-empty-p path))) path)
-                                    (t "Unknown Workspace")))
-                     
-                     ;; Safely parse the JSON payload stored inside the 'data' column
-                     (msg-snippet
-                      (if (and last-msg-raw (not (string-empty-p last-msg-raw)))
-                          (condition-case nil
-                              (let* ((parsed (json-parse-string last-msg-raw :object-type 'alist :array-type 'list))
-                                     (parts (cdr (assoc 'parts parsed)))
-                                     (first-part (car parts))
-                                     (text-val (or (cdr (assoc 'text first-part)) "")))
-                                (if (> (length text-val) 60)
-                                    (concat (substring text-val 0 57) "...")
-                                  text-val))
-                            (error "Unparseable raw payload"))
-                        "No messages yet"))
-                     
-                     (created-str (if (numberp created-raw)
-                                      (format-time-string "%Y-%m-%d %H:%M" (seconds-to-time (/ created-raw 1000.0)))
-                                    "Unknown"))
-                     (updated-str (if (numberp updated-raw)
-                                      (format-time-string "%Y-%m-%d %H:%M" (seconds-to-time (/ updated-raw 1000.0)))
-                                    "Unknown")))
-                
-                (insert (format "Session ID:   %s " id))
-                (let ((start (point)))
-                  (insert "[Connect]")
-                  (make-button start (point)
-                               'action (lambda (_) (opencode-open-session-terminal id project-root))
-                               'follow-link t
-                               'help-echo "Click to launch session in a new terminal"))
-                (insert "\n")
-                
-                (insert (format "Title:        %s\n" title))
-                (insert (format "Project Root: %s\n" project-root))
-                (insert (format "Agent/Model:  %s (%s)\n" agent model))
-                (insert (format "Last Message: \"%s\"\n" msg-snippet))
-                (insert (format "Activity:     Created %s | Updated %s\n" created-str updated-str))
-                (insert (make-string 50 ?-) "\n"))))
+              (insert (propertize "No matching sessions found.\n" 'face 'warning))
+            (let ((n 0))
+              (dolist (row rows)
+                (setq n (1+ n))
+                (let* ((id (nth 0 row))
+                       (created-raw (nth 1 row))
+                       (updated-raw (nth 2 row))
+                       (title (or (nth 3 row) "Untitled Session"))
+                       (directory (nth 4 row))
+                       (path (nth 5 row))
+                       (model (or (nth 6 row) "default"))
+                       (agent (or (nth 7 row) "primary"))
+                       (last-msg-raw (nth 8 row))
+
+                       (project-root (cond
+                                      ((and directory (not (string-empty-p directory))) directory)
+                                      ((and path (not (string-empty-p path))) path)
+                                      (t "Unknown Workspace")))
+                       (project-short (if (string= project-root "Unknown Workspace")
+                                          project-root
+                                        (abbreviate-file-name project-root)))
+
+                       ;; SQL already extracted the text; normalise whitespace.
+                       (msg-snippet
+                        (if (and last-msg-raw (not (string-empty-p last-msg-raw)))
+                            (let ((text (string-trim
+                                         (replace-regexp-in-string "[ \t\n]+" " " last-msg-raw))))
+                              (if (> (length text) 100)
+                                  (concat (substring text 0 97) "...")
+                                text))
+                          "No messages yet"))
+
+                       (created-str (if (numberp created-raw)
+                                        (format-time-string "%Y-%m-%d %H:%M"
+                                                            (seconds-to-time (/ created-raw 1000.0)))
+                                      "Unknown"))
+                       (updated-str (if (numberp updated-raw)
+                                        (format-time-string "%Y-%m-%d %H:%M"
+                                                            (seconds-to-time (/ updated-raw 1000.0)))
+                                      "Unknown")))
+
+                  ;; Numbered title header with inline [Connect] button.
+                  (insert (propertize (format "%2d. " n) 'face 'shadow))
+                  (insert (propertize title 'face 'bold))
+                  (insert "  ")
+                  (let ((start (point)))
+                    (insert "[Connect]")
+                    (make-button start (point)
+                                 'action (lambda (_) (opencode-open-session-terminal id project-root))
+                                 'follow-link t
+                                 'face 'success
+                                 'mouse-face 'highlight
+                                 'help-echo (format "Launch session %s in a new terminal" id)))
+                  (insert "\n")
+
+                  ;; Aligned detail lines: dim labels, plain values.
+                  (insert (propertize "    Session:    " 'face 'shadow)
+                          (propertize id 'face 'font-lock-comment-face) "\n")
+                  (insert (propertize "    Title:      " 'face 'shadow) title "\n")
+                  (insert (propertize "    Directory:  " 'face 'shadow) project-short "\n")
+                  (insert (propertize "    Agent:      " 'face 'shadow)
+                          (format "%s • %s\n" agent model))
+                  (insert (propertize "    Last:       " 'face 'shadow)
+                          (propertize (concat "\"" msg-snippet "\"") 'face 'font-lock-doc-face)
+                          "\n")
+                  (insert (propertize "    Activity:   " 'face 'shadow)
+                          (format "Created %s  •  Updated %s\n" created-str updated-str))
+                  (insert (propertize (make-string 72 ?─) 'face 'shadow) "\n\n")))))
           (ansi-color-apply-on-region (point-min) (point-max))
-          (read-only-mode 1))
-        (display-buffer buf)))))
+          (read-only-mode 1)
+          ;; Keep point/cursor at the top whenever the buffer is (re)built.
+          (goto-char (point-min)))
+        ;; Display the buffer, focus its window, and park point at the top.
+        (let ((win (display-buffer buf)))
+          (when (window-live-p win)
+            (select-window win)
+            (set-window-point win (point-min))))))))
 
 ;;; 3. Specialized search actions
 (defun opencode-occur-all-titles ()
@@ -1690,8 +1734,8 @@ If TITLE-FILTER is provided, filters results matching the session title."
       (opencode-list-sessions-native)
       (setq buf (get-buffer "*OpenCode Sessions*")))
     (with-current-buffer buf
-      ;; Match all lines starting with "Title:"
-      (occur "^Title:[[:space:]]+.*"))))
+      ;; Match indented "Title:" detail lines (e.g. "    Title:      foo").
+      (occur "^[ \t]*Title:[[:space:]]+.*"))))
 
 ;;; 4. The Transient Dispatcher
 (transient-define-prefix opencode-dispatch ()
@@ -1727,3 +1771,5 @@ If TITLE-FILTER is provided, filters results matching the session title."
 ;; M-U / M-I switch tab-line buffers (M-u / M-i switch tab-bar tabs).
 (define-key my-overrides-mode-map (kbd "M-U") #'tab-line-switch-to-prev-tab)
 (define-key my-overrides-mode-map (kbd "M-I") #'tab-line-switch-to-next-tab)
+
+(use-package valign)
