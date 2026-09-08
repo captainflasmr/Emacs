@@ -1647,10 +1647,8 @@ If TITLE-FILTER is provided, filters results matching the session title."
 
             (if (null rows)
                 (insert "No matching sessions found.\n")
-              (let ((n 0))
-                (dolist (row rows)
-                  (setq n (1+ n))
-                  (let* ((id (nth 0 row))
+              (dolist (row rows)
+                (let* ((id (nth 0 row))
                          (created-raw (nth 1 row))
                          (updated-raw (nth 2 row))
                          (title-raw (or (nth 3 row) "Untitled Session"))
@@ -1692,9 +1690,7 @@ If TITLE-FILTER is provided, filters results matching the session title."
 
                     ;; Each session is a level-1 Org headline so folding,
                     ;; org-goto, imenu, sparse trees, etc. work natively.
-                    ;; The numeric prefix also guards against TODO-keyword
-                    ;; or tag misparses in free-form session titles.
-                    (insert (format "* %2d. %s\n" n title))
+                    (insert (format "* %s\n" title))
                     (insert ":PROPERTIES:\n")
                     (insert (format ":SESSION_ID: %s\n" id))
                     (insert (format ":DIRECTORY: %s\n" project-root))
@@ -1714,7 +1710,7 @@ If TITLE-FILTER is provided, filters results matching the session title."
                     (insert "- Last ::\n")
                     (insert "#+BEGIN_QUOTE\n")
                     (insert msg-snippet "\n")
-                    (insert "#+END_QUOTE\n\n")))))
+                    (insert "#+END_QUOTE\n\n"))))
             (org-mode)
             ;; Honour #+STARTUP even if the user overrides
             ;; `org-startup-folded' globally.
