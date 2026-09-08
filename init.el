@@ -1725,14 +1725,6 @@ If TITLE-FILTER is provided, filters results matching the session title."
             (select-window win)
             (set-window-point win (point-min))))))))
 
-;;; 3. The Transient Dispatcher
-(transient-define-prefix opencode-dispatch ()
-  "Transient menu for OpenCode session management."
-  ["Manage Sessions"
-   ("l" "List Active (Recent)" opencode-list-sessions-native)]
-  ["Quit"
-   ("q" "Quit Menu" transient-quit-one)])
-
 (use-package gnuplot)
 
 (use-package zig-mode)
