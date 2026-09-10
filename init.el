@@ -166,7 +166,6 @@ n" :prepend t :jump-to-captured t)
   :demand t
   :hook (org-mode . org-table-fit-overlay-mode)
   :bind (:map org-mode-map
-              ("C-c t f" . org-table-fit-window)
               ("C-c t i" . org-table-fit-window)
               ("C-c t t" . org-table-fit-overlay-mode)
               ("C-c t u" . org-table-fit-unwrap)
@@ -1731,7 +1730,7 @@ If TITLE-FILTER is provided, filters results matching the session title."
 
 (setq tab-bar-auto-width-max '((120) 20))
 
-(load-theme 'doom-dracula t)
+(load-theme 'deeper-blue t)
 
 (define-key my-win-keymap (kbd "m") #'diff-minimap-toggle)
 
@@ -1744,7 +1743,7 @@ If TITLE-FILTER is provided, filters results matching the session title."
 (setq tab-line-close-button-show nil)
 (setq tab-line-new-button-show nil)
 (setq tab-line-separator nil)
-(global-tab-line-mode 1)
+(global-tab-line-mode -1)
 (define-key my-win-keymap (kbd "i")
             (lambda () (interactive) (global-tab-line-mode 'toggle)))
 ;; M-U / M-I switch tab-line buffers (M-u / M-i switch tab-bar tabs).

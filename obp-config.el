@@ -68,6 +68,9 @@
          (org-bootstrap-publish-site-url     . "https://www.dyerdwelling.family/")
          (org-bootstrap-publish-author       . "James Dyer")
          (org-bootstrap-publish-cloudflare-project . "dyerdwelling")
+         (org-bootstrap-publish-contact-links
+          . (("Email" . "mailto:captainflasmr@gmail.com")
+             ("About" . "/blog/posts--about-me/")))
          (org-bootstrap-publish-preview-limit . 10)
          (org-bootstrap-publish-serve-browser . "firefox")
          (org-bootstrap-publish-async-init-files . ("~/.emacs.d/obp-shortcodes.el"))
@@ -116,6 +119,8 @@
          (org-bootstrap-publish-site-url     . "https://www.art.dyerdwelling.family/")
          (org-bootstrap-publish-author       . "James Dyer")
          (org-bootstrap-publish-cloudflare-project . "art-dyerdwelling")
+         (org-bootstrap-publish-contact-links
+          . (("Email" . "mailto:captainflasmr@gmail.com")))
          (org-bootstrap-publish-preview-limit . 20)
          (org-bootstrap-publish-serve-browser . "firefox")
          (org-bootstrap-publish-static-dirs
@@ -174,6 +179,8 @@
          (org-bootstrap-publish-static-dirs  . ("static/emacs" "static/images/banner"))
          (org-bootstrap-publish-disqus-shortname . "https-www-emacs-dyerdwelling-family")
          (org-bootstrap-publish-cloudflare-project . "emacs-dyerdwelling")
+         (org-bootstrap-publish-contact-links
+          . (("Email" . "mailto:captainflasmr@gmail.com")))
          (org-bootstrap-publish-preview-limit . 10)
          (org-bootstrap-publish-serve-browser . "firefox")
          (org-bootstrap-publish-background-image
