@@ -96,7 +96,9 @@ The rendered =init.el= puts =~/.emacs.d/local-packages/= plus every immediate su
 
 Each =starters/emacs-<VER>.el=, if present, is bundled as =init-starter.el= at the root of the toolkit tarball, and =setup.sh= installs it to =~/.emacs.d/init-starter.el= on the target. It is /not/ auto-loaded — the rendered =init.el= copy-over is left untouched.
 
-The snippets are distilled from the author's live config: =use-package= blocks for the themes, =diff-hl=, =selected-window-accent-mode=, =simply-annotate=, =ztree=, =ollama-buddy= (30.x), etc. They assume the corresponding package is already in the offline mirror (true by construction, since the snippet is matched to =packages/emacs-<VER>.el=).
+The snippets are distilled from the author's live config: =use-package= blocks for the themes, =diff-hl=, =selected-window-accent-mode=, =simply-annotate=, =vlf=, =ztree=, =ollama-buddy= (30.x), etc. They assume the corresponding package is already in the offline mirror (true by construction, since the snippet is matched to =packages/emacs-<VER>.el=).
+
+The =vlf= block (View Large Files, GNU ELPA, available for every target) loads =vlf-setup= and sets =vlf-application= to =dont-ask=, so files past =large-file-warning-threshold= (~10 MB by default) open in batches instead of being loaded into memory whole. Set it to =ask= to be prompted per file, =always= to route every file through VLF, or =nil= to keep VLF strictly manual (=M-x vlf=). Once =vlf-setup= is loaded, Dired also gets a =V= binding.
 
 Coding-oriented blocks (=dape=, =emeld-sidebar=, =demap=, =eglot= hooks, =flymake=, =corfu=, etc.) live in =starters/coding.el= to avoid duplication. Load both starters to get the full set:
 

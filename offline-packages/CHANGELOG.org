@@ -10,6 +10,14 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-09-18>
+
+Bundled =vlf= (view/edit large files in batches)
+
+- Added =vlf= to every =packages/emacs-<VER>.el= manifest (=emacs-27.2.el= through =emacs-30.2.el=). GNU ELPA v1.7.2 supports Emacs 23+, so all targets get it; the mirror builder only logs and skips it if the archive doesn't carry it.
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=: added a =use-package= block that loads =vlf-setup= and sets =vlf-application= to =dont-ask=, so files over =large-file-warning-threshold= open in batches automatically. Comments document the =ask=/=always=/=nil= alternatives, the =C-c C-v= keymap, the Dired =V= binding, and the =vlf-tune-*= / =vlf-save-in-place= knobs.
+- =README.org=: noted the =vlf= block in the starter snippet section.
+
 ** <2026-08-12>
 
 =--tools= is now opt-in; drop Zig build junk from the toolkit

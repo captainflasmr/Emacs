@@ -29,6 +29,7 @@ timu-caribbean-theme
 timu-rouge-theme
 timu-spacegrey-theme
 typescript-mode
+vlf
 web-mode
 yaml-mode
 zig-mode

@@ -85,6 +85,33 @@
   (dired-async-mode 1))
 
 ;;
+;; -> vlf — view and edit huge files in batches (GNU ELPA)
+;;
+;; VLF reads a file chunk by chunk, so files larger than RAM open without
+;; swapping. Loading `vlf-setup' hooks the built-in large-file prompt;
+;; `vlf-application' decides when VLF is used:
+;;   ask       (default) offer VLF past `large-file-warning-threshold'
+;;   dont-ask  open large files in VLF automatically
+;;   always    use VLF for every file
+;;   nil       never automatic — open explicitly with M-x vlf
+;;
+;; Dired gains a `V' binding (dired-vlf) once vlf-setup is loaded.
+;; Inside a VLF buffer C-c C-v is the prefix: n/p next/prev batch,
+;; s/r search forward/backward, o occur index, l goto-line, j jump to
+;; a batch, % query-replace across the whole file.
+;;
+;; Other useful options:
+;;   (setq vlf-tune-enabled nil)         ; don't auto-tune batch size
+;;   (setq vlf-tune-max (* 4 1024 1024)) ; cap tuned batch size at 4 MB
+;;   (setq vlf-save-in-place 'ask)       ; write via temp file on resize
+(use-package vlf
+  :commands vlf
+  :init
+  (require 'vlf-setup)
+  :custom
+  (vlf-application 'dont-ask))
+
+;;
 ;; -> selected-window-accent-mode — highlights the active window's borders
 ;;
 (use-package selected-window-accent-mode
