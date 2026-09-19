@@ -830,17 +830,17 @@ n" :prepend t :jump-to-captured t)
   :bind ("C-c q" . qemu-manager-list))
 
 (use-package eglot
-   :ensure t
-   :hook (nxml-mode . eglot-ensure)
-   :config
-   (add-to-list 'eglot-server-programs
-                `(java-mode . ("/home/jdyer/.emacs.d/bin/jdtls/bin/jdtls"
-                               :initializationOptions
-                               (:bundles ["/home/jdyer/.emacs.d/bin/jdtls/com.microsoft.java.debug.plugin-0.53.2.jar"]))))
+  :ensure t
+  :hook (nxml-mode . eglot-ensure)
+  :config
+  (add-to-list 'eglot-server-programs
+               `(java-mode . ("/home/jdyer/.emacs.d/bin/jdtls/bin/jdtls"
+                              :initializationOptions
+                              (:bundles ["/home/jdyer/.emacs.d/bin/jdtls/com.microsoft.java.debug.plugin-0.53.2.jar"]))))
 
-   (add-to-list 'eglot-server-programs
-                '(nxml-mode . ("java" "-jar"
-                               "/home/jdyer/Downloads/org.eclipse.lemminx-uber.jar")))
+  (add-to-list 'eglot-server-programs
+               '(nxml-mode . ("java" "-jar"
+                              "/home/jdyer/Downloads/org.eclipse.lemminx-uber.jar")))
 
   ;; Disable resource-intensive features for the target system
   (setq eglot-ignored-server-capabilities
@@ -1648,68 +1648,68 @@ If TITLE-FILTER is provided, filters results matching the session title."
                 (insert "No matching sessions found.\n")
               (dolist (row rows)
                 (let* ((id (nth 0 row))
-                         (created-raw (nth 1 row))
-                         (updated-raw (nth 2 row))
-                         (title-raw (or (nth 3 row) "Untitled Session"))
-                         ;; Headlines, properties and tables must stay single-line.
-                         (title (string-trim
-                                 (replace-regexp-in-string "[ \t\n]+" " " title-raw)))
-                         (directory (nth 4 row))
-                         (path (nth 5 row))
-                         (model (or (nth 6 row) "default"))
-                         (agent (or (nth 7 row) "primary"))
-                         (last-msg-raw (nth 8 row))
+                       (created-raw (nth 1 row))
+                       (updated-raw (nth 2 row))
+                       (title-raw (or (nth 3 row) "Untitled Session"))
+                       ;; Headlines, properties and tables must stay single-line.
+                       (title (string-trim
+                               (replace-regexp-in-string "[ \t\n]+" " " title-raw)))
+                       (directory (nth 4 row))
+                       (path (nth 5 row))
+                       (model (or (nth 6 row) "default"))
+                       (agent (or (nth 7 row) "primary"))
+                       (last-msg-raw (nth 8 row))
 
-                         (project-root (cond
-                                        ((and directory (not (string-empty-p directory))) directory)
-                                        ((and path (not (string-empty-p path))) path)
-                                        (t "Unknown Workspace")))
-                         (project-short (if (string= project-root "Unknown Workspace")
-                                            project-root
-                                          (abbreviate-file-name project-root)))
+                       (project-root (cond
+                                      ((and directory (not (string-empty-p directory))) directory)
+                                      ((and path (not (string-empty-p path))) path)
+                                      (t "Unknown Workspace")))
+                       (project-short (if (string= project-root "Unknown Workspace")
+                                          project-root
+                                        (abbreviate-file-name project-root)))
 
-                         ;; SQL already extracted the text; normalise whitespace.
-                         (msg-snippet
-                          (if (and last-msg-raw (not (string-empty-p last-msg-raw)))
-                              (let ((text (string-trim
-                                           (replace-regexp-in-string "[ \t\n]+" " " last-msg-raw))))
-                                (if (> (length text) 400)
-                                    (concat (substring text 0 397) "...")
-                                  text))
-                            "No messages yet"))
+                       ;; SQL already extracted the text; normalise whitespace.
+                       (msg-snippet
+                        (if (and last-msg-raw (not (string-empty-p last-msg-raw)))
+                            (let ((text (string-trim
+                                         (replace-regexp-in-string "[ \t\n]+" " " last-msg-raw))))
+                              (if (> (length text) 400)
+                                  (concat (substring text 0 397) "...")
+                                text))
+                          "No messages yet"))
 
-                         (created-str (if (numberp created-raw)
-                                          (format-time-string "%Y-%m-%d %H:%M"
-                                                              (seconds-to-time (/ created-raw 1000.0)))
-                                        "Unknown"))
-                         (updated-str (if (numberp updated-raw)
-                                          (format-time-string "%Y-%m-%d %H:%M"
-                                                              (seconds-to-time (/ updated-raw 1000.0)))
-                                        "Unknown")))
+                       (created-str (if (numberp created-raw)
+                                        (format-time-string "%Y-%m-%d %H:%M"
+                                                            (seconds-to-time (/ created-raw 1000.0)))
+                                      "Unknown"))
+                       (updated-str (if (numberp updated-raw)
+                                        (format-time-string "%Y-%m-%d %H:%M"
+                                                            (seconds-to-time (/ updated-raw 1000.0)))
+                                      "Unknown")))
 
-                    ;; Each session is a level-1 Org headline so folding,
-                    ;; org-goto, imenu, sparse trees, etc. work natively.
-                    (insert (format "* %s\n" title))
-                    (insert ":PROPERTIES:\n")
-                    (insert (format ":SESSION_ID: %s\n" id))
-                    (insert (format ":DIRECTORY: %s\n" project-root))
-                    (insert (format ":AGENT: %s\n" agent))
-                    (insert (format ":MODEL: %s\n" model))
-                    (insert (format ":CREATED: %s\n" created-str))
-                    (insert (format ":UPDATED: %s\n" updated-str))
-                    (insert ":END:\n")
-                    (insert (format "- Directory :: %s\n" project-short))
-                    (insert (format "- Agent :: %s (%s)\n" agent model))
-                    (insert (format "- Activity :: Created %s, Updated %s\n"
-                                    created-str updated-str))
-                    (insert (format "- Session :: %s\n" id))
-                    (insert (format "- Connect :: [[elisp:(opencode-open-session-terminal %s %s)][Open in terminal]]\n"
-                                    (prin1-to-string id)
-                                    (prin1-to-string project-root)))
-                    (insert "- Last ::\n")
-                    (insert "#+BEGIN_QUOTE\n")
-                    (insert msg-snippet "\n")
-                    (insert "#+END_QUOTE\n\n"))))
+                  ;; Each session is a level-1 Org headline so folding,
+                  ;; org-goto, imenu, sparse trees, etc. work natively.
+                  (insert (format "* %s\n" title))
+                  (insert ":PROPERTIES:\n")
+                  (insert (format ":SESSION_ID: %s\n" id))
+                  (insert (format ":DIRECTORY: %s\n" project-root))
+                  (insert (format ":AGENT: %s\n" agent))
+                  (insert (format ":MODEL: %s\n" model))
+                  (insert (format ":CREATED: %s\n" created-str))
+                  (insert (format ":UPDATED: %s\n" updated-str))
+                  (insert ":END:\n")
+                  (insert (format "- Directory :: %s\n" project-short))
+                  (insert (format "- Agent :: %s (%s)\n" agent model))
+                  (insert (format "- Activity :: Created %s, Updated %s\n"
+                                  created-str updated-str))
+                  (insert (format "- Session :: %s\n" id))
+                  (insert (format "- Connect :: [[elisp:(opencode-open-session-terminal %s %s)][Open in terminal]]\n"
+                                  (prin1-to-string id)
+                                  (prin1-to-string project-root)))
+                  (insert "- Last ::\n")
+                  (insert "#+BEGIN_QUOTE\n")
+                  (insert msg-snippet "\n")
+                  (insert "#+END_QUOTE\n\n"))))
             (org-mode)
             ;; Honour #+STARTUP even if the user overrides
             ;; `org-startup-folded' globally.
@@ -1733,3 +1733,39 @@ If TITLE-FILTER is provided, filters results matching the session title."
 (load-theme 'deeper-blue t)
 
 (define-key my-win-keymap (kbd "m") #'diff-minimap-toggle)
+
+;;
+;; -> vlf — view very large files (e.g. SVN dumps) in batches
+;;
+;; Usage:
+;;   M-x vlf <file>  — open any file in ~1 MiB chunks (works on multi-GB files)
+;;   V in dired      — open the file at point with VLF (wired up by vlf-setup)
+;;   C-c V           — open with VLF from anywhere (binding below)
+;; In a VLF buffer: n/p next/prev chunk, [/] first/last chunk, +/- resize
+;; chunk, s/r search forward/back over the whole file, o occur, l go to
+;; line, C-c C-v prefix for all VLF keys. Scrolling past the buffer limits
+;; auto-advances to the next/previous chunk.
+;;
+(use-package vlf
+  :ensure t
+  :custom
+  ;; Offer VLF when a file exceeds `large-file-warning-threshold'
+  ;; (default 10 MiB). Change to 'dont-ask to jump straight into VLF.
+  (vlf-application 'ask)
+  ;; Chunk size for local files. Auto-tuned at runtime (vlf-tune-enabled).
+  ;; 1 MiB is a good balance for line-oriented ASCII like SVN dumps.
+  (vlf-batch-size 1048576)
+  (vlf-tune-enabled t)
+  :config
+  ;; Hooks VLF into `abort-if-file-too-large' and defines `dired-vlf'.
+  (require 'vlf-setup)
+  ;; SVN dumps / generic dumps: keep them in fundamental-mode so no slow
+  ;; major-mode or font-lock runs over the chunk.
+  (add-to-list 'auto-mode-alist '("\\.svndump\\'" . fundamental-mode))
+  (add-to-list 'auto-mode-alist '("\\.dump\\'" . fundamental-mode))
+  ;; Safety net for very long single lines inside a chunk.
+  (when (fboundp 'global-so-long-mode)
+    (global-so-long-mode 1))
+  (define-key my-overrides-mode-map (kbd "C-c V") #'vlf)
+  (with-eval-after-load 'dired
+    (define-key dired-mode-map (kbd "V") #'dired-vlf)))
