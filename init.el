@@ -404,13 +404,6 @@ n" :prepend t :jump-to-captured t)
 ;;
 ;; -> other
 ;;
-(defun convert-weight (weight)
-  "Convert WEIGHT from string to pounds."
-  (let* ((parts (split-string weight ":"))
-         (stone (string-to-number (car parts)))
-         (pounds (string-to-number (cadr parts))))
-    (+ (* stone 14) pounds)))
-
 (tiny-diminish 'cursor-heatmap-mode)
 ;; (tiny-diminish 'simply-annotate-mode)
 (tiny-diminish 'simple-autosuggest-mode)
@@ -885,7 +878,7 @@ n" :prepend t :jump-to-captured t)
   (dumb-jump-selector 'completing-read)
   :config
   ;; Prepend globally so dumb-jump beats the default etags backend.
-  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
+  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate 100))
 
 
 ;; Ada support for dumb-jump (not built-in).
