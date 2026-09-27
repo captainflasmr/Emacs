@@ -174,6 +174,85 @@ n" :prepend t :jump-to-captured t)
   (setq org-table-fit-overlay-reveal-on-point nil))
 
 ;;
+;; -> org sell summaries
+;;
+;; Regenerates a summary table from the buffer's TODO headings as an
+;; Org dynamic block.  Update it with `C-c C-c' on the BEGIN line; it
+;; is also refreshed automatically before saving:
+;;
+;;   * Summary
+;;
+;;   #+BEGIN: sell-summary
+;;   | Item | Status | Target | Sold |
+;;   ...
+;;   #+END:
+
+(defun my/org-sell-summary--format (value)
+  "Return VALUE formatted for the summary table.
+Numeric values get two decimals; anything else, including nil and
+empty strings, is returned as trimmed text."
+  (let ((value (and value (string-trim value))))
+    (cond ((or (null value) (string= value "")) "")
+          ((string-match-p "\\`-?[0-9]+\\(?:\\.[0-9]+\\)?\\'" value)
+           (format "%.2f" (string-to-number value)))
+          (t value))))
+
+(defun my/org-sell-summary--rows ()
+  "Collect summary rows for each heading with a TODO keyword.
+Each row is a list (ITEM STATUS TARGET SOLD)."
+  (let (rows)
+    (org-element-map (org-element-parse-buffer) 'headline
+      (lambda (headline)
+        (when-let* ((keyword (org-element-property :todo-keyword headline)))
+          (push (list (org-element-property :raw-value headline)
+                      (format "%s" keyword)
+                      (my/org-sell-summary--format (org-element-property :TARGET headline))
+                      (my/org-sell-summary--format (org-element-property :SOLD headline)))
+                rows))))
+    (nreverse rows)))
+
+(defun my/org-sell-summary--sum (rows column)
+  "Return the sum of numeric COLUMN in ROWS, formatted with two decimals."
+  (format "%.2f"
+          (apply #'+ (mapcar (lambda (row) (string-to-number (nth column row)))
+                             rows))))
+
+(defun my/org-sell-summary--table ()
+  "Build the heading summary table for the current buffer."
+  (let* ((rows (my/org-sell-summary--rows))
+         (table (append rows
+                        (list (list "TOTAL" ""
+                                    (my/org-sell-summary--sum rows 2)
+                                    (my/org-sell-summary--sum rows 3))))))
+    (concat "| Item | Status | Target | Sold |\n"
+            "|------+--------+--------+------|\n"
+            (mapconcat (lambda (row)
+                         (concat "| " (mapconcat #'identity row " | ") " |"))
+                       table "\n"))))
+
+(defun org-dblock-write:sell-summary (_params)
+  "Write a summary table of the buffer's TODO headings."
+  (insert (my/org-sell-summary--table))
+  (org-table-align))
+
+(defun my/org-sell-summary--update-on-save ()
+  "Refresh `sell-summary' dynamic blocks before saving the buffer."
+  (when (and (derived-mode-p 'org-mode)
+             (save-excursion
+               (goto-char (point-min))
+               (re-search-forward "^[ \t]*#\\+BEGIN:[ \t]*sell-summary\\>" nil t)))
+    (let ((inhibit-message t))
+      (org-update-all-dblocks))))
+
+(add-hook 'before-save-hook #'my/org-sell-summary--update-on-save)
+
+(with-eval-after-load 'org
+  (org-dynamic-block-define "sell-summary"
+    (lambda ()
+      (interactive)
+      (org-create-dblock '(:name "sell-summary")))))
+
+;;
 ;; -> use-package
 ;;
 (use-package async)
@@ -1723,7 +1802,7 @@ If TITLE-FILTER is provided, filters results matching the session title."
 
 (setq tab-bar-auto-width-max '((120) 20))
 
-(load-theme 'deeper-blue t)
+(load-theme 'doom-lantern t)
 
 (define-key my-win-keymap (kbd "m") #'diff-minimap-toggle)
 
