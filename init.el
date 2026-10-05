@@ -163,7 +163,6 @@ n" :prepend t :jump-to-captured t)
 
 (use-package org-table-fit
   :load-path "~/.emacs.d/offline-packages/local-packages/org-table-fit"
-  :demand t
   :hook (org-mode . org-table-fit-overlay-mode)
   :bind (:map org-mode-map
               ("C-c t i" . org-table-fit-window)
@@ -255,9 +254,12 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 ;;
 ;; -> use-package
 ;;
-(use-package async)
-(use-package i3wm-config-mode)
-(use-package yaml-mode)
+(use-package async
+  :defer t)
+(use-package i3wm-config-mode
+  :defer t)
+(use-package yaml-mode
+  :mode ("\\.yml\\'" "\\.yaml\\'"))
 
 ;;
 ;; -> plantuml
@@ -295,28 +297,33 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 ;; -> themes
 ;;
 (use-package doom-themes)
-(use-package ef-themes)
-(use-package gruvbox-theme)
-(use-package timu-caribbean-theme)
+(use-package ef-themes
+  :defer t)
+(use-package gruvbox-theme
+  :defer t)
+(use-package timu-caribbean-theme
+  :defer t)
 
 (use-package timu-spacegrey-theme
-  :config
+  :defer t
+  :custom
   ;; (setq timu-spacegrey-flavour "light")
-  (setq timu-spacegrey-scale-org-document-title 1.8)
-  (setq timu-spacegrey-scale-org-document-info 1.4)
-  (setq timu-spacegrey-scale-org-level-1 1.8)
-  (setq timu-spacegrey-scale-org-level-2 1.4)
-  (setq timu-spacegrey-scale-org-level-3 1.2))
+  (timu-spacegrey-scale-org-document-title 1.8)
+  (timu-spacegrey-scale-org-document-info 1.4)
+  (timu-spacegrey-scale-org-level-1 1.8)
+  (timu-spacegrey-scale-org-level-2 1.4)
+  (timu-spacegrey-scale-org-level-3 1.2))
 
 (use-package timu-rouge-theme
-  :config
+  :defer t
+  :custom
   ;; (setq timu-rouge-org-intense-colors t)
-  (setq timu-rouge-mode-line-border t)
-  (setq timu-rouge-scale-org-document-title 1.8)
-  (setq timu-rouge-scale-org-document-info 1.4)
-  (setq timu-rouge-scale-org-level-1 1.8)
-  (setq timu-rouge-scale-org-level-2 1.4)
-  (setq timu-rouge-scale-org-level-3 1.2))
+  (timu-rouge-mode-line-border t)
+  (timu-rouge-scale-org-document-title 1.8)
+  (timu-rouge-scale-org-document-info 1.4)
+  (timu-rouge-scale-org-level-1 1.8)
+  (timu-rouge-scale-org-level-2 1.4)
+  (timu-rouge-scale-org-level-3 1.2))
 
 ;;
 ;; -> auto-mode-alist
@@ -337,8 +344,11 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 ;; -> emacs-30.1
 ;;
 
-(use-package csv-mode)
-(use-package package-lint)
+(use-package csv-mode
+  :mode "\\.csv\\'")
+(use-package package-lint
+  :commands (package-lint-current-buffer
+             package-lint-batch-and-exit))
 
 (use-package bank-buddy
   :load-path "~/source/repos/bank-buddy"
@@ -360,7 +370,6 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 
 (use-package ollama-buddy
   :load-path "~/source/repos/ollama-buddy"
-  :demand t
   :bind
   ("C-c O" . ollama-buddy-transient-menu)
   :config
@@ -520,7 +529,8 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 
 (add-to-list 'auto-mode-alist '("\\.cshtml\\'" . html-mode))
 
-(use-package ibuffer)
+(use-package ibuffer
+  :defer t)
 
 ;; (use-package dape
 ;;   :init
@@ -590,7 +600,6 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 
 (use-package dired-image-thumbnail
   :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/dired-image-thumbnail"
-  :demand t
   :config
   (setq dired-image-thumbnail-auto-accept t)
   (setq dired-image-thumbnail-sort-by 'date)
@@ -607,207 +616,208 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 ;;
 (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
 (when (locate-library "mu4e")
-  (require 'mu4e)
-
-  (setq mu4e-maildir "~/Maildir"
-        mu4e-attachment-dir "~/Downloads"
-        mu4e-change-filenames-when-moving t
-        mu4e-update-interval 120
-        mu4e-get-mail-command "mbsync -a"
-        mu4e-headers-auto-update t
-        mu4e-view-show-images t
-        mu4e-view-show-addresses t
-        mu4e-split-view 'vertical
-        mu4e-context-policy 'pick-first
-        mu4e-compose-context-policy 'ask
-        mu4e-search-results-limit 2000
-        message-send-mail-function 'smtpmail-send-it)
-
-  ;; This format gives you "YYYY-MM-DD HH:MM" (e.g., 2026-05-21 08:53)
-  (setq mu4e-headers-date-format "%Y-%m-%d %H:%M")
-
-  (setq mu4e-headers-fields
-        '((:date    . 17)    ; Date of the message
-          ;; (:flags   .  6)    ; Message flags (U, R, F, etc.)
-          (:from    . 22)    ; Sender name/email
-          (:subject . nil))) ; Subject line (nil tells it to use all remaining space)
-
-
-  (setq mu4e-contexts
-        `(,(make-mu4e-context
-            :name "james"
-            :enter-func (lambda () (mu4e-message "Switch to james"))
-            :leave-func (lambda () (mu4e-message "Leave james"))
-            :match-func (lambda (msg)
-                          (when msg
-                            (string-prefix-p "/james" (mu4e-message-field msg :maildir))))
-            :vars `((user-mail-address . "james@dyerdwelling.family")
-                    (user-full-name . "james dyer")
-                    (mu4e-sent-folder . "/james/Sent")
-                    (mu4e-drafts-folder . "/james/Drafts")
-                    (mu4e-trash-folder . "/james/Trash")
-                    (mu4e-refile-folder . "/james/Archive")
-                    (smtpmail-smtp-user . "james@dyerdwelling.family")
-                    (smtpmail-smtp-server . "smtp.migadu.com")
-                    (smtpmail-smtp-service . 587)
-                    (smtpmail-stream-type . starttls)))
-          ,(make-mu4e-context
-            :name "jimbob"
-            :enter-func (lambda () (mu4e-message "Switch to jimbob"))
-            :leave-func (lambda () (mu4e-message "Leave jimbob"))
-            :match-func (lambda (msg)
-                          (when msg
-                            (string-prefix-p "/jimbob" (mu4e-message-field msg :maildir))))
-            :vars `((user-mail-address . "jimbob@dyerdwelling.family")
-                    (user-full-name . "james dyer")
-                    (mu4e-sent-folder . "/jimbob/Sent")
-                    (mu4e-drafts-folder . "/jimbob/Drafts")
-                    (mu4e-trash-folder . "/jimbob/Trash")
-                    (mu4e-refile-folder . "/jimbob/Archive")
-                    (smtpmail-smtp-user . "jimbob@dyerdwelling.family")
-                    (smtpmail-smtp-server . "smtp.migadu.com")
-                    (smtpmail-smtp-service . 587)
-                    (smtpmail-stream-type . starttls)))
-          ,(make-mu4e-context
-            :name "captainflasmr"
-            :enter-func (lambda () (mu4e-message "Switch to Gmail"))
-            :leave-func (lambda () (mu4e-message "Leave Gmail"))
-            :match-func (lambda (msg)
-                          (when msg
-                            (string-prefix-p "/captainflasmr" (mu4e-message-field msg :maildir))))
-            :vars `((user-mail-address . "captainflasmr@gmail.com")
-                    (user-full-name . "james dyer")
-                    (mu4e-sent-folder . "/captainflasmr/[Gmail]/Sent Mail")
-                    (mu4e-drafts-folder . "/captainflasmr/[Gmail]/Drafts")
-                    (mu4e-trash-folder . "/captainflasmr/[Gmail]/Trash")
-                    (mu4e-refile-folder . "/captainflasmr/[Gmail]/All Mail")
-                    (smtpmail-smtp-user . "captainflasmr@gmail.com")
-                    (smtpmail-smtp-server . "smtp.gmail.com")
-                    (smtpmail-smtp-service . 587)
-                    (smtpmail-stream-type . starttls)))))
-
-  (setq mu4e-maildir-shortcuts
-        '(("/jimbob/INBOX" . ?j)
-          ("/james/INBOX" . ?m)
-          ("/captainflasmr/INBOX" . ?g)))
-
-  (setq mu4e-bookmarks
-        '((:name "Unified Inbox"
-                 :query "(maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX)"
-                 :key ?b)
-          (:name "Unified Archive"
-                 :query "(maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:\"/captainflasmr/[Gmail]/All Mail\")"
-                 :key ?a)
-          (:name "Unified Sent"
-                 :query "(maildir:/jimbob/Sent OR maildir:/james/Sent OR maildir:\"/captainflasmr/[Gmail]/Sent Mail\")"
-                 :key ?s)
-          (:name "Unified Trash"
-                 :query "(maildir:/jimbob/Trash OR maildir:/james/Trash OR maildir:\"/captainflasmr/[Gmail]/Trash\")"
-                 :key ?t)
-          (:name "Unified Spam"
-                 :query "(maildir:/jimbob/Junk OR maildir:/james/Junk OR maildir:\"/captainflasmr/[Gmail]/Spam\")"
-                 :key ?p)
-          (:name "Unread messages"
-                 :query "flag:unread AND NOT flag:trashed"
-                 :key ?u)
-          (:name "Today's messages"
-                 :query "date:today..now"
-                 :key ?d)))
-
-  (setq shr-use-colors nil
-        shr-use-fonts nil
-        mm-text-html-renderer 'shr)
-
-  (remove-hook 'mu4e-view-rendered-hook 'mu4e-resize-linked-headers-window)
-  (add-hook 'mu4e-view-rendered-hook
-            (defun my/mu4e-balance-views ()
-              (when (and (eq mu4e-split-view 'vertical)
-                         (mu4e-current-buffer-type-p 'view))
-                (when-let* ((win (get-buffer-window (current-buffer) t)))
-                  (let ((target (floor (/ (frame-width) 2))))
-                    (window-resize win (- target (window-total-width win)) t nil t))))))
-
-  (defvar my/mu4e--focus-window nil)
-
-  (advice-add 'mu4e-headers-view-message :before
-              (defun my/mu4e-save-focus-window (&rest _)
-                (setq my/mu4e--focus-window (selected-window))))
-
-  (advice-add 'mu4e-view :after
-              (defun my/mu4e-restore-focus-window (&rest _)
-                (when (window-live-p my/mu4e--focus-window)
-                  (select-window my/mu4e--focus-window 'norecord)
-                  (setq my/mu4e--focus-window nil))))
-
+  ;; mu4e pulls in gnus/message and friends (~0.5s): load it on first
+  ;; use via C-c m or M-x mu4e rather than at startup.
+  (autoload 'mu4e "mu4e" "Start mu4e." t)
   (define-key my-overrides-mode-map (kbd "C-c m") #'mu4e)
 
-  (define-key mu4e-headers-mode-map (kbd "f") #'mu4e-headers-view-message)
+  (with-eval-after-load 'mu4e
+    (setq mu4e-maildir "~/Maildir"
+          mu4e-attachment-dir "~/Downloads"
+          mu4e-change-filenames-when-moving t
+          mu4e-update-interval 120
+          mu4e-get-mail-command "mbsync -a"
+          mu4e-headers-auto-update t
+          mu4e-view-show-images t
+          mu4e-view-show-addresses t
+          mu4e-split-view 'vertical
+          mu4e-context-policy 'pick-first
+          mu4e-compose-context-policy 'ask
+          mu4e-search-results-limit 2000
+          message-send-mail-function 'smtpmail-send-it)
 
-  (advice-add 'mu4e-message :around
-              (defun my/mu4e-suppress-indexing (orig-fn &rest args)
-                "Suppress distracting indexing/retrieval progress messages from minibuffer."
-                (unless (and (stringp (car args))
-                             (string-match-p
-                              "\\`\\(?:Indexing\\|Retrieving mail\\)" (car args)))
-                  (apply orig-fn args))))
+    ;; This format gives you "YYYY-MM-DD HH:MM" (e.g., 2026-05-21 08:53)
+    (setq mu4e-headers-date-format "%Y-%m-%d %H:%M")
 
-  ;;
-  ;; -> mu4e-update-indicator
-  ;;
-  (defvar my/mu4e--updating nil
-    "Non-nil while mu4e is retrieving or indexing mail.")
-  (defvar my/mu4e-update-timer nil
-    "Timer for refreshing the mu4e update header-line.")
+    (setq mu4e-headers-fields
+          '((:date    . 17)    ; Date of the message
+            ;; (:flags   .  6)    ; Message flags (U, R, F, etc.)
+            (:from    . 22)    ; Sender name/email
+            (:subject . nil))) ; Subject line (nil tells it to use all remaining space)
 
-  (defun my/mu4e--update-buffer-p ()
-    "Return non-nil if the mu4e retrieval process is alive."
-    (and (boundp 'mu4e--update-buffer)
-         (buffer-live-p mu4e--update-buffer)
-         (process-live-p (get-buffer-process mu4e--update-buffer))))
 
-  (defun my/mu4e--buffer-is-mu4e-p ()
-    "Return non-nil if current buffer is in a mu4e mode."
-    (memq major-mode
-          '(mu4e-main-mode mu4e-headers-mode
-                           mu4e-view-mode mu4e-raw-view-mode)))
+    (setq mu4e-contexts
+          `(,(make-mu4e-context
+              :name "james"
+              :enter-func (lambda () (mu4e-message "Switch to james"))
+              :leave-func (lambda () (mu4e-message "Leave james"))
+              :match-func (lambda (msg)
+                            (when msg
+                              (string-prefix-p "/james" (mu4e-message-field msg :maildir))))
+              :vars `((user-mail-address . "james@dyerdwelling.family")
+                      (user-full-name . "james dyer")
+                      (mu4e-sent-folder . "/james/Sent")
+                      (mu4e-drafts-folder . "/james/Drafts")
+                      (mu4e-trash-folder . "/james/Trash")
+                      (mu4e-refile-folder . "/james/Archive")
+                      (smtpmail-smtp-user . "james@dyerdwelling.family")
+                      (smtpmail-smtp-server . "smtp.migadu.com")
+                      (smtpmail-smtp-service . 587)
+                      (smtpmail-stream-type . starttls)))
+            ,(make-mu4e-context
+              :name "jimbob"
+              :enter-func (lambda () (mu4e-message "Switch to jimbob"))
+              :leave-func (lambda () (mu4e-message "Leave jimbob"))
+              :match-func (lambda (msg)
+                            (when msg
+                              (string-prefix-p "/jimbob" (mu4e-message-field msg :maildir))))
+              :vars `((user-mail-address . "jimbob@dyerdwelling.family")
+                      (user-full-name . "james dyer")
+                      (mu4e-sent-folder . "/jimbob/Sent")
+                      (mu4e-drafts-folder . "/jimbob/Drafts")
+                      (mu4e-trash-folder . "/jimbob/Trash")
+                      (mu4e-refile-folder . "/jimbob/Archive")
+                      (smtpmail-smtp-user . "jimbob@dyerdwelling.family")
+                      (smtpmail-smtp-server . "smtp.migadu.com")
+                      (smtpmail-smtp-service . 587)
+                      (smtpmail-stream-type . starttls)))
+            ,(make-mu4e-context
+              :name "captainflasmr"
+              :enter-func (lambda () (mu4e-message "Switch to Gmail"))
+              :leave-func (lambda () (mu4e-message "Leave Gmail"))
+              :match-func (lambda (msg)
+                            (when msg
+                              (string-prefix-p "/captainflasmr" (mu4e-message-field msg :maildir))))
+              :vars `((user-mail-address . "captainflasmr@gmail.com")
+                      (user-full-name . "james dyer")
+                      (mu4e-sent-folder . "/captainflasmr/[Gmail]/Sent Mail")
+                      (mu4e-drafts-folder . "/captainflasmr/[Gmail]/Drafts")
+                      (mu4e-trash-folder . "/captainflasmr/[Gmail]/Trash")
+                      (mu4e-refile-folder . "/captainflasmr/[Gmail]/All Mail")
+                      (smtpmail-smtp-user . "captainflasmr@gmail.com")
+                      (smtpmail-smtp-server . "smtp.gmail.com")
+                      (smtpmail-smtp-service . 587)
+                      (smtpmail-stream-type . starttls)))))
 
-  (defun my/mu4e-update-header-refresh ()
-    "Refresh the header-line in mu4e buffers to show update status."
-    (let* ((retrieving (my/mu4e--update-buffer-p))
-           (indicator
-            (cond (retrieving
-                   (propertize " ⟳ mu4e retrieving... " 'face 'mode-line-highlight))
-                  (my/mu4e--updating
-                   (propertize " ⟳ mu4e indexing... "    'face 'mode-line-highlight))
-                  (t nil))))
-      (dolist (buf (buffer-list))
-        (with-current-buffer buf
-          (when (my/mu4e--buffer-is-mu4e-p)
-            (setq-local header-line-format indicator))))
-      (force-mode-line-update t)
-      (unless indicator
-        (setq my/mu4e--updating nil)
-        (when my/mu4e-update-timer
-          (cancel-timer my/mu4e-update-timer)
-          (setq my/mu4e-update-timer nil)))))
+    (setq mu4e-maildir-shortcuts
+          '(("/jimbob/INBOX" . ?j)
+            ("/james/INBOX" . ?m)
+            ("/captainflasmr/INBOX" . ?g)))
 
-  (defun my/mu4e-update-header-start ()
-    "Start the mu4e update header-line timer."
-    (setq my/mu4e--updating t)
-    (my/mu4e-update-header-refresh)
-    (unless my/mu4e-update-timer
-      (setq my/mu4e-update-timer
-            (run-at-time 0.5 0.5 #'my/mu4e-update-header-refresh))))
+    (setq mu4e-bookmarks
+          '((:name "Unified Inbox"
+                   :query "(maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX)"
+                   :key ?b)
+            (:name "Unified Archive"
+                   :query "(maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:\"/captainflasmr/[Gmail]/All Mail\")"
+                   :key ?a)
+            (:name "Unified Sent"
+                   :query "(maildir:/jimbob/Sent OR maildir:/james/Sent OR maildir:\"/captainflasmr/[Gmail]/Sent Mail\")"
+                   :key ?s)
+            (:name "Unified Trash"
+                   :query "(maildir:/jimbob/Trash OR maildir:/james/Trash OR maildir:\"/captainflasmr/[Gmail]/Trash\")"
+                   :key ?t)
+            (:name "Unified Spam"
+                   :query "(maildir:/jimbob/Junk OR maildir:/james/Junk OR maildir:\"/captainflasmr/[Gmail]/Spam\")"
+                   :key ?p)
+            (:name "Unread messages"
+                   :query "flag:unread AND NOT flag:trashed"
+                   :key ?u)
+            (:name "Today's messages"
+                   :query "date:today..now"
+                   :key ?d)))
 
-  (defun my/mu4e-update-header-stop ()
-    "Mark mu4e update as done and clear header-lines."
-    (setq my/mu4e--updating nil)
-    (my/mu4e-update-header-refresh))
+    (setq shr-use-colors nil
+          shr-use-fonts nil
+          mm-text-html-renderer 'shr)
 
-  (add-hook 'mu4e-update-pre-hook #'my/mu4e-update-header-start)
-  (add-hook 'mu4e-index-updated-hook #'my/mu4e-update-header-stop)
+    (remove-hook 'mu4e-view-rendered-hook 'mu4e-resize-linked-headers-window)
+    (add-hook 'mu4e-view-rendered-hook
+              (defun my/mu4e-balance-views ()
+		(when (and (eq mu4e-split-view 'vertical)
+                           (mu4e-current-buffer-type-p 'view))
+                  (when-let* ((win (get-buffer-window (current-buffer) t)))
+                    (let ((target (floor (/ (frame-width) 2))))
+                      (window-resize win (- target (window-total-width win)) t nil t))))))
 
-  ) ;; end (when (locate-library "mu4e"))
+    (defvar my/mu4e--focus-window nil)
+
+    (advice-add 'mu4e-headers-view-message :before
+		(defun my/mu4e-save-focus-window (&rest _)
+                  (setq my/mu4e--focus-window (selected-window))))
+
+    (advice-add 'mu4e-view :after
+		(defun my/mu4e-restore-focus-window (&rest _)
+                  (when (window-live-p my/mu4e--focus-window)
+                    (select-window my/mu4e--focus-window 'norecord)
+                    (setq my/mu4e--focus-window nil))))
+
+    (define-key mu4e-headers-mode-map (kbd "f") #'mu4e-headers-view-message)
+
+    (advice-add 'mu4e-message :around
+		(defun my/mu4e-suppress-indexing (orig-fn &rest args)
+                  "Suppress distracting indexing/retrieval progress messages from minibuffer."
+                  (unless (and (stringp (car args))
+                               (string-match-p
+				"\\`\\(?:Indexing\\|Retrieving mail\\)" (car args)))
+                    (apply orig-fn args))))
+
+    ;;
+    ;; -> mu4e-update-indicator
+    ;;
+    (defvar my/mu4e--updating nil
+      "Non-nil while mu4e is retrieving or indexing mail.")
+    (defvar my/mu4e-update-timer nil
+      "Timer for refreshing the mu4e update header-line.")
+
+    (defun my/mu4e--update-buffer-p ()
+      "Return non-nil if the mu4e retrieval process is alive."
+      (and (boundp 'mu4e--update-buffer)
+           (buffer-live-p mu4e--update-buffer)
+           (process-live-p (get-buffer-process mu4e--update-buffer))))
+
+    (defun my/mu4e--buffer-is-mu4e-p ()
+      "Return non-nil if current buffer is in a mu4e mode."
+      (memq major-mode
+            '(mu4e-main-mode mu4e-headers-mode
+                             mu4e-view-mode mu4e-raw-view-mode)))
+
+    (defun my/mu4e-update-header-refresh ()
+      "Refresh the header-line in mu4e buffers to show update status."
+      (let* ((retrieving (my/mu4e--update-buffer-p))
+             (indicator
+              (cond (retrieving
+                     (propertize " ⟳ mu4e retrieving... " 'face 'mode-line-highlight))
+                    (my/mu4e--updating
+                     (propertize " ⟳ mu4e indexing... "    'face 'mode-line-highlight))
+                    (t nil))))
+	(dolist (buf (buffer-list))
+          (with-current-buffer buf
+            (when (my/mu4e--buffer-is-mu4e-p)
+              (setq-local header-line-format indicator))))
+	(force-mode-line-update t)
+	(unless indicator
+          (setq my/mu4e--updating nil)
+          (when my/mu4e-update-timer
+            (cancel-timer my/mu4e-update-timer)
+            (setq my/mu4e-update-timer nil)))))
+
+    (defun my/mu4e-update-header-start ()
+      "Start the mu4e update header-line timer."
+      (setq my/mu4e--updating t)
+      (my/mu4e-update-header-refresh)
+      (unless my/mu4e-update-timer
+	(setq my/mu4e-update-timer
+              (run-at-time 0.5 0.5 #'my/mu4e-update-header-refresh))))
+
+    (defun my/mu4e-update-header-stop ()
+      "Mark mu4e update as done and clear header-lines."
+      (setq my/mu4e--updating nil)
+      (my/mu4e-update-header-refresh))
+
+    (add-hook 'mu4e-update-pre-hook #'my/mu4e-update-header-start)
+    (add-hook 'mu4e-index-updated-hook #'my/mu4e-update-header-stop)
+    )) ;; end (with-eval-after-load 'mu4e) and (when (locate-library "mu4e"))
 
 ;;
 ;; -> magit
@@ -1110,9 +1120,7 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
   (add-to-list 'eglot-server-programs
                '(protobuf-mode . ("buf" "lsp" "serve"))))
 
-(use-package eglot
-  :ensure nil ; Built-in
-  :config
+(with-eval-after-load 'eglot
   (add-to-list 'eglot-server-programs
                '(kotlin-mode . ("kotlin-language-server"))))
 
@@ -1129,6 +1137,7 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 ;; it open/closed, rooted at the current file's project.
 (use-package emeld
   :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld"
+  :commands (emeld-diff-dwim emeld-load-preset emeld-save-preset emeld-delete-preset)
   :bind ("C-x m" . emeld-sidebar))
 
 (load (expand-file-name "obp-config" user-emacs-directory))
@@ -1287,9 +1296,9 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 
 (use-package transmute
   :load-path "~/.emacs.d/offline-packages/local-packages/transmute"
-  :demand t
+  :bind (:map my-overrides-mode-map
+              ("C-c I" . transmute-menu))
   :config
-  (define-key my-overrides-mode-map (kbd "C-c I") #'transmute-menu)
   (with-eval-after-load 'image-dired
     (transmute-setup-thumbnail-keys)))
 
@@ -1379,7 +1388,7 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
   (my/demap-preserve-window))
 
 (add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/diff-minimap")
-(require 'diff-minimap)
+(autoload 'diff-minimap-toggle "diff-minimap" nil t)
 
 
 ;; (setq diff-minimap-viewport-style 'filled)
@@ -1433,18 +1442,16 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
   ;; Open remotes in Firefox regardless of the system default browser.
   (setq project-overview-browse-url-function #'browse-url-firefox))
 
-(use-package markdown-mode)
+(use-package markdown-mode
+  :mode ("\\.md\\'" "\\.markdown\\'"))
 
-(add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/emeld")
-(require 'emeld)
-
+;; (setq emeld-benchmark t)
+(setq emeld-dir-prefix "📁 ")
 (global-set-key (kbd "C-c z d") 'emeld-diff-dwim)
 (global-set-key (kbd "C-c z j") 'emeld-load-preset)
 (global-set-key (kbd "C-c z l") 'emeld-load-preset)
 (global-set-key (kbd "C-c z s") 'emeld-save-preset)
 (global-set-key (kbd "C-c z x") 'emeld-delete-preset)
-;; (setq emeld-benchmark t)
-(setq emeld-dir-prefix "📁 ")
 
 ;; 1. Classic solid triangles — medium (U+25BA / U+25BC)
 ;; (setq emeld-fold-collapsed-indicator "► "
@@ -1468,8 +1475,8 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 ;; Unbalanced at pos 31818, line 693, col 62
 
 (use-package simply-kanban
-  :demand t
   :load-path "~/.emacs.d/offline-packages/local-packages/simply-kanban"
+  :commands (simply-kanban-show-card)
   :bind
   ("C-c K" . simply-kanban)
   ("C-c A" . simply-kanban-agenda))
@@ -1585,7 +1592,6 @@ comment headers fold their section, definitions fold to the next one."
               (my/elisp-outline-fold-setup))))
 
 (use-package simply-annotate
-  :demand t
   :load-path "~/source/repos/simply-annotate"
   :hook (find-file-hook . simply-annotate-mode)
   :config
@@ -1623,7 +1629,8 @@ comment headers fold their section, definitions fold to the next one."
 (custom-set-faces
  '(mode-line-buffer-id ((t (:foreground "#EEEEFF" :weight bold)))))
 
-(use-package chess)
+(use-package chess
+  :defer t)
 
 (setq chess-images-separate-frame nil)
 (setq chess-images-default-size 64)
@@ -1796,9 +1803,11 @@ If TITLE-FILTER is provided, filters results matching the session title."
             (select-window win)
             (set-window-point win (point-min))))))))
 
-(use-package gnuplot)
+(use-package gnuplot
+  :defer t)
 
-(use-package zig-mode)
+(use-package zig-mode
+  :mode "\\.zig\\'")
 
 (setq tab-bar-auto-width-max '((120) 20))
 
