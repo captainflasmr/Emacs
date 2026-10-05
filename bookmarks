@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("image-dired"
+(("C2SIMArtifacts"
+  (filename . "~/source/repos/C2SIMArtifacts/")
+  (front-context-string . "Derived products")
+  (rear-context-string . "30 Sep  9 13:58 ")
+  (position . 187)
+  (last-modified 1790074278436631032 . 1000000000))
+("image-dired"
  (filename . "~/.emacs.d/image-dired/")
  (front-context-string . "  -rw------- 1 2")
  (rear-context-string . "Sep  3 10:34 ..\n")
