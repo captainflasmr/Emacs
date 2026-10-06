@@ -606,7 +606,7 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
   (setq dired-image-thumbnail-sort-order 'descending)
   :bind
   (:map dired-mode-map
-        ("C-t d" . dired-image-thumbnail)  ; m for modern/enhanced
+        ("r" . dired-image-thumbnail)  ; r for render/reveal thumbnails
         ("C-t s" . dired-image-thumbnail-insert-image-subdirs)  ; s for smart subdirs
         ("C-t z" . dired-image-thumbnail-insert-subdir-recursive)  ; z for all (last letter)
         ("C-t k" . dired-image-thumbnail-kill-all-subdirs)))  ; k for kill
