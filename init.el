@@ -247,9 +247,9 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 
 (with-eval-after-load 'org
   (org-dynamic-block-define "sell-summary"
-    (lambda ()
-      (interactive)
-      (org-create-dblock '(:name "sell-summary")))))
+                            (lambda ()
+                              (interactive)
+                              (org-create-dblock '(:name "sell-summary")))))
 
 ;;
 ;; -> use-package
@@ -734,7 +734,7 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
     (remove-hook 'mu4e-view-rendered-hook 'mu4e-resize-linked-headers-window)
     (add-hook 'mu4e-view-rendered-hook
               (defun my/mu4e-balance-views ()
-		(when (and (eq mu4e-split-view 'vertical)
+		        (when (and (eq mu4e-split-view 'vertical)
                            (mu4e-current-buffer-type-p 'view))
                   (when-let* ((win (get-buffer-window (current-buffer) t)))
                     (let ((target (floor (/ (frame-width) 2))))
@@ -743,11 +743,11 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
     (defvar my/mu4e--focus-window nil)
 
     (advice-add 'mu4e-headers-view-message :before
-		(defun my/mu4e-save-focus-window (&rest _)
+		        (defun my/mu4e-save-focus-window (&rest _)
                   (setq my/mu4e--focus-window (selected-window))))
 
     (advice-add 'mu4e-view :after
-		(defun my/mu4e-restore-focus-window (&rest _)
+		        (defun my/mu4e-restore-focus-window (&rest _)
                   (when (window-live-p my/mu4e--focus-window)
                     (select-window my/mu4e--focus-window 'norecord)
                     (setq my/mu4e--focus-window nil))))
@@ -755,11 +755,11 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
     (define-key mu4e-headers-mode-map (kbd "f") #'mu4e-headers-view-message)
 
     (advice-add 'mu4e-message :around
-		(defun my/mu4e-suppress-indexing (orig-fn &rest args)
+		        (defun my/mu4e-suppress-indexing (orig-fn &rest args)
                   "Suppress distracting indexing/retrieval progress messages from minibuffer."
                   (unless (and (stringp (car args))
                                (string-match-p
-				"\\`\\(?:Indexing\\|Retrieving mail\\)" (car args)))
+				                "\\`\\(?:Indexing\\|Retrieving mail\\)" (car args)))
                     (apply orig-fn args))))
 
     ;;
@@ -791,12 +791,12 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
                     (my/mu4e--updating
                      (propertize " ⟳ mu4e indexing... "    'face 'mode-line-highlight))
                     (t nil))))
-	(dolist (buf (buffer-list))
+	    (dolist (buf (buffer-list))
           (with-current-buffer buf
             (when (my/mu4e--buffer-is-mu4e-p)
               (setq-local header-line-format indicator))))
-	(force-mode-line-update t)
-	(unless indicator
+	    (force-mode-line-update t)
+	    (unless indicator
           (setq my/mu4e--updating nil)
           (when my/mu4e-update-timer
             (cancel-timer my/mu4e-update-timer)
@@ -807,7 +807,7 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
       (setq my/mu4e--updating t)
       (my/mu4e-update-header-refresh)
       (unless my/mu4e-update-timer
-	(setq my/mu4e-update-timer
+	    (setq my/mu4e-update-timer
               (run-at-time 0.5 0.5 #'my/mu4e-update-header-refresh))))
 
     (defun my/mu4e-update-header-stop ()
@@ -1850,3 +1850,19 @@ If TITLE-FILTER is provided, filters results matching the session title."
   (define-key my-overrides-mode-map (kbd "C-c V") #'vlf)
   (with-eval-after-load 'dired
     (define-key dired-mode-map (kbd "V") #'dired-vlf)))
+
+;; (use-package completion-preview
+;;   :ensure nil
+;;   :demand t
+;;   :bind
+;;   (:map completion-preview-active-mode-map
+;;         ("M-i" . completion-preview-insert-word)
+;;         ("M-n" . completion-preview-next-candidate)
+;;         ("M-p" . completion-preview-prev-candidate)
+;;         ("M-<return>" . completion-preview-insert)
+;;         ;; With TAB we effectively defer to the *Completions* buffer to
+;;         ;; show more completion candidates at once.
+;;         ("<tab>" . completion-preview-complete))
+;;   :config
+;;   (setq completion-preview-minimum-symbol-length 2)
+;;   (global-completion-preview-mode 1))
