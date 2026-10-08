@@ -177,7 +177,6 @@
          (org-bootstrap-publish-site-url     . "https://emacs.dyerdwelling.family/")
          (org-bootstrap-publish-author       . "James Dyer")
          (org-bootstrap-publish-static-dirs  . ("static/emacs" "static/images/banner"))
-         (org-bootstrap-publish-disqus-shortname . "https-www-emacs-dyerdwelling-family")
          (org-bootstrap-publish-cloudflare-project . "emacs-dyerdwelling")
          (org-bootstrap-publish-contact-links
           . (("Email" . "mailto:captainflasmr@gmail.com")))
