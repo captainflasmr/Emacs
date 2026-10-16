@@ -6,6 +6,36 @@
 (load-file "~/.emacs.d/Emacs-vanilla/init.el")
 
 ;;
+;; -> fonts
+;;
+;; Main font sizes. Edit these numbers, then re-evaluate this section
+;; (or restart Emacs). Values are in 1/10pt, so 105 means 10.5pt.
+;; They override `Emacs-vanilla/init.el' `custom-set-faces' above.
+(defvar my/main-font-height 90
+  "Height for `default' and `fixed-pitch' faces.")
+(defvar my/variable-pitch-height 100
+  "Height for `variable-pitch' face.")
+(defvar my/mode-line-height 120
+  "Height for `mode-line' and `mode-line-inactive' faces.")
+
+(defun my/apply-main-font-sizes ()
+  "Apply `my/main-font-height' and related face heights."
+  (set-face-attribute 'default nil :height my/main-font-height)
+  (when (facep 'fixed-pitch)
+    (set-face-attribute 'fixed-pitch nil :height my/main-font-height))
+  (when (facep 'variable-pitch)
+    (set-face-attribute 'variable-pitch nil :height my/variable-pitch-height))
+  (set-face-attribute 'mode-line nil :height my/mode-line-height)
+  (set-face-attribute 'mode-line-inactive nil :height my/mode-line-height))
+
+(my/apply-main-font-sizes)
+;; Re-apply after theme changes and on new frames (daemon).
+(add-hook 'enable-theme-functions
+          (lambda (&rest _) (my/apply-main-font-sizes)))
+(add-hook 'after-make-frame-functions
+          (lambda (_frame) (my/apply-main-font-sizes)))
+
+;;
 ;; -> package-archives
 ;;
 
