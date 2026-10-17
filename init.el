@@ -15,7 +15,7 @@
   "Height for `default' and `fixed-pitch' faces.")
 (defvar my/variable-pitch-height 100
   "Height for `variable-pitch' face.")
-(defvar my/mode-line-height 120
+(defvar my/mode-line-height 90
   "Height for `mode-line' and `mode-line-inactive' faces.")
 
 (defun my/apply-main-font-sizes ()
@@ -508,12 +508,12 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
   ;; (ollama-buddy-update-menu-entry 'synonym           :model "n:mimo-v2.5")
   ;; (ollama-buddy-update-menu-entry 'proofread         :model "n:minimax-m2.7")
 
-  (ollama-buddy-update-menu-entry 'refactor-code     :model "n:deepseek-v4-flash")
-  (ollama-buddy-update-menu-entry 'git-commit        :model "n:deepseek-v4-flash")
-  (ollama-buddy-update-menu-entry 'describe-code     :model "n:deepseek-v4-flash")
-  (ollama-buddy-update-menu-entry 'dictionary-lookup :model "n:deepseek-v4-flash")
-  (ollama-buddy-update-menu-entry 'synonym           :model "n:deepseek-v4-flash")
-  (ollama-buddy-update-menu-entry 'proofread         :model "n:deepseek-v4-flash")
+  (ollama-buddy-update-menu-entry 'refactor-code     :model "u:gemma4:31b-cloud")
+  (ollama-buddy-update-menu-entry 'git-commit        :model "u:gemma4:31b-cloud")
+  (ollama-buddy-update-menu-entry 'describe-code     :model "u:gemma4:31b-cloud")
+  (ollama-buddy-update-menu-entry 'dictionary-lookup :model "u:gemma4:31b-cloud")
+  (ollama-buddy-update-menu-entry 'synonym           :model "u:gemma4:31b-cloud")
+  (ollama-buddy-update-menu-entry 'proofread         :model "u:gemma4:31b-cloud")
 
   ;; dired integration
   (with-eval-after-load 'dired
@@ -1162,14 +1162,6 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
          ("\\.psm1\\'" . powershell-mode)
          ("\\.psd1\\'" . powershell-mode)))
 
-;; emeld-sidebar: a project file-tree sidebar that follows and highlights the
-;; active file (current-line overlay + follow are built in).  `C-x m' toggles
-;; it open/closed, rooted at the current file's project.
-(use-package emeld
-  :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld"
-  :commands (emeld-diff-dwim emeld-load-preset emeld-save-preset emeld-delete-preset)
-  :bind ("C-x m" . emeld-sidebar))
-
 (load (expand-file-name "obp-config" user-emacs-directory))
 
 (dolist (entry org-bootstrap-publish-sites)
@@ -1475,13 +1467,19 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 (use-package markdown-mode
   :mode ("\\.md\\'" "\\.markdown\\'"))
 
+;; emeld-sidebar: a project file-tree sidebar that follows and highlights the
+;; active file (current-line overlay + follow are built in).  `C-x m' toggles
+;; it open/closed, rooted at the current file's project.
+(use-package emeld
+  :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld"
+  :commands (emeld-diff-dwim emeld-load-preset emeld-save-preset emeld-delete-preset)
+  :bind ("C-x m" . emeld-sidebar))
+
 ;; (setq emeld-benchmark t)
 (setq emeld-dir-prefix "📁 ")
 (global-set-key (kbd "C-c z d") 'emeld-diff-dwim)
-(global-set-key (kbd "C-c z j") 'emeld-load-preset)
 (global-set-key (kbd "C-c z l") 'emeld-load-preset)
-(global-set-key (kbd "C-c z s") 'emeld-save-preset)
-(global-set-key (kbd "C-c z x") 'emeld-delete-preset)
+(global-set-key (kbd "C-c z j") 'emeld-recent)
 
 ;; 1. Classic solid triangles — medium (U+25BA / U+25BC)
 ;; (setq emeld-fold-collapsed-indicator "► "
