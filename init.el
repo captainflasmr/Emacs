@@ -1480,6 +1480,11 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 (global-set-key (kbd "C-c z d") 'emeld-diff-dwim)
 (global-set-key (kbd "C-c z l") 'emeld-load-preset)
 (global-set-key (kbd "C-c z j") 'emeld-recent)
+(global-set-key (kbd "C-c z a") #'emeld-mark-dir-a)
+(global-set-key (kbd "C-c z b") #'emeld-mark-dir-b)
+(global-set-key (kbd "C-c z c") #'emeld-compare-marked-dirs)
+(global-set-key (kbd "C-c z s") #'emeld-swap-marked-dirs)
+(global-set-key (kbd "C-c z k") #'emeld-clear-marked-dirs)
 
 ;; 1. Classic solid triangles — medium (U+25BA / U+25BC)
 ;; (setq emeld-fold-collapsed-indicator "► "
