@@ -795,10 +795,19 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
     ;;
     ;; -> mu4e-update-indicator
     ;;
+    ;; Show retrieval/indexing progress in the header-line of mu4e buffers.
+    ;; mu4e's own progress messages are suppressed (see
+    ;; `my/mu4e-suppress-indexing' above), so this is the main feedback
+    ;; during mail updates: retrieve progress comes from mbsync's status
+    ;; line, indexing progress from `mu4e-index-message' calls.
     (defvar my/mu4e--updating nil
       "Non-nil while mu4e is retrieving or indexing mail.")
     (defvar my/mu4e-update-timer nil
       "Timer for refreshing the mu4e update header-line.")
+    (defvar my/mu4e--index-progress nil
+      "Latest indexing progress, e.g. \"checked 2588 · updated 3\".")
+    (defvar-local my/mu4e--saved-header-line-format nil
+      "Value of `header-line-format' to restore after an update.")
 
     (defun my/mu4e--update-buffer-p ()
       "Return non-nil if the mu4e retrieval process is alive."
@@ -812,32 +821,130 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
             '(mu4e-main-mode mu4e-headers-mode
                              mu4e-view-mode mu4e-raw-view-mode)))
 
+    (defun my/mu4e--indicator-p (value)
+      "Return non-nil if VALUE is one of our update indicator strings."
+      (and (stringp value)
+           (get-text-property 0 'my/mu4e-indicator value)))
+
+    (defun my/mu4e--format-mbsync-status (status)
+      "Render an mbsync status line STATUS compactly; nil if unrecognized.
+STATUS looks like this, with the counts changing as mail is moved:
+\"C: 1/3  B: 11/12  F: +0/0 *0/0 #0/0 -0/0  N: +210/337 *0/0 #0/0 -0/0\"."
+      (when (and status
+                 (string-match
+                  (concat "\\`C: \\([0-9]+\\)/\\([0-9]+\\)"
+                          " +B: \\([0-9]+\\)/\\([0-9]+\\)"
+                          ".* N: \\([+*#-]\\)\\([0-9]+\\)/\\([0-9]+\\)")
+                  status))
+        (let ((parts (list (format "%s/%s accounts"
+                                   (match-string 1 status)
+                                   (match-string 2 status)))))
+          ;; Box count is 0/0 until the first mailbox of a channel is known.
+          (unless (string= (match-string 4 status) "0")
+            (setq parts (append parts (list (format "%s/%s mailboxes"
+                                                    (match-string 3 status)
+                                                    (match-string 4 status))))))
+          ;; Only count transferred ("+") messages, when there are any.
+          (when (and (string= (match-string 5 status) "+")
+                     (not (string= (match-string 7 status) "0")))
+            (setq parts (append parts (list (format "%s/%s new"
+                                                    (match-string 6 status)
+                                                    (match-string 7 status))))))
+          (mapconcat #'identity parts " · "))))
+
+    (defun my/mu4e--retrieval-progress ()
+      "Describe the current mail retrieval progress.
+Prefer the latest mbsync status line from `mu4e--update-buffer'; fall
+back to its last non-empty line.  Return nil when nothing is known."
+      (when (and (boundp 'mu4e--update-buffer)
+                 (buffer-live-p mu4e--update-buffer))
+        (with-current-buffer mu4e--update-buffer
+          (let* ((tail (buffer-substring-no-properties
+                        (max (point-min) (- (point-max) 2000))
+                        (point-max)))
+                 ;; Foreground updates rewrite the status line in place,
+                 ;; background ones accumulate them separated by CRs.
+                 (lines (split-string tail "[\r\n]+" t))
+                 (status (car (last (seq-filter
+                                     (lambda (line) (string-match-p "\\`C: " line))
+                                     lines)))))
+            (or (my/mu4e--format-mbsync-status status)
+                (when-let* ((line (car (last (seq-filter
+                                              (lambda (l)
+                                                (not (string-empty-p (string-trim l))))
+                                              lines)))))
+                  (truncate-string-to-width
+                   (replace-regexp-in-string
+                    "%" "%%" ;; escape for use in `header-line-format'
+                    (string-trim (replace-regexp-in-string "[ \t]+" " " line)))
+                   60 nil nil "…")))))))
+
+    (defun my/mu4e--record-index-progress (frm &rest args)
+      "Record indexing progress from a `mu4e-index-message' FRM call.
+Also starts showing the indicator for indexing started outside of a
+mail retrieval (e.g. \\[mu4e-update-index])."
+      (let ((msg (ignore-errors (apply #'format frm args))))
+        (cond
+         ((and (stringp msg)
+               (string-match
+                (concat "\\`Indexing\\.\\.\\. checked \\([0-9]+\\), "
+                        "updated \\([0-9]+\\)")
+                msg))
+          (unless my/mu4e-update-timer
+            (my/mu4e-update-header-start))
+          (setq my/mu4e--index-progress
+                (format "checked %s · updated %s"
+                        (match-string 1 msg) (match-string 2 msg))))
+         ((and (stringp msg)
+               (string-match "\\`\\(?:Lazy indexing\\|Indexing\\) completed" msg))
+          (setq my/mu4e--index-progress nil)))))
+
     (defun my/mu4e-update-header-refresh ()
-      "Refresh the header-line in mu4e buffers to show update status."
+      "Refresh the header-line in mu4e buffers to show update status.
+Shows the current mail retrieval or indexing progress and restores
+mu4e's own header-line content once the update is done."
       (let* ((retrieving (my/mu4e--update-buffer-p))
              (indicator
-              (cond (retrieving
-                     (propertize " ⟳ mu4e retrieving... " 'face 'mode-line-highlight))
-                    (my/mu4e--updating
-                     (propertize " ⟳ mu4e indexing... "    'face 'mode-line-highlight))
-                    (t nil))))
-	    (dolist (buf (buffer-list))
-          (with-current-buffer buf
-            (when (my/mu4e--buffer-is-mu4e-p)
-              (setq-local header-line-format indicator))))
-	    (force-mode-line-update t)
-	    (unless indicator
-          (setq my/mu4e--updating nil)
+              (cond
+               (retrieving
+                (propertize (format " ⟳ mu4e retrieving: %s "
+                                    (or (my/mu4e--retrieval-progress) "connecting…"))
+                            'face 'mode-line-highlight
+                            'my/mu4e-indicator t))
+               (my/mu4e--updating
+                (propertize (if my/mu4e--index-progress
+                                (format " ⟳ mu4e indexing: %s " my/mu4e--index-progress)
+                              " ⟳ mu4e updating… ")
+                            'face 'mode-line-highlight
+                            'my/mu4e-indicator t)))))
+        (dolist (buf (buffer-list))
+          (when (buffer-live-p buf)
+            (with-current-buffer buf
+              (when (my/mu4e--buffer-is-mu4e-p)
+                (if indicator
+                    (progn ;; remember mu4e's own header-line for restoration
+                      (unless (my/mu4e--indicator-p header-line-format)
+                        (setq-local my/mu4e--saved-header-line-format
+                                    header-line-format))
+                      (setq-local header-line-format indicator))
+                  (when (my/mu4e--indicator-p header-line-format)
+                    (setq-local header-line-format
+                                my/mu4e--saved-header-line-format)))))))
+        (force-mode-line-update t)
+        (unless indicator
+          (setq my/mu4e--updating nil
+                my/mu4e--index-progress nil)
           (when my/mu4e-update-timer
             (cancel-timer my/mu4e-update-timer)
             (setq my/mu4e-update-timer nil)))))
 
     (defun my/mu4e-update-header-start ()
       "Start the mu4e update header-line timer."
-      (setq my/mu4e--updating t)
+      (setq my/mu4e--updating t
+            my/mu4e--index-progress nil)
       (my/mu4e-update-header-refresh)
       (unless my/mu4e-update-timer
-	    (setq my/mu4e-update-timer
+        (setq my/mu4e-update-timer
               (run-at-time 0.5 0.5 #'my/mu4e-update-header-refresh))))
 
     (defun my/mu4e-update-header-stop ()
@@ -845,6 +952,7 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
       (setq my/mu4e--updating nil)
       (my/mu4e-update-header-refresh))
 
+    (advice-add 'mu4e-index-message :before #'my/mu4e--record-index-progress)
     (add-hook 'mu4e-update-pre-hook #'my/mu4e-update-header-start)
     (add-hook 'mu4e-index-updated-hook #'my/mu4e-update-header-stop)
     )) ;; end (with-eval-after-load 'mu4e) and (when (locate-library "mu4e"))
