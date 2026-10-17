@@ -1470,21 +1470,25 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
 ;; emeld-sidebar: a project file-tree sidebar that follows and highlights the
 ;; active file (current-line overlay + follow are built in).  `C-x m' toggles
 ;; it open/closed, rooted at the current file's project.
+;;
+;; `C-c z' is the emeld compare namespace: d diff-dwim, l load preset,
+;; j reopen a recent pair; a/b mark the current dired directory as
+;; comparison side A/B, c compares the marked pair, s swaps them, k clears.
 (use-package emeld
   :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld"
   :commands (emeld-diff-dwim emeld-load-preset emeld-save-preset emeld-delete-preset)
-  :bind ("C-x m" . emeld-sidebar))
-
-;; (setq emeld-benchmark t)
-(setq emeld-dir-prefix "📁 ")
-(global-set-key (kbd "C-c z d") 'emeld-diff-dwim)
-(global-set-key (kbd "C-c z l") 'emeld-load-preset)
-(global-set-key (kbd "C-c z j") 'emeld-recent)
-(global-set-key (kbd "C-c z a") #'emeld-mark-dir-a)
-(global-set-key (kbd "C-c z b") #'emeld-mark-dir-b)
-(global-set-key (kbd "C-c z c") #'emeld-compare-marked-dirs)
-(global-set-key (kbd "C-c z s") #'emeld-swap-marked-dirs)
-(global-set-key (kbd "C-c z k") #'emeld-clear-marked-dirs)
+  :bind (("C-x m"   . emeld-sidebar)
+         ("C-c z d" . emeld-diff-dwim)
+         ("C-c z l" . emeld-load-preset)
+         ("C-c z j" . emeld-recent)
+         ("C-c z a" . emeld-mark-dir-a)
+         ("C-c z b" . emeld-mark-dir-b)
+         ("C-c z c" . emeld-compare-marked-dirs)
+         ("C-c z s" . emeld-swap-marked-dirs)
+         ("C-c z k" . emeld-clear-marked-dirs))
+  :config
+  ;; (setq emeld-benchmark t)
+  (setq emeld-dir-prefix "📁 "))
 
 ;; 1. Classic solid triangles — medium (U+25BA / U+25BC)
 ;; (setq emeld-fold-collapsed-indicator "► "
