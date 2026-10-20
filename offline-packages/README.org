@@ -100,6 +100,8 @@ The snippets are distilled from the author's live config: =use-package= blocks f
 
 The =vlf= block (View Large Files, GNU ELPA, available for every target) loads =vlf-setup= and sets =vlf-application= to =dont-ask=, so files past =large-file-warning-threshold= (~10 MB by default) open in batches instead of being loaded into memory whole. Set it to =ask= to be prompted per file, =always= to route every file through VLF, or =nil= to keep VLF strictly manual (=M-x vlf=). Once =vlf-setup= is loaded, Dired also gets a =V= binding.
 
+The =org-present= block presents an Org file directly from the buffer: each top-level heading is one slide, and the =#+TITLE= block is the title slide. The package is vendored under =local-packages/org-present/=, so it needs no ELPA mirror. =C-c s p= starts, left/right navigate, =C-c C-q= quits, =C-c C-w= toggles read-only, and nested headings stay on their parent slide. The block is in every per-version starter and the Windows starter; it falls back between =offline-packages/local-packages/org-present= (live config) and =local-packages/org-present= (installed toolkit).
+
 Coding-oriented blocks (=dape=, =emeld-sidebar=, =demap=, =eglot= hooks, =flymake=, =corfu=, etc.) live in =starters/coding.el= to avoid duplication. Load both starters to get the full set:
 
 To opt in on the target, append one line to =~/.emacs.d/init.el=:

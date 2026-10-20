@@ -10,6 +10,14 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-10-20>
+
+Bundled =org-present= for in-buffer Org presentations
+
+- Added =local-packages/org-present/= (upstream =20220806.1847=, commit =4ec04e1b77de=, GPLv3) with =VENDORED.org= provenance, so presentations work without an ELPA mirror.
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: added a =use-package= block with the presentation keymap, image display, read-only mode, and cursor hiding; =C-c s p= starts, left/right navigate, =C-c C-q= quits, and =C-c C-w= toggles read-only.
+- =README.org=: documented the block under the starter snippets.
+
 ** <2026-09-18>
 
 Bundled =vlf= (view/edit large files in batches)

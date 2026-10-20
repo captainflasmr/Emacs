@@ -328,6 +328,35 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
 
 (use-package jira-to-org)
 
+;;
+;; -> org-present — present an Org buffer, one top-level heading per slide
+;;
+;; Vendored under local-packages/org-present; no ELPA archive needed.
+;; C-c s p starts, left/right navigate, C-c C-q quits, C-c C-w toggles
+;; read-only.
+;;
+(use-package org-present
+  :ensure nil
+  :load-path ("offline-packages/local-packages/org-present"
+              "local-packages/org-present")
+  :commands org-present
+  :init
+  (with-eval-after-load 'org
+    (define-key org-mode-map (kbd "C-c s p") #'org-present))
+  :config
+  (add-hook 'org-present-mode-hook
+            (lambda ()
+              (org-present-big)
+              (org-display-inline-images)
+              (org-present-hide-cursor)
+              (org-present-read-only)))
+  (add-hook 'org-present-mode-quit-hook
+            (lambda ()
+              (org-present-small)
+              (org-remove-inline-images)
+              (org-present-show-cursor)
+              (org-present-read-write))))
+
 (use-package selected-window-accent-mode
   :config (selected-window-accent-mode 1)
   :custom
