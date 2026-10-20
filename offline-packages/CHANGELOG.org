@@ -12,10 +12,21 @@ This document contains the release notes for offline-packages
 
 ** <2026-10-20>
 
+Bundled =org-ibullets= for UTF-8 Org heading bullets
+
+- Added =local-packages/org-ibullets/= (upstream =1.0.2=, commit =e4b8c21=, GPLv3) with =VENDORED.org= provenance, so headings render as UTF-8 bullets without an ELPA mirror.
+- =init.el.in=: enables =org-ibullets-mode= from =org-mode-hook= when the vendored package is present and sets =inhibit-compacting-font-caches=.
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: added a standalone =use-package= block for the same configuration, guarded by =my/org-ibullets-configured= so it does not add duplicate hooks when the base config has already run.
+- =README.org=: documented the block under the starter snippets.
+
+** <2026-10-20>
+
 Bundled =org-present= for in-buffer Org presentations
 
 - Added =local-packages/org-present/= (upstream =20220806.1847=, commit =4ec04e1b77de=, GPLv3) with =VENDORED.org= provenance, so presentations work without an ELPA mirror.
-- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: added a =use-package= block with the presentation keymap, image display, read-only mode, and cursor hiding; =C-c s p= starts, left/right navigate, =C-c C-q= quits, and =C-c C-w= toggles read-only.
+- =init.el.in=: configures =org-present= automatically when the vendored package is present, including the =C-c s p= keybinding, image display, read-only mode, and cursor hiding.
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: kept a standalone =use-package= block for the same configuration, guarded by =my/org-present-configured= so it does not duplicate hooks when the base config has already run.
+- Fixed cursor restoration on exit: call =org-present-read-only= before =org-present-hide-cursor= and restore =cursor-type= from the cache (falling back to =t=) in the quit hook.
 - =README.org=: documented the block under the starter snippets.
 
 ** <2026-09-18>

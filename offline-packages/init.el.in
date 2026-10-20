@@ -94,6 +94,53 @@ Failures (e.g. package requires a newer Emacs) are logged, not fatal."
   (my/ensure-package pkg))
 
 ;;
+;; -> org-ibullets
+;;
+;; Vendored under local-packages/org-ibullets.  Render Org heading stars as
+;; UTF-8 bullets.  Disabling font-cache compaction keeps the composed glyphs
+;; fast (see the package README).
+;;
+(defvar my/org-ibullets-configured nil
+  "Non-nil when the org-ibullets hook and performance setting are installed.")
+
+(when (locate-library "org-ibullets")
+  (autoload 'org-ibullets-mode "org-ibullets" nil t)
+  (add-hook 'org-mode-hook #'org-ibullets-mode)
+  (setq inhibit-compacting-font-caches t)
+  (setq my/org-ibullets-configured t))
+
+;;
+;; -> org-present
+;;
+;; Vendored under local-packages/org-present.  Each top-level heading is one
+;; slide; `C-c s p' starts the presentation, left/right navigate, and
+;; `C-c C-q' quits.  `org-present-read-only' also writes `cursor-type', so it
+;; must run before `org-present-hide-cursor' to preserve the cursor cache.
+;;
+(defvar my/org-present-configured nil
+  "Non-nil when the org-present hooks and keybinding are installed.")
+
+(when (locate-library "org-present")
+  (autoload 'org-present "org-present" nil t)
+  (with-eval-after-load 'org
+    (define-key org-mode-map (kbd "C-c s p") #'org-present))
+  (add-hook 'org-present-mode-hook
+            (lambda ()
+              (org-present-big)
+              (org-display-inline-images)
+              (org-present-read-only)
+              (org-present-hide-cursor)))
+  (add-hook 'org-present-mode-quit-hook
+            (lambda ()
+              (org-present-small)
+              (org-remove-inline-images)
+              ;; Restore a visible cursor even if the cache was empty.
+              (setq-local cursor-type (or org-present-cursor-cache t))
+              (org-present-show-cursor)
+              (org-present-read-write)))
+  (setq my/org-present-configured t))
+
+;;
 ;; -> custom-faces
 ;;
 (condition-case err

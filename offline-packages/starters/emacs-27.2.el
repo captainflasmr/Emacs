@@ -171,33 +171,59 @@
 (use-package org-bootstrap-publish :demand t)
 
 ;;
+;; -> org-ibullets — render Org heading stars as UTF-8 bullets
+;;
+;; Vendored under local-packages/org-ibullets; no ELPA archive needed.
+;; Disabling font-cache compaction keeps the composed bullets fast.
+;;
+(unless (and (boundp 'my/org-ibullets-configured)
+             my/org-ibullets-configured)
+  (use-package org-ibullets
+    :ensure nil
+    :load-path ("offline-packages/local-packages/org-ibullets"
+                "local-packages/org-ibullets")
+    :commands org-ibullets-mode
+    :init
+    (setq my/org-ibullets-configured t
+          inhibit-compacting-font-caches t)
+    :hook (org-mode . org-ibullets-mode)))
+
+;;
 ;; -> org-present — present an Org buffer, one top-level heading per slide
 ;;
 ;; Vendored under local-packages/org-present; no ELPA archive needed.
 ;; C-c s p starts, left/right navigate, C-c C-q quits, C-c C-w toggles
 ;; read-only.
 ;;
-(use-package org-present
-  :ensure nil
-  :load-path ("offline-packages/local-packages/org-present"
-              "local-packages/org-present")
-  :commands org-present
-  :init
-  (with-eval-after-load 'org
-    (define-key org-mode-map (kbd "C-c s p") #'org-present))
-  :config
-  (add-hook 'org-present-mode-hook
-            (lambda ()
-              (org-present-big)
-              (org-display-inline-images)
-              (org-present-hide-cursor)
-              (org-present-read-only)))
-  (add-hook 'org-present-mode-quit-hook
-            (lambda ()
-              (org-present-small)
-              (org-remove-inline-images)
-              (org-present-show-cursor)
-              (org-present-read-write))))
+(unless (and (boundp 'my/org-present-configured)
+             my/org-present-configured)
+  (use-package org-present
+    :ensure nil
+    :load-path ("offline-packages/local-packages/org-present"
+                "local-packages/org-present")
+    :commands org-present
+    :init
+    (setq my/org-present-configured t)
+    (with-eval-after-load 'org
+      (define-key org-mode-map (kbd "C-c s p") #'org-present))
+    :config
+    (add-hook 'org-present-mode-hook
+              (lambda ()
+                (org-present-big)
+                (org-display-inline-images)
+                ;; Cache the cursor before hiding it: `org-present-read-only'
+                ;; also records `cursor-type', so calling it first prevents it
+                ;; from clobbering the cached value with nil.
+                (org-present-read-only)
+                (org-present-hide-cursor)))
+    (add-hook 'org-present-mode-quit-hook
+              (lambda ()
+                (org-present-small)
+                (org-remove-inline-images)
+                ;; Restore a visible cursor even if the cache was empty.
+                (setq-local cursor-type (or org-present-cursor-cache t))
+                (org-present-show-cursor)
+                (org-present-read-write)))))
 
 ;;
 ;; -> quality-of-life
