@@ -236,6 +236,8 @@ n" :prepend t :jump-to-captured t)
 ;; this needs no package archive; `:ensure nil' keeps startup offline-safe.
 ;; Experimental: set `org-slides-page-style' to `split' to narrow each page
 ;; to only that page's content and show "SLIDE.PAGE / TOTALS" in the mode line.
+;; SPC/f reveals the next Org list item; S-SPC (or b/S-TAB/Backspace)
+;; re-shadows the previous one.
 ;; The indicator is shown on every slide by default; set
 ;; `org-slides-page-indicator' to `split' for only multi-page slides, or
 ;; nil to disable it.  The title page is slide 0 and top-level headings are
