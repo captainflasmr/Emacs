@@ -110,35 +110,21 @@ Failures (e.g. package requires a newer Emacs) are logged, not fatal."
   (setq my/org-ibullets-configured t))
 
 ;;
-;; -> org-present
+;; -> org-slides
 ;;
-;; Vendored under local-packages/org-present.  Each top-level heading is one
-;; slide; `C-c s p' starts the presentation, left/right navigate, and
-;; `C-c C-q' quits.  `org-present-read-only' also writes `cursor-type', so it
-;; must run before `org-present-hide-cursor' to preserve the cursor cache.
+;; Vendored under local-packages/org-slides.  Each top-level heading is one
+;; slide; `C-c s p' starts the presentation, `n'/`SPC'/right move forward,
+;; `p'/`S-SPC'/left move back, and `q' quits.  The package handles the text
+;; scale, inline images, read-only mode, and cursor hiding itself.
 ;;
-(defvar my/org-present-configured nil
-  "Non-nil when the org-present hooks and keybinding are installed.")
+(defvar my/org-slides-configured nil
+  "Non-nil when the org-slides keybinding is installed.")
 
-(when (locate-library "org-present")
-  (autoload 'org-present "org-present" nil t)
+(when (locate-library "org-slides")
+  (autoload 'org-slides-start "org-slides" nil t)
   (with-eval-after-load 'org
-    (define-key org-mode-map (kbd "C-c s p") #'org-present))
-  (add-hook 'org-present-mode-hook
-            (lambda ()
-              (org-present-big)
-              (org-display-inline-images)
-              (org-present-read-only)
-              (org-present-hide-cursor)))
-  (add-hook 'org-present-mode-quit-hook
-            (lambda ()
-              (org-present-small)
-              (org-remove-inline-images)
-              ;; Restore a visible cursor even if the cache was empty.
-              (setq-local cursor-type (or org-present-cursor-cache t))
-              (org-present-show-cursor)
-              (org-present-read-write)))
-  (setq my/org-present-configured t))
+    (define-key org-mode-map (kbd "C-c s p") #'org-slides-start))
+  (setq my/org-slides-configured t))
 
 ;;
 ;; -> custom-faces
@@ -153,7 +139,7 @@ Failures (e.g. package requires a newer Emacs) are logged, not fatal."
      '(ediff-even-diff-A ((t (:background "#bafbba" :foreground "#000000" :extend t))))
      '(ediff-fine-diff-A ((t (:background "#f4bd92" :foreground "#000000" :extend t))))
      '(ediff-odd-diff-A ((t (:background "#b8fbb8" :foreground "#000000" :extend t))))
-     '(fixed-pitch ((t (:family "Monospace" :height 110))))
+     '(fixed-pitch ((t (:family "Monospace" :height 1.1))))
      '(font-lock-warning-face ((t (:foreground "#930000" :inverse-video nil))))
      '(fringe ((t (:foreground "#2d3743" :background "#2d3743"))))
      '(hl-line ((t (:background "#3636424250b6"))))

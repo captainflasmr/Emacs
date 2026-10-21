@@ -10,6 +10,17 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-10-21>
+
+Replaced =org-present= with the local =org-slides= package
+
+- Added =local-packages/org-slides/=, a GPLv3 fork of =org-present= with default forward/backward keys (=n=/=SPC=/right and =p=/=S-SPC=/left), =q= to quit, editable-aware navigation, text-scale restoration, buffer-local overlays/cursor state, the source-block newline fix, and an ERT suite.
+- =init.el.in=, =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: replaced the =org-present= blocks with =org-slides= blocks.
+- =init.el=: uses =org-slides-start= on =C-c s p= and refreshes =org-table-fit= overlays from =org-slides-after-navigate-functions=.
+- =org-slides=: tall slides are paged automatically one screenful at a time in a single window; =n=/=p= walk the pages and then change slides.  Controlled by =org-slides-auto-page=.  The experimental split-page style (=org-slides-page-style= =split=) narrows to one computed page at a time and shows =SLIDE.PAGE / TOTAL-SLIDES.TOTAL-PAGES= in the mode line on every slide.
+- =README.org=: documented =org-slides= under the starter snippets.
+- The previous =org-present= entry is retained below as history; the vendored copy is no longer loaded by the configs.
+
 ** <2026-10-20>
 
 Bundled =org-ibullets= for UTF-8 Org heading bullets
@@ -27,6 +38,11 @@ Bundled =org-present= for in-buffer Org presentations
 - =init.el.in=: configures =org-present= automatically when the vendored package is present, including the =C-c s p= keybinding, image display, read-only mode, and cursor hiding.
 - =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: kept a standalone =use-package= block for the same configuration, guarded by =my/org-present-configured= so it does not duplicate hooks when the base config has already run.
 - Fixed cursor restoration on exit: call =org-present-read-only= before =org-present-hide-cursor= and restore =cursor-type= from the cache (falling back to =t=) in the quit hook.
+- Patched the vendored =org-present.el= so hiding a complete =#+= line also hides its trailing newline. This removes the extra blank lines that upstream left around =#+begin_src= / =#+end_src= delimiters while presenting source blocks.
+- The same patch leaves =#+= lines inside block contents alone, makes title/author/date/email option detection case-insensitive, and clears =org-present-overlays-list= when overlays are removed so re-entering presentation mode does not accumulate dead overlays.
+- Made =org-present-overlays-list= and =org-present-cursor-cache= buffer-local, so presenting different buffers does not delete each other's overlays or overwrite the saved cursor type.
+- Fixed the double-spaced source-code appearance during presentations: =fixed-pitch= now uses a relative height (=1.0= in the live config, =1.1= in the offline init and Windows starter) so it scales with =text-scale-mode= instead of staying at an absolute size while the surrounding line height grows.
+- Live =init.el=: added an =org-present-after-navigate-functions= hook that calls =org-table-fit-refresh-overlays=.  Tables now relayout as soon as =org-present= narrows to a slide, instead of keeping their old width until the window is resized.
 - =README.org=: documented the block under the starter snippets.
 
 ** <2026-09-18>

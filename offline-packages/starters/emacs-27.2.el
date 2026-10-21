@@ -189,41 +189,22 @@
     :hook (org-mode . org-ibullets-mode)))
 
 ;;
-;; -> org-present — present an Org buffer, one top-level heading per slide
+;; -> org-slides — present an Org buffer, one top-level heading per slide
 ;;
-;; Vendored under local-packages/org-present; no ELPA archive needed.
-;; C-c s p starts, left/right navigate, C-c C-q quits, C-c C-w toggles
-;; read-only.
+;; Vendored under local-packages/org-slides; no ELPA archive needed.
+;; C-c s p starts, n/SPC/right go forward, p/S-SPC/left go back, and q quits.
 ;;
-(unless (and (boundp 'my/org-present-configured)
-             my/org-present-configured)
-  (use-package org-present
+(unless (and (boundp 'my/org-slides-configured)
+             my/org-slides-configured)
+  (use-package org-slides
     :ensure nil
-    :load-path ("offline-packages/local-packages/org-present"
-                "local-packages/org-present")
-    :commands org-present
+    :load-path ("offline-packages/local-packages/org-slides"
+                "local-packages/org-slides")
+    :commands org-slides-start
     :init
-    (setq my/org-present-configured t)
+    (setq my/org-slides-configured t)
     (with-eval-after-load 'org
-      (define-key org-mode-map (kbd "C-c s p") #'org-present))
-    :config
-    (add-hook 'org-present-mode-hook
-              (lambda ()
-                (org-present-big)
-                (org-display-inline-images)
-                ;; Cache the cursor before hiding it: `org-present-read-only'
-                ;; also records `cursor-type', so calling it first prevents it
-                ;; from clobbering the cached value with nil.
-                (org-present-read-only)
-                (org-present-hide-cursor)))
-    (add-hook 'org-present-mode-quit-hook
-              (lambda ()
-                (org-present-small)
-                (org-remove-inline-images)
-                ;; Restore a visible cursor even if the cache was empty.
-                (setq-local cursor-type (or org-present-cursor-cache t))
-                (org-present-show-cursor)
-                (org-present-read-write)))))
+      (define-key org-mode-map (kbd "C-c s p") #'org-slides-start))))
 
 ;;
 ;; -> quality-of-life
