@@ -350,7 +350,7 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
 ;; -> org-slides — present an Org buffer, one top-level heading per slide
 ;;
 ;; Vendored under local-packages/org-slides; no ELPA archive needed.
-;; C-c s p starts, n/SPC/right go forward, p/S-SPC/left go back, and q quits.
+;; C-c P starts, n/SPC/right go forward, p/S-SPC/left go back, and q quits.
 ;;
 (unless (and (boundp 'my/org-slides-configured)
              my/org-slides-configured)
@@ -362,7 +362,7 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
     :init
     (setq my/org-slides-configured t)
     (with-eval-after-load 'org
-      (define-key org-mode-map (kbd "C-c s p") #'org-slides-start))))
+      (define-key org-mode-map (kbd "C-c P") #'org-slides-start))))
 
 (use-package selected-window-accent-mode
   :config (selected-window-accent-mode 1)

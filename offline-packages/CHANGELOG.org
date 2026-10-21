@@ -16,7 +16,8 @@ Replaced =org-present= with the local =org-slides= package
 
 - Added =local-packages/org-slides/=, a GPLv3 fork of =org-present= with default forward/backward keys (=n=/=SPC=/right and =p=/=S-SPC=/left), =q= to quit, editable-aware navigation, text-scale restoration, buffer-local overlays/cursor state, the source-block newline fix, and an ERT suite.
 - =init.el.in=, =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: replaced the =org-present= blocks with =org-slides= blocks.
-- =init.el=: uses =org-slides-start= on =C-c s p= and refreshes =org-table-fit= overlays from =org-slides-after-navigate-functions=.
+- =init.el=: uses =org-slides-start= on =C-c P= and refreshes =org-table-fit= overlays from =org-slides-after-navigate-functions=.
+- Moved the presentation start binding from =C-c s p= to =C-c P=: =C-c s= is the global =spelling-menu= prefix, and any binding below it made the spelling menu unreachable in Org buffers.
 - =org-slides=: tall slides are paged automatically one screenful at a time in a single window; =n=/=p= walk the pages and then change slides.  Controlled by =org-slides-auto-page=.  The experimental split-page style (=org-slides-page-style= =split=) narrows to one computed page at a time and shows =SLIDE.PAGE / TOTAL-SLIDES.TOTAL-PAGES= in the mode line on every slide, and can reveal Org list items one at a time with =SPC=/=S-SPC=.
 - =README.org=: documented =org-slides= under the starter snippets.
 - The previous =org-present= entry is retained below as history; the vendored copy is no longer loaded by the configs.
@@ -35,7 +36,7 @@ Bundled =org-ibullets= for UTF-8 Org heading bullets
 Bundled =org-present= for in-buffer Org presentations
 
 - Added =local-packages/org-present/= (upstream =20220806.1847=, commit =4ec04e1b77de=, GPLv3) with =VENDORED.org= provenance, so presentations work without an ELPA mirror.
-- =init.el.in=: configures =org-present= automatically when the vendored package is present, including the =C-c s p= keybinding, image display, read-only mode, and cursor hiding.
+- =init.el.in=: configures =org-present= automatically when the vendored package is present, including the =C-c P= keybinding, image display, read-only mode, and cursor hiding.
 - =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: kept a standalone =use-package= block for the same configuration, guarded by =my/org-present-configured= so it does not duplicate hooks when the base config has already run.
 - Fixed cursor restoration on exit: call =org-present-read-only= before =org-present-hide-cursor= and restore =cursor-type= from the cache (falling back to =t=) in the quit hook.
 - Patched the vendored =org-present.el= so hiding a complete =#+= line also hides its trailing newline. This removes the extra blank lines that upstream left around =#+begin_src= / =#+end_src= delimiters while presenting source blocks.

@@ -113,7 +113,7 @@ Failures (e.g. package requires a newer Emacs) are logged, not fatal."
 ;; -> org-slides
 ;;
 ;; Vendored under local-packages/org-slides.  Each top-level heading is one
-;; slide; `C-c s p' starts the presentation, `n'/`SPC'/right move forward,
+;; slide; `C-c P' starts the presentation, `n'/`SPC'/right move forward,
 ;; `p'/`S-SPC'/left move back, and `q' quits.  The package handles the text
 ;; scale, inline images, read-only mode, and cursor hiding itself.
 ;;
@@ -123,7 +123,7 @@ Failures (e.g. package requires a newer Emacs) are logged, not fatal."
 (when (locate-library "org-slides")
   (autoload 'org-slides-start "org-slides" nil t)
   (with-eval-after-load 'org
-    (define-key org-mode-map (kbd "C-c s p") #'org-slides-start))
+    (define-key org-mode-map (kbd "C-c P") #'org-slides-start))
   (setq my/org-slides-configured t))
 
 ;;
