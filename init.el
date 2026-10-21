@@ -12,7 +12,7 @@
 ;; (or restart Emacs). Values are in 1/10pt, so 105 means 10.5pt.
 ;; They override `Emacs-vanilla/init.el' `custom-set-faces' above.
 (defvar my/main-font-height 90
-  "Height for `default' and `fixed-pitch' faces.")
+  "Height for the `default' face.")
 (defvar my/variable-pitch-height 100
   "Height for `variable-pitch' face.")
 (defvar my/mode-line-height 90
@@ -21,8 +21,12 @@
 (defun my/apply-main-font-sizes ()
   "Apply `my/main-font-height' and related face heights."
   (set-face-attribute 'default nil :height my/main-font-height)
+  ;; Keep `fixed-pitch' relative to `default' so it follows
+  ;; `text-scale-mode' (used by `org-slides').  An absolute height here
+  ;; leaves code and tables small while the surrounding text is scaled up,
+  ;; which makes each code line look double-spaced.
   (when (facep 'fixed-pitch)
-    (set-face-attribute 'fixed-pitch nil :height my/main-font-height))
+    (set-face-attribute 'fixed-pitch nil :height 1.0))
   (when (facep 'variable-pitch)
     (set-face-attribute 'variable-pitch nil :height my/variable-pitch-height))
   (set-face-attribute 'mode-line nil :height my/mode-line-height)
@@ -201,6 +205,65 @@ n" :prepend t :jump-to-captured t)
               ("C-c t r" . org-table-fit-toggle-reveal-on-point))
   :config
   (setq org-table-fit-overlay-reveal-on-point nil))
+
+;;
+;; -> org-ibullets
+;;
+;; Display Org heading stars as UTF-8 bullets.  Installed from source with
+;; the built-in `:vc' backend; `:commands' keeps it lazy until an Org buffer
+;; is opened.  Disabling font-cache compaction keeps the composed bullets
+;; fast (see the package README).
+
+(use-package org-ibullets
+  :vc (:url "https://github.com/jamescherti/org-ibullets.el"
+       :rev :newest)
+  :commands org-ibullets-mode
+  :init
+  (setq my/org-ibullets-configured t)
+  :hook (org-mode . org-ibullets-mode))
+
+(setq inhibit-compacting-font-caches t)
+
+;;
+;; -> org-slides
+;;
+;; Present an Org file directly from the buffer: each top-level heading is
+;; one slide.  `C-c s p' starts the presentation; `n'/`SPC'/right move
+;; forward, `p'/`S-SPC'/left move back, and `q' quits.  The package handles
+;; the text scale, inline images, read-only mode, and cursor hiding itself.
+;; (`C-c p' is taken by diff-minimap in Org buffers, hence the `s' prefix.)
+;; The source is vendored in offline-packages/local-packages/org-slides, so
+;; this needs no package archive; `:ensure nil' keeps startup offline-safe.
+;; Experimental: set `org-slides-page-style' to `split' to narrow each page
+;; to only that page's content and show "SLIDE.PAGE / TOTALS" in the mode line.
+;; The indicator is shown on every slide by default; set
+;; `org-slides-page-indicator' to `split' for only multi-page slides, or
+;; nil to disable it.  The title page is slide 0 and top-level headings are
+;; numbered 1, 2, ...
+;;
+(use-package org-slides
+  :ensure nil
+  :load-path ("offline-packages/local-packages/org-slides"
+              "local-packages/org-slides")
+  :commands org-slides-start
+  :init
+  ;; (setq my/org-slides-configured t)
+  (with-eval-after-load 'org
+    (define-key org-mode-map (kbd "C-c s p") #'org-slides-start))
+  :config
+  (setq org-slides-page-style 'split)
+  (setq org-slides-text-scale 3)
+  (setq org-slides-hide-stars-in-headings nil)
+  (setq org-slides-hide-cursor-on-start nil)
+  ;; Refit displayed tables after org-slides narrows to a slide.  The
+  ;; text-scale refresh can run while the title page is current, and slide
+  ;; navigation does not otherwise retrigger it, so wide tables can keep
+  ;; their old layout until the window is resized.
+  (add-hook 'org-slides-after-navigate-functions
+            (lambda (&rest _)
+              (when (and (bound-and-true-p org-table-fit-overlay-mode)
+                         (fboundp 'org-table-fit-refresh-overlays))
+                (org-table-fit-refresh-overlays)))))
 
 ;;
 ;; -> org sell summaries
@@ -404,7 +467,8 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
   ("C-c O" . ollama-buddy-transient-menu)
   :config
   ;; overall default model
-  (setq ollama-buddy-default-model "u:gemma4:31b-cloud")
+  ;; (setq ollama-buddy-default-model "u:gemma4:31b-cloud")
+  (setq ollama-buddy-default-model "n:deepseek-v4.1-flash")
 
   ;;
   ;; Opencode
@@ -413,7 +477,7 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
   ;; ~/.authinfo:  machine ollama-buddy-opencode login apikey password <KEY>
   (setq ollama-buddy-opencode-api-key
         (auth-source-pick-first-password
-         :host "opencode-go-old" :user "apikey"))
+         :host "opencode-go" :user "apikey"))
   (setq ollama-buddy-opencode-usage-url 
         "https://opencode.ai/workspace/wrk_01KQ0AFJ2GSES8D7J3CRMAW8B8/go")
   (setq ollama-buddy-opencode-session-token 
@@ -501,19 +565,19 @@ Each row is a list (ITEM STATUS TARGET SOLD)."
   (setq ollama-buddy-completion-model "qwen3-coder-next:cloud")
 
   ;; setup default custom menu for preferred models
-  ;; (ollama-buddy-update-menu-entry 'refactor-code     :model "n:kimi-k2.6")
-  ;; (ollama-buddy-update-menu-entry 'git-commit        :model "n:deepseek-v4-flash")
-  ;; (ollama-buddy-update-menu-entry 'describe-code     :model "n:kimi-k2.6")
-  ;; (ollama-buddy-update-menu-entry 'dictionary-lookup :model "n:mimo-v2.5")
-  ;; (ollama-buddy-update-menu-entry 'synonym           :model "n:mimo-v2.5")
-  ;; (ollama-buddy-update-menu-entry 'proofread         :model "n:minimax-m2.7")
+  (ollama-buddy-update-menu-entry 'refactor-code     :model "n:deepseek-v4.1-flash")
+  (ollama-buddy-update-menu-entry 'git-commit        :model "n:deepseek-v4.1-flash")
+  (ollama-buddy-update-menu-entry 'describe-code     :model "n:deepseek-v4.1-flash")
+  (ollama-buddy-update-menu-entry 'dictionary-lookup :model "n:deepseek-v4.1-flash")
+  (ollama-buddy-update-menu-entry 'synonym           :model "n:deepseek-v4.1-flash")
+  (ollama-buddy-update-menu-entry 'proofread         :model "n:deepseek-v4.1-flash")
 
-  (ollama-buddy-update-menu-entry 'refactor-code     :model "u:gemma4:31b-cloud")
-  (ollama-buddy-update-menu-entry 'git-commit        :model "u:gemma4:31b-cloud")
-  (ollama-buddy-update-menu-entry 'describe-code     :model "u:gemma4:31b-cloud")
-  (ollama-buddy-update-menu-entry 'dictionary-lookup :model "u:gemma4:31b-cloud")
-  (ollama-buddy-update-menu-entry 'synonym           :model "u:gemma4:31b-cloud")
-  (ollama-buddy-update-menu-entry 'proofread         :model "u:gemma4:31b-cloud")
+  ;; (ollama-buddy-update-menu-entry 'refactor-code     :model "u:gemma4:31b-cloud")
+  ;; (ollama-buddy-update-menu-entry 'git-commit        :model "u:gemma4:31b-cloud")
+  ;; (ollama-buddy-update-menu-entry 'describe-code     :model "u:gemma4:31b-cloud")
+  ;; (ollama-buddy-update-menu-entry 'dictionary-lookup :model "u:gemma4:31b-cloud")
+  ;; (ollama-buddy-update-menu-entry 'synonym           :model "u:gemma4:31b-cloud")
+  ;; (ollama-buddy-update-menu-entry 'proofread         :model "u:gemma4:31b-cloud")
 
   ;; dired integration
   (with-eval-after-load 'dired
@@ -996,8 +1060,10 @@ mu4e's own header-line content once the update is done."
                  kotlin-mode magit org-social ox-hugo package-lint
                  protobuf-mode timu-caribbean-theme timu-rouge-theme
                  timu-spacegrey-theme web-mode yaml-mode))
- '(warning-suppress-log-types '((frameset)))
- '(warning-suppress-types '((frameset))))
+ '(warning-suppress-log-types '((frameset)
+                                (files missing-lexbind-cookie)))
+ '(warning-suppress-types '((frameset)
+                            (files missing-lexbind-cookie))))
 
 ;;
 ;; -> typescript-support
@@ -1579,21 +1645,24 @@ mu4e's own header-line content once the update is done."
 ;; active file (current-line overlay + follow are built in).  `C-x m' toggles
 ;; it open/closed, rooted at the current file's project.
 ;;
-;; `C-c z' is the emeld compare namespace: d diff-dwim, l load preset,
-;; j reopen a recent pair; a/b mark the current dired directory as
-;; comparison side A/B, c compares the marked pair, s swaps them, k clears.
+;; `C-c z' is the emeld compare namespace: d diff-dwim, j reopen a recent
+;; comparison; a marks the current dired directory as comparison side A,
+;; c compares it with the directory being browsed.
 (use-package emeld
   :load-path "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld"
-  :commands (emeld-diff-dwim emeld-load-preset emeld-save-preset emeld-delete-preset)
+  :commands (emeld-diff-dwim emeld-recent)
   :bind (("C-x m"   . emeld-sidebar)
          ("C-c z d" . emeld-diff-dwim)
-         ("C-c z l" . emeld-load-preset)
-         ("C-c z j" . emeld-recent)
+         ("C-c z l" . emeld-recent)
          ("C-c z a" . emeld-mark-dir-a)
-         ("C-c z b" . emeld-mark-dir-b)
          ("C-c z c" . emeld-compare-marked-dirs)
-         ("C-c z s" . emeld-swap-marked-dirs)
-         ("C-c z k" . emeld-clear-marked-dirs))
+         ;; M-n / M-p are reserved for window navigation: emeld's change
+         ;; navigation moves to the shifted pair inside its own buffers.
+         :map emeld-mode-map
+         ("M-N"     . emeld-next-change)
+         ("M-P"     . emeld-previous-change)
+         ("M-n"     . nil)
+         ("M-p"     . nil))
   :config
   ;; (setq emeld-benchmark t)
   (setq emeld-dir-prefix "📁 "))
@@ -1613,8 +1682,8 @@ mu4e's own header-line content once the update is done."
 ;;
 ;; -> visuals
 ;;
-(set-frame-parameter nil 'alpha-background 90)
-(add-to-list 'default-frame-alist '(alpha-background . 90))
+(set-frame-parameter nil 'alpha-background 98)
+(add-to-list 'default-frame-alist '(alpha-background . 98))
 
 ;; $ emacs --batch --eval '(progn (find-file "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld/emeld.el") (goto-char (point-min)) (condition-case nil (while (not (eobp)) (forward-sexp)) (error (message "Unbalanced at pos %d, line %d, col %d" (point) (line-number-at-pos) (current-column)))))' 2>&1
 ;; Unbalanced at pos 31818, line 693, col 62
@@ -1956,7 +2025,8 @@ If TITLE-FILTER is provided, filters results matching the session title."
 
 (setq tab-bar-auto-width-max '((120) 20))
 
-(load-theme 'doom-lantern t)
+;; (load-theme 'doom-lantern t)
+(load-theme 'doom-molokai t)
 
 (define-key my-win-keymap (kbd "m") #'diff-minimap-toggle)
 
