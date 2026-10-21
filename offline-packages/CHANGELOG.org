@@ -17,7 +17,7 @@ Replaced =org-present= with the local =org-slides= package
 - Added =local-packages/org-slides/=, a GPLv3 fork of =org-present= with default forward/backward keys (=n=/=SPC=/right and =p=/=S-SPC=/left), =q= to quit, editable-aware navigation, text-scale restoration, buffer-local overlays/cursor state, the source-block newline fix, and an ERT suite.
 - =init.el.in=, =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: replaced the =org-present= blocks with =org-slides= blocks.
 - =init.el=: uses =org-slides-start= on =C-c s p= and refreshes =org-table-fit= overlays from =org-slides-after-navigate-functions=.
-- =org-slides=: tall slides are paged automatically one screenful at a time in a single window; =n=/=p= walk the pages and then change slides.  Controlled by =org-slides-auto-page=.  The experimental split-page style (=org-slides-page-style= =split=) narrows to one computed page at a time and shows =SLIDE.PAGE / TOTAL-SLIDES.TOTAL-PAGES= in the mode line on every slide.
+- =org-slides=: tall slides are paged automatically one screenful at a time in a single window; =n=/=p= walk the pages and then change slides.  Controlled by =org-slides-auto-page=.  The experimental split-page style (=org-slides-page-style= =split=) narrows to one computed page at a time and shows =SLIDE.PAGE / TOTAL-SLIDES.TOTAL-PAGES= in the mode line on every slide, and can reveal Org list items one at a time with =SPC=/=S-SPC=.
 - =README.org=: documented =org-slides= under the starter snippets.
 - The previous =org-present= entry is retained below as history; the vendored copy is no longer loaded by the configs.
 
