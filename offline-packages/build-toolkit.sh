@@ -191,6 +191,12 @@ _tar_excludes=(
   --exclude='.zig-cache'
 )
 
+# Paths under local-packages/ that are not needed on the offline target.
+# Patterns are relative to local-packages/ (e.g. 'emeld/demos').
+_local_pkg_excludes=(
+  --exclude='emeld/demos'
+)
+
 if [[ "$LOCAL_CONFIGS" -eq 1 ]]; then
   for d in Emacs-vanilla Emacs-DIYer; do
     if [[ -d "${EMACS_D_DIR}/${d}" ]]; then
@@ -268,7 +274,8 @@ if [[ -d "$LOCAL_PKG_SRC" ]] \
    && find "$LOCAL_PKG_SRC" -mindepth 1 ! -name '.gitkeep' -print -quit | grep -q .; then
   echo ">> Copying local-packages from ${LOCAL_PKG_SRC}..."
   mkdir -p "${STAGING}/local-packages"
-  tar -C "$LOCAL_PKG_SRC" "${_tar_excludes[@]}" --exclude='.gitkeep' -cf - . \
+  tar -C "$LOCAL_PKG_SRC" "${_tar_excludes[@]}" "${_local_pkg_excludes[@]}" \
+    --exclude='.gitkeep' -cf - . \
     | tar -C "${STAGING}/local-packages" -xf -
 fi
 

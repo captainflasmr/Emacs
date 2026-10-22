@@ -77,7 +77,7 @@ The GNU Emacs source tarball bundled with the toolkit is decoupled from the mirr
 
 * Local packages (self-written / locally-patched)
 
-Anything dropped under =offline-packages/local-packages/= is bundled into every toolkit regardless of target version — these are packages you've written yourself or pulled from GitHub and tweaked, i.e. things that don't live in an ELPA archive.
+Anything dropped under =offline-packages/local-packages/= is bundled into every toolkit regardless of target version — these are packages you've written yourself or pulled from GitHub and tweaked, i.e. things that don't live in an ELPA archive. A few source-only assets (such as =emeld/demos/=) are excluded from the bundle; see "What goes into the toolkit".
 
 Two supported shapes:
 
@@ -276,6 +276,10 @@ Excluded from =Emacs-vanilla/=, =Emacs-DIYer/= and =local-packages/= to keep the
 - =*.elc=, =*~=, =.#*=, =#*#=
 - =eln-cache=, =auto-save-list=
 - =.zig-cache= (Zig incremental build caches)
+
+=local-packages/= has an additional exclusion list in =build-toolkit.sh= for package assets that are useful in the source repo but not on the offline target:
+
+- =emeld/demos/= (screen-recording GIF/MP4 demos referenced by the emeld README)
 
 ** Size
 

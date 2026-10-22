@@ -10,6 +10,13 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-10-22>
+
+Exclude emeld's demo recordings from the packaged toolkit
+
+- =build-toolkit.sh=: added a local-packages-specific exclusion list and omitted =emeld/demos/=. The directory holds ~32 MB of screen-recording GIF/MP4 media referenced by the emeld README; it stays in =local-packages/= but no longer bloats the toolkit tarball.
+- =README.org=: documented the local-packages-only exclusions.
+
 ** <2026-10-21>
 
 Replaced =org-present= with the local =org-slides= package
