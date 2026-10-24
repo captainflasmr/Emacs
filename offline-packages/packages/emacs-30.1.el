@@ -8,7 +8,6 @@ cmake-mode
 corfu
 csv-mode
 dape
-demap
 diff-hl
 doc-view-follow
 doom-themes

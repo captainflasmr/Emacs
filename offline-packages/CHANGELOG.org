@@ -10,6 +10,14 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-10-23>
+
+Removed =demap= from the mirror and starter configs
+
+- =packages/emacs-30.1.el= and =packages/emacs-30.2.el=: dropped =demap= from the package lists.
+- =starters/coding.el=: deleted the =demap= block (custom diff faces, diff-hl overlay sync, and window advice).
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =README.org=: removed stale =demap= references.
+
 ** <2026-10-22>
 
 Exclude emeld's demo recordings from the packaged toolkit

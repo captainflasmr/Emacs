@@ -104,7 +104,7 @@ The =org-slides= block presents an Org file directly from the buffer: each top-l
 
 The =org-ibullets= block renders Org heading stars as UTF-8 bullets (●, ◉, ○, …). The package is vendored under =local-packages/org-ibullets/=, so it needs no ELPA mirror. The rendered =init.el= enables =org-ibullets-mode= from =org-mode-hook= when the package is present and sets =inhibit-compacting-font-caches= to keep the composed glyphs fast. The same block is retained in every per-version starter and the Windows starter, guarded by =my/org-ibullets-configured= so it does not add duplicate hooks when the base config has already run.
 
-Coding-oriented blocks (=dape=, =emeld-sidebar=, =demap=, =eglot= hooks, =flymake=, =corfu=, etc.) live in =starters/coding.el= to avoid duplication. Load both starters to get the full set:
+Coding-oriented blocks (=dape=, =emeld-sidebar=, =eglot= hooks, =flymake=, =corfu=, etc.) live in =starters/coding.el= to avoid duplication. Load both starters to get the full set:
 
 To opt in on the target, append one line to =~/.emacs.d/init.el=:
 
@@ -118,7 +118,7 @@ Adding a starter for a new version: drop =starters/emacs-<VER>.el= next to =init
 
 ** Coding companion (=starters/coding.el=)
 
-=starters/coding.el= is a version-agnostic snippet distilled from =docs/setting-up-emacs-for-coding/README.org= — eglot hooks for Java/C#/C++/TypeScript/Protobuf/Kotlin, flymake =M-n=/=M-p=, eldoc, corfu with =corfu-auto nil=, dape =F5=/=F9=/=F10=/=F11= (with netcoredbg support), the local =emeld-sidebar= project file-tree (with current-line overlay and follow), demap minimap with diff-hl integration, =cmake-mode=, =typescript-mode=, =protobuf-mode=, =highlight-indent-guides=. It's bundled as =init-starter-coding.el= at the toolkit root and installed to =~/.emacs.d/init-starter-coding.el= (not auto-loaded). All starter files share the =init-starter-= prefix so they group together in directory listings. Opt in alongside or instead of the per-version starter:
+=starters/coding.el= is a version-agnostic snippet distilled from =docs/setting-up-emacs-for-coding/README.org= — eglot hooks for Java/C#/C++/TypeScript/Protobuf/Kotlin, flymake =M-n=/=M-p=, eldoc, corfu with =corfu-auto nil=, dape =F5=/=F9=/=F10=/=F11= (with netcoredbg support), the local =emeld-sidebar= project file-tree (with current-line overlay and follow), =cmake-mode=, =typescript-mode=, =protobuf-mode=, =highlight-indent-guides=. It's bundled as =init-starter-coding.el= at the toolkit root and installed to =~/.emacs.d/init-starter-coding.el= (not auto-loaded). All starter files share the =init-starter-= prefix so they group together in directory listings. Opt in alongside or instead of the per-version starter:
 
 #+begin_src emacs-lisp
 (load (expand-file-name "init-starter-coding" user-emacs-directory) t t)
