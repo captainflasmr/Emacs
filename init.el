@@ -216,7 +216,7 @@ n" :prepend t :jump-to-captured t)
 
 (use-package org-ibullets
   :vc (:url "https://github.com/jamescherti/org-ibullets.el"
-       :rev :newest)
+            :rev :newest)
   :commands org-ibullets-mode
   :init
   (setq my/org-ibullets-configured t)
@@ -228,10 +228,10 @@ n" :prepend t :jump-to-captured t)
 ;; -> org-slides
 ;;
 ;; Present an Org file directly from the buffer: each top-level heading is
-;; one slide.  `C-c s p' starts the presentation; `n'/`SPC'/right move
+;; one slide.  `C-c P' starts the presentation; `n'/`SPC'/right move
 ;; forward, `p'/`S-SPC'/left move back, and `q' quits.  The package handles
 ;; the text scale, inline images, read-only mode, and cursor hiding itself.
-;; (`C-c p' is taken by diff-minimap in Org buffers, hence the `s' prefix.)
+;; `C-c s' is the global spelling-menu prefix, so use capital `P' for slides.
 ;; The source is vendored in offline-packages/local-packages/org-slides, so
 ;; this needs no package archive; `:ensure nil' keeps startup offline-safe.
 ;; Experimental: set `org-slides-page-style' to `split' to narrow each page
@@ -243,20 +243,24 @@ n" :prepend t :jump-to-captured t)
 ;; nil to disable it.  The title page is slide 0 and top-level headings are
 ;; numbered 1, 2, ...
 ;;
+
 (use-package org-slides
   :ensure nil
   :load-path ("offline-packages/local-packages/org-slides"
               "local-packages/org-slides")
-  :commands org-slides-start
+  :commands (org-slides-start org-slides-timed-macro-toggle)
+  :bind (("C-c T" . org-slides-timed-macro-toggle)
+         :map org-mode-map
+         ("C-c P" . org-slides-start))
   :init
   ;; (setq my/org-slides-configured t)
   (with-eval-after-load 'org
-    (define-key org-mode-map (kbd "C-c s p") #'org-slides-start))
+    (define-key org-mode-map (kbd "C-c P") #'org-slides-start))
   :config
   (setq org-slides-page-style 'split)
   (setq org-slides-text-scale 3)
   (setq org-slides-hide-stars-in-headings nil)
-  (setq org-slides-hide-cursor-on-start nil)
+  ;; (setq org-slides-hide-cursor-on-start nil)
   ;; Refit displayed tables after org-slides narrows to a slide.  The
   ;; text-scale refresh can run while the title page is current, and slide
   ;; navigation does not otherwise retrigger it, so wide tables can keep
@@ -1056,7 +1060,7 @@ mu4e's own header-line content once the update is done."
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(misterioso))
  '(package-selected-packages
-   '(agent-shell async csv-mode dape demap diff-hl dired-sidebar
+   '(agent-shell async csv-mode dape diff-hl dired-sidebar
                  doom-themes dumb-jump ef-themes elpa-mirror
                  forge gruvbox-theme htmlize i3wm-config-mode
                  kotlin-mode magit org-social ox-hugo package-lint
@@ -1500,91 +1504,18 @@ mu4e's own header-line content once the update is done."
   (with-eval-after-load 'image-dired
     (transmute-setup-thumbnail-keys)))
 
-(use-package demap
-  :demand t
-  :config
-  (defface my/demap-diff-added
-    '((t :background "#335533" :extend t))
-    "Face for added lines in demap diff display.")
-  (defface my/demap-diff-modified
-    '((t :background "#555533" :extend t))
-    "Face for modified lines in demap diff display.")
-  (defface my/demap-diff-removed
-    '((t :background "#553333" :extend t))
-    "Face for deleted lines in demap diff display.")
-
-  (defun my/demap-diff-update (&optional minimap-or-name)
-    "Update diff overlays in MINIMAP from the source buffer's diff-hl data."
-    (let* ((minimap (demap-normalize-minimap
-                     (or minimap-or-name (demap-buffer-minimap))))
-           (minimap-buf (demap-minimap-buffer minimap))
-           (source-buf (demap-minimap-showing minimap)))
-      (when (and minimap-buf
-                 (buffer-live-p minimap-buf)
-                 source-buf
-                 (buffer-live-p source-buf))
-        (with-current-buffer minimap-buf
-          (dolist (ov (overlays-in (point-min) (point-max)))
-            (when (overlay-get ov 'my/demap-diff)
-              (delete-overlay ov)))
-          (with-current-buffer source-buf
-            (dolist (ov (overlays-in (point-min) (point-max)))
-              (when (overlay-get ov 'diff-hl-hunk)
-                (let* ((beg (overlay-start ov))
-                       (end (overlay-end ov))
-                       (type (overlay-get ov 'diff-hl-hunk-type))
-                       (face (pcase type
-                               ('insert 'my/demap-diff-added)
-                               ('change 'my/demap-diff-modified)
-                               ('delete 'my/demap-diff-removed)
-                               (_ nil)))
-                       (new-ov (make-overlay beg end minimap-buf)))
-                  (when face
-                    (overlay-put new-ov 'face face)
-                    (overlay-put new-ov 'my/demap-diff t)
-                    (overlay-put new-ov 'priority 100))))))))))
-
-  (defun my/demap-diff-clear ()
-    "Remove all diff overlays from the current minimap buffer."
-    (dolist (ov (overlays-in (point-min) (point-max)))
-      (when (overlay-get ov 'my/demap-diff)
-        (delete-overlay ov))))
-
-  (defun my/demap-diff-update-current ()
-    "Update diff overlays for any minimap showing the current buffer."
-    (when-let* ((minimap-buf (get-buffer demap-minimap-default-name))
-                (minimap (demap-buffer-minimap minimap-buf))
-                (source-buf (demap-minimap-showing minimap))
-                ((buffer-live-p source-buf)))
-      (when (eq source-buf (current-buffer))
-        (my/demap-diff-update minimap))))
-
-  (defun my/demap-diff-schedule-update ()
-    "Schedule a diff update for the minimap after diff-hl runs."
-    (run-with-idle-timer 0.1 nil #'my/demap-diff-update-current))
-
-  (defun my/demap-diff-after-save ()
-    "Update demap diff overlays after saving a buffer with diff-hl active."
-    (when (bound-and-true-p diff-hl-mode)
-      (my/demap-diff-schedule-update)))
-
-  (add-hook 'after-save-hook #'my/demap-diff-after-save)
-  (add-hook 'window-state-change-hook
-            (lambda ()
-              (run-with-idle-timer 0.05 nil #'my/demap-diff-update-current)))
-
-  (add-hook 'demap-minimap-construct-hook
-            (lambda ()
-              (my/demap-diff-update-current)))
-
-  (defun my/demap-preserve-window (&rest _)
-    "Set no-delete-other-windows on the demap side window."
-    (when-let* ((buf (get-buffer demap-minimap-default-name))
-                (win (get-buffer-window buf)))
-      (set-window-parameter win 'no-delete-other-windows t)))
-  (advice-add 'demap-open :after #'my/demap-preserve-window)
-  (my/demap-preserve-window))
-
+;;
+;; -> diff-minimap — minimap sidebar showing diff regions
+;;
+;; Toggle with `C-z m' (see `my-win-keymap' below), not `C-x v m':
+;; that is stock `vc-merge' and prompts for a branch merge in VC buffers.
+;; With the minimap open, every hunk is shown inline; edits update the diff
+;; live (reverting text to HEAD clears it) and `M-n'/`M-p' (also `M-F5'/
+;; `M-S-F5', `C-x v ]'/`C-x v [') step between hunks.  Old lines are virtual,
+;; new lines are real text; use `C-x o' to switch windows (it skips the
+;; minimap).  `C-z m' closes the shared sidebar but clears inlines only in
+;; the current buffer; other buffers keep theirs.
+;;
 (add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/diff-minimap")
 (autoload 'diff-minimap-toggle "diff-minimap" nil t)
 
@@ -2027,8 +1958,9 @@ If TITLE-FILTER is provided, filters results matching the session title."
 
 (setq tab-bar-auto-width-max '((120) 20))
 
-;; (load-theme 'doom-lantern t)
-(load-theme 'doom-molokai t)
+(load-theme 'doom-lantern t)
+;; (load-theme 'doom-molokai t)
+;; (load-theme 'ef-trio-dark t)
 
 (define-key my-win-keymap (kbd "m") #'diff-minimap-toggle)
 
@@ -2083,3 +2015,4 @@ If TITLE-FILTER is provided, filters results matching the session title."
 ;;   :config
 ;;   (setq completion-preview-minimum-symbol-length 2)
 ;;   (global-completion-preview-mode 1))
+
