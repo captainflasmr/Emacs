@@ -23,8 +23,6 @@
 !obp-shortcodes.el
 !ollama-buddy-user-prompts/
 !ollama-buddy-user-prompts/**
-!Emacs-vanilla/
-!Emacs-DIYer/
 !bookmarks
 !projects
 !v-social.org
