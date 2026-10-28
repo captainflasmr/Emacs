@@ -22,6 +22,16 @@ emacs -batch -f package-lint-batch-and-exit <file.el>
 emacs -q -l /home/jdyer/.emacs.d/init.el --eval '(message "Config loaded successfully")'
 ```
 
+## Literate Sources
+
+`Emacs-vanilla/init.el` and `Emacs-DIYer/init.el` are tangled from their sibling `README.org` files (see the `#+property: header-args :tangle` line at the top of each). Edit the Org source, then tangle:
+
+```bash
+emacs -Q --batch --eval '(progn (require (quote org)) (setq org-confirm-babel-evaluate nil) (org-babel-tangle-file "Emacs-vanilla/README.org") (org-babel-tangle-file "Emacs-DIYer/README.org"))'
+```
+
+Run that from the repository root. Do not edit the generated `.el` files directly. The top-level `init.el` is not tangled; edit it directly.
+
 ## Code Style Guidelines
 
 ### Elisp Format & Structure

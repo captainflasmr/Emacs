@@ -25,7 +25,8 @@ None of these are currently bound:
 
 /! C-c b -> my/copy-buffer-to-kill-ring (Emacs-vanilla/init.el:310)
 /! C-c d -> my/dired-duplicate-file (Emacs-vanilla/init.el:2009, dired-mode-map)
-/! C-c e -> my/export-menu (Emacs-vanilla/init.el:3073)
+/! C-c e -> diff-minimap-show-hunk (diff-minimap-mode, file buffers)
+/! C-c X -> my/export-menu (Emacs-vanilla/init.el)
 /! C-c v -> dwim-convert (Emacs-vanilla/init.el:2898)
 /! C-c u -> my/dired-du (Emacs-vanilla/init.el:2010, dired-mode-map)
 

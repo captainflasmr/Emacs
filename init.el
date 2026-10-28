@@ -18,23 +18,36 @@
 (defvar my/mode-line-height 90
   "Height for `mode-line' and `mode-line-inactive' faces.")
 
+(defun my/set-face-height (face height)
+  "Give FACE a HEIGHT that survives theme changes.
+HEIGHT is an absolute value in 1/10pt, or a relative scale such as 1.0.
+Unlike `set-face-attribute', this stores a face override spec, which
+`face-spec-recalc' applies last.  Theme changes therefore cannot restore
+the theme's own height over it."
+  (face-spec-set face `((t (:height ,height))) 'face-override-spec))
+
 (defun my/apply-main-font-sizes ()
   "Apply `my/main-font-height' and related face heights."
-  (set-face-attribute 'default nil :height my/main-font-height)
+  (my/set-face-height 'default my/main-font-height)
   ;; Keep `fixed-pitch' relative to `default' so it follows
   ;; `text-scale-mode' (used by `org-slides').  An absolute height here
   ;; leaves code and tables small while the surrounding text is scaled up,
   ;; which makes each code line look double-spaced.
   (when (facep 'fixed-pitch)
-    (set-face-attribute 'fixed-pitch nil :height 1.0))
+    (my/set-face-height 'fixed-pitch 1.0))
   (when (facep 'variable-pitch)
-    (set-face-attribute 'variable-pitch nil :height my/variable-pitch-height))
-  (set-face-attribute 'mode-line nil :height my/mode-line-height)
-  (set-face-attribute 'mode-line-inactive nil :height my/mode-line-height))
+    (my/set-face-height 'variable-pitch my/variable-pitch-height))
+  (my/set-face-height 'mode-line my/mode-line-height)
+  (my/set-face-height 'mode-line-inactive my/mode-line-height))
 
 (my/apply-main-font-sizes)
-;; Re-apply after theme changes and on new frames (daemon).
+;; The override specs above survive theme recalculation on their own, but
+;; re-apply them anyway to cover code that clears the override spec.  Both
+;; hooks are needed: `load-theme' enables a theme, while switching away
+;; from the old theme recalculates faces when it is disabled.
 (add-hook 'enable-theme-functions
+          (lambda (&rest _) (my/apply-main-font-sizes)))
+(add-hook 'disable-theme-functions
           (lambda (&rest _) (my/apply-main-font-sizes)))
 (add-hook 'after-make-frame-functions
           (lambda (_frame) (my/apply-main-font-sizes)))
@@ -1511,10 +1524,14 @@ mu4e's own header-line content once the update is done."
 ;; that is stock `vc-merge' and prompts for a branch merge in VC buffers.
 ;; With the minimap open, every hunk is shown inline; edits update the diff
 ;; live (reverting text to HEAD clears it) and `M-n'/`M-p' (also `M-F5'/
-;; `M-S-F5', `C-x v ]'/`C-x v [') step between hunks.  Old lines are virtual,
-;; new lines are real text; use `C-x o' to switch windows (it skips the
-;; minimap).  `C-z m' closes the shared sidebar but clears inlines only in
-;; the current buffer; other buffers keep theirs.
+;; `M-S-F5', `C-x v ]'/`C-x v [') step between hunks.  `C-c r' reverts the
+;; hunk at point in place (no vc-diff needed), and `C-x u' undoes it.  Old
+;; lines are virtual, new lines are real text; use `C-x o' to switch windows
+;; (it skips the minimap).  `C-z m' closes the shared sidebar but clears
+;; inlines only in the current buffer; other buffers keep theirs.  `C-c e'/
+;; `C-c E' toggle one/all inline hunks, leaving `C-c p'/`C-c P' free for
+;; major modes (Org uses `C-c P' for org-slides-start).  The sidebar only
+;; appears for files with local changes.
 ;;
 (add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/diff-minimap")
 (autoload 'diff-minimap-toggle "diff-minimap" nil t)
@@ -1588,17 +1605,15 @@ mu4e's own header-line content once the update is done."
          ("C-c z d" . emeld-diff-dwim)
          ("C-c z l" . emeld-recent)
          ("C-c z a" . emeld-mark-dir-a)
-         ("C-c z c" . emeld-compare-marked-dirs)
-         ;; M-n / M-p are reserved for window navigation: emeld's change
-         ;; navigation moves to the shifted pair inside its own buffers.
-         :map emeld-mode-map
-         ("M-N"     . emeld-next-change)
-         ("M-P"     . emeld-previous-change)
-         ("M-n"     . nil)
-         ("M-p"     . nil))
+         ("C-c z c" . emeld-compare-marked-dirs))
+  ;; M-n / M-p keep emeld's own change navigation (next/previous changed
+  ;; file) and M-N / M-P step through its hunks: `emeld-mode' is in
+  ;; `my/window-nav-passthrough-modes', so the global window bindings
+  ;; stand aside there.
   :config
   ;; (setq emeld-benchmark t)
-  (setq emeld-dir-prefix "📁 "))
+  ;; (setq emeld-dir-prefix "📁 ")
+  )
 
 ;; 1. Classic solid triangles — medium (U+25BA / U+25BC)
 ;; (setq emeld-fold-collapsed-indicator "► "
@@ -1958,7 +1973,9 @@ If TITLE-FILTER is provided, filters results matching the session title."
 
 (setq tab-bar-auto-width-max '((120) 20))
 
-(load-theme 'doom-lantern t)
+(load-theme 'doom-material-dark t)
+;; (load-theme 'doom-manegarm t)
+;; (load-theme 'doom-lantern t)
 ;; (load-theme 'doom-molokai t)
 ;; (load-theme 'ef-trio-dark t)
 
@@ -2016,3 +2033,4 @@ If TITLE-FILTER is provided, filters results matching the session title."
 ;;   (setq completion-preview-minimum-symbol-length 2)
 ;;   (global-completion-preview-mode 1))
 
+(setq isearch-allow-motion t)
