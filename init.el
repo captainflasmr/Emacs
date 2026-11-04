@@ -15,8 +15,11 @@
   "Height for the `default' face.")
 (defvar my/variable-pitch-height 100
   "Height for `variable-pitch' face.")
-(defvar my/mode-line-height 90
-  "Height for `mode-line' and `mode-line-inactive' faces.")
+(defvar my/mode-line-height 1.0
+  "Height for `mode-line' and `mode-line-inactive' faces.
+This is relative to the `default' face, so the mode line follows
+`my/main-font-height' when the global font size changes.  A value of
+1.0 makes it the same height as `default'; use e.g. 1.1 for 10% larger.")
 
 (defun my/set-face-height (face height)
   "Give FACE a HEIGHT that survives theme changes.
@@ -1633,6 +1636,23 @@ mu4e's own header-line content once the update is done."
 (set-frame-parameter nil 'alpha-background 98)
 (add-to-list 'default-frame-alist '(alpha-background . 98))
 
+;;
+;; -> neomacs
+;;
+;; Neomacs is a Rust implementation of Emacs with its own renderer.  Its
+;; visual effects are defcustoms in `neomacs-effects', which is loaded at
+;; startup under a graphical Neomacs but absent from GNU Emacs, hence the
+;; guard.  Assign with `setopt' rather than `setq': each option's :set
+;; function pushes the new value to the running renderer.  Discover the rest
+;; with `M-x customize-group RET neomacs RET'.
+(when (fboundp 'neomacs-effect-names)
+  (require 'neomacs-effects)
+  ;; No fading tail behind the moving cursor; 0.0 draws none (default 0.7).
+  (setopt neomacs-cursor-motion-trail-size 0.0)
+  ;; To remove the glide as well, jump straight to the new position:
+  ;; (setopt neomacs-cursor-motion-enabled nil)
+  )
+
 ;; $ emacs --batch --eval '(progn (find-file "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld/emeld.el") (goto-char (point-min)) (condition-case nil (while (not (eobp)) (forward-sexp)) (error (message "Unbalanced at pos %d, line %d, col %d" (point) (line-number-at-pos) (current-column)))))' 2>&1
 ;; Unbalanced at pos 31818, line 693, col 62
 
@@ -1974,9 +1994,8 @@ If TITLE-FILTER is provided, filters results matching the session title."
 (setq tab-bar-auto-width-max '((120) 20))
 
 (load-theme 'doom-material-dark t)
+;; (load-theme 'doom-outrun-electric t)
 ;; (load-theme 'doom-manegarm t)
-;; (load-theme 'doom-lantern t)
-;; (load-theme 'doom-molokai t)
 ;; (load-theme 'ef-trio-dark t)
 
 (define-key my-win-keymap (kbd "m") #'diff-minimap-toggle)
