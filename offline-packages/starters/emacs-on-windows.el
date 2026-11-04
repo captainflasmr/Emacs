@@ -26,6 +26,10 @@
  '(warning-suppress-log-types '((frameset)))
  '(warning-suppress-types '((frameset))))
 
+;; `default' (when set) must use an absolute height (1/10 pt); every other
+;; face uses a float relative to it, so global font-size changes and
+;; `text-scale-mode' keep the UI proportional.  Tab faces inherit
+;; `fixed-pitch' so a buffer-local `variable-pitch-mode' cannot change them.
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -47,8 +51,8 @@
  '(icomplete-first-match ((t (:foreground "#7c7c75" :background "#3a3a3a" :weight bold))))
  '(icomplete-selected-match ((t (:foreground "#ffffff" :background "#5f87af" :weight bold))))
  '(indent-guide-face ((t (:background "#282828" :foreground "#666666"))))
- '(mode-line ((t (:height 140 :underline nil :overline nil :box nil))))
- '(mode-line-inactive ((t (:height 140 :underline nil :overline nil :box nil))))
+ '(mode-line ((t (:height 1.4 :underline nil :overline nil :box nil))))
+ '(mode-line-inactive ((t (:height 1.4 :underline nil :overline nil :box nil))))
  '(org-column ((t (:background "#1e1e1e" :foreground "#d4d4d4"))))
  '(org-level-1 ((t (:inherit default :weight regular :height 1.0))))
  '(org-level-2 ((t (:inherit default :weight light :height 1.0))))
@@ -58,10 +62,10 @@
  '(org-level-6 ((t (:inherit default :weight light :height 1.0))))
  '(org-link ((t (:underline nil))))
  '(org-tag ((t (:height 0.9))))
- '(tab-bar ((t (:inherit default :background "#2d3743" :foreground "#e1e1e0"))))
- '(tab-bar-tab ((t (:inherit 'highlight :background "coral" :foreground "#000000"))))
- '(tab-bar-tab-inactive ((t (:inherit default :background "#2d3743" :foreground "#e1e1e0" :box (:line-width 1 :color "#2d3743" :style flat-button)))))
- '(variable-pitch ((t (:family "Consolas" :height 110 :weight normal))))
+ '(tab-bar ((t (:inherit fixed-pitch :background "#2d3743" :foreground "#e1e1e0"))))
+ '(tab-bar-tab ((t (:inherit (highlight fixed-pitch) :background "coral" :foreground "#000000"))))
+ '(tab-bar-tab-inactive ((t (:inherit fixed-pitch :background "#2d3743" :foreground "#e1e1e0" :box (:line-width 1 :color "#2d3743" :style flat-button)))))
+ '(variable-pitch ((t (:family "Consolas" :height 1.1 :weight normal))))
  '(vertical-border ((t (:foreground "#000000"))))
  '(widget-button ((t (:inherit fixed-pitch :weight regular))))
  '(window-divider ((t (:foreground "black")))))

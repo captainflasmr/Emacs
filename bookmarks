@@ -2,12 +2,18 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("Videos"
-  (filename . "~/Videos/")
-  (front-context-string . "20261022101000--")
-  (rear-context-string . "3M Oct 22 10:14 ")
-  (position . 134)
-  (last-modified 1792662360946343937 . 1000000000))
+(("advent-calendar--2026-bluey__kate"
+  (filename . "~/Downloads/Projects/AdventCalendar/advent-calendar--2026-bluey__kate/")
+  (front-context-string . "img\n  -rw-r--r--")
+  (rear-context-string . "2K Nov  2 17:58 ")
+  (position . 412)
+  (last-modified 1793642353847242395 . 1000000000))
+("Videos"
+ (filename . "~/Videos/")
+ (front-context-string . "20261022101000--")
+ (rear-context-string . "3M Oct 22 10:14 ")
+ (position . 134)
+ (last-modified 1792662360946343937 . 1000000000))
 ("org-slides"
  (filename . "~/.emacs.d/offline-packages/local-packages/org-slides/")
  (front-context-string . "org-slides.el\n  ")

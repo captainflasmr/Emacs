@@ -56,6 +56,31 @@
 ;; (load-theme 'timu-spacegrey t)   ; uncomment to pick one
 
 ;;
+;; -> face heights
+;;
+;; `default' is the only face that needs an absolute height; everything else
+;; uses a float relative to it so global font-size changes and
+;; `text-scale-mode' keep the UI proportional.  Override specs are applied
+;; after themes, so a theme change cannot reset these sizes.
+(dolist (face-height '((fixed-pitch 1.1)
+                       (variable-pitch 1.2)
+                       (mode-line 1.4)
+                       (mode-line-inactive 1.4)))
+  (face-spec-set (car face-height)
+                 `((t (:height ,(cadr face-height))))
+                 'face-override-spec))
+
+;; Tab labels inherit `fixed-pitch' so a buffer-local `variable-pitch-mode'
+;; cannot change their typeface as you switch tabs.
+(face-spec-set 'tab-bar '((t (:inherit fixed-pitch))) 'face-override-spec)
+(face-spec-set 'tab-bar-tab
+               '((t (:inherit (highlight fixed-pitch))))
+               'face-override-spec)
+(face-spec-set 'tab-bar-tab-inactive
+               '((t (:inherit fixed-pitch)))
+               'face-override-spec)
+
+;;
 ;; -> mode hints for file types
 ;;
 (use-package yaml-mode)

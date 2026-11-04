@@ -10,6 +10,15 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-11-04>
+
+Improved the shared face examples
+
+- =init.el.in= and =starters/emacs-on-windows.el=: changed =mode-line= and =mode-line-inactive= from absolute heights to relative =1.4=, and =variable-pitch= to relative =1.2= (=1.1= on Windows), so they follow =default= and =text-scale-mode=.
+- =init.el.in= and =starters/emacs-on-windows.el=: tab-bar faces now inherit =fixed-pitch=, with active labels inheriting both =highlight= and =fixed-pitch=, so buffer-local =variable-pitch-mode= cannot change the tab typeface.
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, and =emacs-30.2.el=: added a compact face-height example using relative heights and =face-spec-set= override specs, plus the same fixed-pitch tab-bar inheritance.
+- =README.org=: documented the relative-height and fixed-pitch tab-face conventions.
+
 ** <2026-10-23>
 
 Removed =demap= from the mirror and starter configs

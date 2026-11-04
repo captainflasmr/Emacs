@@ -129,6 +129,10 @@ Failures (e.g. package requires a newer Emacs) are logged, not fatal."
 ;;
 ;; -> custom-faces
 ;;
+;; `default' must use an absolute height (1/10 pt).  Every other face uses
+;; a float relative to it, so global font-size changes and `text-scale-mode'
+;; keep the UI proportional.  Tab faces inherit `fixed-pitch' so a
+;; buffer-local `variable-pitch-mode' cannot change their typeface.
 (condition-case err
     (custom-set-faces
      '(default ((t (:family "Monospace" :foundry "ADBO" :slant normal :weight regular :height 100 :width normal))))
@@ -146,8 +150,8 @@ Failures (e.g. package requires a newer Emacs) are logged, not fatal."
      '(icomplete-first-match ((t (:foreground "#7c7c75" :background "#3a3a3a" :weight bold))))
      '(icomplete-selected-match ((t (:foreground "#ffffff" :background "#5f87af" :weight bold))))
      '(indent-guide-face ((t (:background "#282828" :foreground "#666666"))))
-     '(mode-line ((t (:height 140 :underline nil :overline nil :box nil))))
-     '(mode-line-inactive ((t (:height 140 :underline nil :overline nil :box nil))))
+     '(mode-line ((t (:height 1.4 :underline nil :overline nil :box nil))))
+     '(mode-line-inactive ((t (:height 1.4 :underline nil :overline nil :box nil))))
      '(org-level-1 ((t (:inherit default :weight regular :height 1.0))))
      '(org-level-2 ((t (:inherit default :weight light :height 1.0))))
      '(org-level-3 ((t (:inherit default :weight light :height 1.0))))
@@ -156,10 +160,10 @@ Failures (e.g. package requires a newer Emacs) are logged, not fatal."
      '(org-level-6 ((t (:inherit default :weight light :height 1.0))))
      '(org-link ((t (:underline nil))))
      '(org-tag ((t (:height 0.9))))
-     '(tab-bar ((t (:inherit default :background "#2d3743" :foreground "#e1e1e0"))))
-     '(tab-bar-tab ((t (:inherit 'highlight :background "coral" :foreground "#000000"))))
-     '(tab-bar-tab-inactive ((t (:inherit default :background "#2d3743" :foreground "#e1e1e0" :box (:line-width 1 :color "#2d3743" :style flat-button)))))
-     '(variable-pitch ((t (:family "DejaVu Sans" :height 120 :weight normal))))
+     '(tab-bar ((t (:inherit fixed-pitch :background "#2d3743" :foreground "#e1e1e0"))))
+     '(tab-bar-tab ((t (:inherit (highlight fixed-pitch) :background "coral" :foreground "#000000"))))
+     '(tab-bar-tab-inactive ((t (:inherit fixed-pitch :background "#2d3743" :foreground "#e1e1e0" :box (:line-width 1 :color "#2d3743" :style flat-button)))))
+     '(variable-pitch ((t (:family "DejaVu Sans" :height 1.2 :weight normal))))
      '(vertical-border ((t (:foreground "#000000"))))
      '(widget-button ((t (:inherit fixed-pitch :weight regular))))
      '(window-divider ((t (:foreground "black")))))
