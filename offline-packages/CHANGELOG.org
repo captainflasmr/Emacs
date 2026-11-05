@@ -10,6 +10,15 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-11-05>
+
+Outline-aware imenu with live preview in the coding companion
+
+- Mirrored the live =init.el= outline-indent enhancements into =starters/coding.el=: XML/nXML buffers now use an element-aware imenu index, so =C-O=/=M-g i= lists XML elements (including =id=/=name= attributes) instead of every physical line.  Other outline-indent buffers get the same outline index on =C-c o i=.
+- =starters/coding.el=: the outline index previews the highlighted candidate in the source window while typing or stepping with =C-n=/=C-p=, reveals folded targets, and restores point, scroll position and folds on =C-g=.  The idle delay is controlled by =my/outline-imenu-preview-delay=.
+- =starters/coding.el=: added the =i= "Jump to section" entry to the =C-c o= transient and kept the =C-c C-f= / =C-i= fold toggles.
+- =README.org=: documented the outline-indent folding, XML-aware imenu index and preview behavior under the starter snippets.
+
 ** <2026-11-04>
 
 Improved the shared face examples

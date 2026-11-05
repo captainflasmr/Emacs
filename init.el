@@ -1329,6 +1329,275 @@ mu4e's own header-line content once the update is done."
       (outline-indent-open-fold-rec)
     (outline-indent-close-fold)))
 
+;; Outline-aware imenu: XML buffers index elements instead of every
+;; physical line; `C-c o i' uses outline headings in any other buffer.
+(defvar-local my/outline-imenu-heading-function nil
+  "Function used to label outline headings in the imenu index.
+Called with point on a heading; return a string, or nil to omit
+the heading.  When nil, use the trimmed heading line.")
+
+(defun my/outline-imenu-default-heading ()
+  "Return the trimmed text of the heading line at point."
+  (string-trim (buffer-substring-no-properties
+                (line-beginning-position)
+                (line-end-position))))
+
+(defun my/nxml-outline-imenu-tag-text ()
+  "Return the complete XML start tag at point, possibly spanning lines."
+  (save-excursion
+    (skip-chars-forward " \t")
+    (when (eq (char-after) ?<)
+      (let ((start (point))
+            (limit (min (point-max) (+ (point) 4096)))
+            end)
+        (while (and (not end) (< (point) limit))
+          (if (search-forward ">" (line-end-position) t)
+              (setq end (point))
+            (forward-line 1)))
+        (when end
+          (buffer-substring-no-properties start end))))))
+
+(defun my/nxml-outline-imenu-heading ()
+  "Return an imenu label for the XML element at point.
+Return nil for closing tags, comments, declarations, attribute
+continuation lines, and text-only lines, so the index follows the
+element structure instead of every physical line."
+  (let ((line (string-trim (buffer-substring-no-properties
+                            (line-beginning-position)
+                            (line-end-position)))))
+    (when (and (not (nth 4 (syntax-ppss)))
+               (string-match "\\`<\\([[:alpha:]_][^[:space:]/>]*\\)" line))
+      (let ((tag (match-string 1 line)))
+        (cond
+         ;; Complete element on one line (text or self-closing): keep
+         ;; the whole line so attribute values and text stay visible.
+         ((or (string-match "/>[[:space:]]*\\'" line)
+              (string-match ">[^<]*</[^>]+>[[:space:]]*\\'" line))
+          line)
+         ;; First line of a multi-line start tag: include an
+         ;; identifying attribute even when it is on a later line.
+         (t
+          (let ((tag-text (if (string-match ">" line)
+                              line
+                            (or (my/nxml-outline-imenu-tag-text) line))))
+            (if (string-match "[[:space:]]\\(?:id\\|name\\)=\"[^\"]*\""
+                              tag-text)
+                (format "<%s%s>" tag (match-string 0 tag-text))
+              (format "<%s>" tag)))))))))
+
+(defun my/outline-imenu-create-index ()
+  "Create a flat imenu index from the buffer's outline headings.
+Names include ancestor headings so every heading, including
+parents, is directly jumpable."
+  (let ((heading-function (or my/outline-imenu-heading-function
+                              #'my/outline-imenu-default-heading))
+        (index nil)
+        (stack nil))
+    (save-excursion
+      (goto-char (point-min))
+      (let ((collect
+             (lambda ()
+               (let ((level (funcall outline-level))
+                     (marker (point-marker))
+                     (label (funcall heading-function)))
+                 (when label
+                   (while (and stack (>= (caar stack) level))
+                     (pop stack))
+                   (push (cons (if stack
+                                   (concat (mapconcat #'cdr (reverse stack)
+                                                      imenu-level-separator)
+                                           imenu-level-separator
+                                           label)
+                                 label)
+                               marker)
+                         index)
+                   (push (cons level label) stack))))))
+        (when (outline-on-heading-p) (funcall collect))
+        (while (outline-next-heading) (funcall collect))))
+    (nreverse index)))
+
+(defcustom my/outline-imenu-preview-delay 0.1
+  "Idle seconds before previewing the highlighted outline section.
+Set to 0 to preview on every minibuffer command."
+  :type 'number
+  :group 'imenu)
+
+;; Live preview state, dynamically bound around `completing-read' so the
+;; minibuffer post-command hook can see it.
+(defvar my/outline-imenu--preview-items nil
+  "Alist of (display-name . marker) for the active preview session.")
+(defvar my/outline-imenu--preview-origin nil
+  "List (WINDOW BUFFER POINT WINDOW-START) captured before the prompt.")
+(defvar my/outline-imenu--preview-last nil
+  "Last marker previewed; used to skip redundant redraws.")
+(defvar my/outline-imenu--preview-timer nil
+  "Pending idle timer for the next preview update.")
+(defvar my/outline-imenu--preview-folds nil
+  "Outline overlays captured before previewing, as (START . END) pairs.")
+
+(defun my/outline-imenu--snapshot-folds (buffer)
+  "Return a list of (START . END) outline overlays in BUFFER."
+  (with-current-buffer buffer
+    (save-restriction
+      (widen)
+      (delq nil
+            (mapcar (lambda (overlay)
+                      (when (eq (overlay-get overlay 'invisible) 'outline)
+                        (cons (overlay-start overlay) (overlay-end overlay))))
+                    (overlays-in (point-min) (point-max)))))))
+
+(defun my/outline-imenu--restore-folds (buffer folds)
+  "Restore outline FOLDS in BUFFER."
+  (when (buffer-live-p buffer)
+    (with-current-buffer buffer
+      (save-restriction
+        (widen)
+        (remove-overlays (point-min) (point-max) 'invisible 'outline)
+        (dolist (range folds)
+          (let ((overlay (make-overlay (car range) (cdr range)
+                                       nil 'front-advance)))
+            (overlay-put overlay 'evaporate t)
+            (overlay-put overlay 'invisible 'outline)
+            (overlay-put overlay 'isearch-open-invisible
+                         (or (bound-and-true-p outline-isearch-open-invisible-function)
+                             #'outline-isearch-open-invisible))))))))
+
+(defun my/outline-imenu--preview-candidate ()
+  "Return the completion candidate currently highlighted in the minibuffer."
+  (or (and (boundp 'completion-all-sorted-completions)
+           (bound-and-true-p icomplete-mode)
+           completion-all-sorted-completions
+           (car completion-all-sorted-completions))
+      (and (minibufferp) (minibuffer-contents-no-properties))))
+
+(defun my/outline-imenu--preview-update ()
+  "Show the highlighted outline section in the origin window."
+  (when (and (minibufferp)
+             my/outline-imenu--preview-items
+             my/outline-imenu--preview-origin)
+    (let* ((candidate (ignore-errors (my/outline-imenu--preview-candidate)))
+           (marker (and candidate
+                        (cdr (assoc candidate my/outline-imenu--preview-items)))))
+      (when (and (markerp marker)
+                 (not (equal marker my/outline-imenu--preview-last))
+                 (window-live-p (car my/outline-imenu--preview-origin)))
+        (setq my/outline-imenu--preview-last marker)
+        (with-selected-window (car my/outline-imenu--preview-origin)
+          (let ((buffer (marker-buffer marker)))
+            (when (buffer-live-p buffer)
+              (switch-to-buffer buffer t t)
+              (goto-char marker)
+              (when (outline-on-heading-p t)
+                (outline-show-entry))
+              (recenter))))))))
+
+(defun my/outline-imenu--preview-schedule ()
+  "Schedule a preview after `my/outline-imenu-preview-delay' idle seconds."
+  (when (timerp my/outline-imenu--preview-timer)
+    (cancel-timer my/outline-imenu--preview-timer))
+  (setq my/outline-imenu--preview-timer
+        (run-with-idle-timer my/outline-imenu-preview-delay nil
+                             #'my/outline-imenu--preview-update)))
+
+(defun my/outline-imenu--preview-cleanup ()
+  "Cancel any pending preview and restore the origin window state."
+  (when (timerp my/outline-imenu--preview-timer)
+    (cancel-timer my/outline-imenu--preview-timer)
+    (setq my/outline-imenu--preview-timer nil))
+  (pcase my/outline-imenu--preview-origin
+    (`(,win ,buf ,pt ,start)
+     (when (and (window-live-p win) (buffer-live-p buf))
+       (my/outline-imenu--restore-folds buf my/outline-imenu--preview-folds)
+       (with-selected-window win
+         (switch-to-buffer buf t t)
+         (goto-char pt)
+         (set-window-start win start))))))
+
+(defun my/outline-imenu--choose (index-alist &optional prompt)
+  "Read an outline index entry from INDEX-ALIST with live preview.
+PROMPT is the minibuffer prompt.  Return the chosen cons cell, or nil."
+  (let* ((win (selected-window))
+         (my/outline-imenu--preview-items index-alist)
+         (my/outline-imenu--preview-origin
+          (list win (window-buffer win) (window-point win) (window-start win)))
+         (my/outline-imenu--preview-last nil)
+         (my/outline-imenu--preview-folds
+          (my/outline-imenu--snapshot-folds (window-buffer win)))
+         (imenu-space-replacement nil)
+         (choice nil))
+    (minibuffer-with-setup-hook
+        (lambda ()
+          (add-hook 'post-command-hook #'my/outline-imenu--preview-schedule nil t)
+          (add-hook 'minibuffer-exit-hook #'my/outline-imenu--preview-cleanup nil t)
+          (my/outline-imenu--preview-schedule))
+      (setq choice
+            (completing-read
+             (or prompt "Outline section: ")
+             (lambda (string pred action)
+               (if (eq action 'metadata)
+                   '(metadata (category . imenu))
+                 (complete-with-action action index-alist string pred)))
+             nil t nil 'imenu--history-list)))
+    (if (stringp choice)
+        (assoc choice index-alist)
+      choice)))
+
+(defun my/outline-imenu--completion-buffer (orig index-alist &optional prompt)
+  "Use `my/outline-imenu--choose' for outline-based imenu indexes."
+  (if (eq imenu-create-index-function #'my/outline-imenu-create-index)
+      (my/outline-imenu--choose index-alist prompt)
+    (funcall orig index-alist prompt)))
+
+(require 'imenu)
+(unless (advice-member-p #'my/outline-imenu--completion-buffer
+                         'imenu--completion-buffer)
+  (advice-add 'imenu--completion-buffer :around
+              #'my/outline-imenu--completion-buffer))
+
+(defun my/outline-imenu ()
+  "Jump to a heading using the current outline structure.
+The highlighted candidate is previewed in the source window
+before the jump."
+  (interactive)
+  (let ((imenu-create-index-function #'my/outline-imenu-create-index)
+        (imenu-generic-expression nil)
+        (imenu--index-alist nil)
+        (imenu-auto-rescan t)
+        (imenu-max-item-length nil)
+        (imenu-space-replacement nil))
+    (call-interactively #'imenu)))
+
+(defun my/outline-imenu-setup ()
+  "Use outline headings for `imenu' in XML buffers.
+Other modes keep their native imenu index; `my/outline-imenu' is
+available everywhere for an outline-based index."
+  (if outline-indent-minor-mode
+      (when (derived-mode-p 'nxml-mode)
+        (setq-local my/outline-imenu-heading-function
+                    #'my/nxml-outline-imenu-heading)
+        (setq-local imenu-create-index-function
+                    #'my/outline-imenu-create-index)
+        (setq-local imenu-auto-rescan t)
+        (setq-local imenu-max-item-length nil)
+        (setq-local imenu-space-replacement nil))
+    (when (and (boundp 'imenu-create-index-function)
+               (eq imenu-create-index-function #'my/outline-imenu-create-index))
+      (kill-local-variable 'imenu-create-index-function)
+      (kill-local-variable 'imenu-auto-rescan)
+      (kill-local-variable 'imenu-max-item-length)
+      (kill-local-variable 'imenu-space-replacement)
+      (kill-local-variable 'my/outline-imenu-heading-function))))
+
+(defun my/outline-imenu-reveal-heading ()
+  "Reveal the outline heading at point after an imenu jump."
+  (when (and (bound-and-true-p outline-indent-minor-mode)
+             (outline-on-heading-p t))
+    (outline-show-entry)
+    (recenter)))
+
+(add-hook 'imenu-after-jump-hook #'my/outline-imenu-reveal-heading)
+(add-hook 'outline-indent-minor-mode-hook #'my/outline-imenu-setup)
+
 (require 'transient)
 
 (transient-define-prefix outline-indent-transient ()
@@ -1349,7 +1618,8 @@ mu4e's own header-line content once the update is done."
     ("p"   "Prev heading"         outline-previous-visible-heading)
     ("f"   "Fwd same level"       outline-indent-forward-same-level)
     ("b"   "Back same level"      outline-indent-backward-same-level)
-    ("u"   "Up heading"           outline-up-heading)]
+    ("u"   "Up heading"           outline-up-heading)
+    ("i"   "Jump to section"      my/outline-imenu)]
    ["Structure / Isolate"
     (">"   "Shift right"          outline-indent-shift-right)
     ("<"   "Shift left"           outline-indent-shift-left)
