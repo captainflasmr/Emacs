@@ -12,6 +12,12 @@ This document contains the release notes for offline-packages
 
 ** <2026-11-05>
 
+Load =simply-annotate= eagerly in the starter configs
+
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: added =:demand t= to the =simply-annotate= =use-package= forms so the package loads at startup and its =:config= / =:bind= setup is active without waiting for the first =find-file-hook= autoload.
+
+** <2026-11-05>
+
 Outline-aware imenu with live preview in the coding companion
 
 - Mirrored the live =init.el= outline-indent enhancements into =starters/coding.el=: XML/nXML buffers now use an element-aware imenu index, so =C-O=/=M-g i= lists XML elements (including =id=/=name= attributes) instead of every physical line.  Other outline-indent buffers get the same outline index on =C-c o i=.

@@ -152,6 +152,7 @@
                                        (find-file (concat user-emacs-directory "README.org"))))
 
 (use-package simply-annotate
+  :demand t
   :hook
   (find-file-hook . simply-annotate-mode)
   :custom

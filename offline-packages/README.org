@@ -96,7 +96,7 @@ The rendered =init.el= puts =~/.emacs.d/local-packages/= plus every immediate su
 
 Each =starters/emacs-<VER>.el=, if present, is bundled as =init-starter.el= at the root of the toolkit tarball, and =setup.sh= installs it to =~/.emacs.d/init-starter.el= on the target. It is /not/ auto-loaded — the rendered =init.el= copy-over is left untouched.
 
-The snippets are distilled from the author's live config: =use-package= blocks for the themes, =diff-hl=, =selected-window-accent-mode=, =simply-annotate=, =vlf=, =ztree=, =ollama-buddy= (30.x), etc. They assume the corresponding package is already in the offline mirror (true by construction, since the snippet is matched to =packages/emacs-<VER>.el=).
+The snippets are distilled from the author's live config: =use-package= blocks for the themes, =diff-hl=, =selected-window-accent-mode=, =simply-annotate=, =vlf=, =ztree=, =ollama-buddy= (30.x), etc. They assume the corresponding package is already in the offline mirror (true by construction, since the snippet is matched to =packages/emacs-<VER>.el=).  The =simply-annotate= blocks use =:demand t= so the package and its keymap/config are available from startup rather than waiting for the first =find-file-hook= autoload.
 
 The face examples in =init.el.in=, the per-version starters, and the Windows starter use an absolute =:height= only for =default=; every other face uses a float relative to =default=, so global font-size changes and =text-scale-mode= keep the mode line, prose, and code in proportion. Tab faces inherit =fixed-pitch= rather than =default=, so a buffer-local =variable-pitch-mode= cannot change the tab typeface when switching tabs.
 

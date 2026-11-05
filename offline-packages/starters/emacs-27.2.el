@@ -153,6 +153,7 @@
 ;; -> simply-annotate — overlay notes on any file
 ;;
 (use-package simply-annotate
+  :demand t
   :hook (find-file-hook . simply-annotate-mode)
   :config
   (define-key my-overrides-mode-map (kbd "M-s") simply-annotate-command-map)
