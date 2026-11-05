@@ -8,52 +8,9 @@
 ;;
 ;; -> fonts
 ;;
-;; Main font sizes. Edit these numbers, then re-evaluate this section
-;; (or restart Emacs). Values are in 1/10pt, so 105 means 10.5pt.
-;; They override `Emacs-vanilla/init.el' `custom-set-faces' above.
-(defvar my/main-font-height 90
-  "Height for the `default' face.")
-(defvar my/variable-pitch-height 100
-  "Height for `variable-pitch' face.")
-(defvar my/mode-line-height 1.0
-  "Height for `mode-line' and `mode-line-inactive' faces.
-This is relative to the `default' face, so the mode line follows
-`my/main-font-height' when the global font size changes.  A value of
-1.0 makes it the same height as `default'; use e.g. 1.1 for 10% larger.")
-
-(defun my/set-face-height (face height)
-  "Give FACE a HEIGHT that survives theme changes.
-HEIGHT is an absolute value in 1/10pt, or a relative scale such as 1.0.
-Unlike `set-face-attribute', this stores a face override spec, which
-`face-spec-recalc' applies last.  Theme changes therefore cannot restore
-the theme's own height over it."
-  (face-spec-set face `((t (:height ,height))) 'face-override-spec))
-
-(defun my/apply-main-font-sizes ()
-  "Apply `my/main-font-height' and related face heights."
-  (my/set-face-height 'default my/main-font-height)
-  ;; Keep `fixed-pitch' relative to `default' so it follows
-  ;; `text-scale-mode' (used by `org-slides').  An absolute height here
-  ;; leaves code and tables small while the surrounding text is scaled up,
-  ;; which makes each code line look double-spaced.
-  (when (facep 'fixed-pitch)
-    (my/set-face-height 'fixed-pitch 1.0))
-  (when (facep 'variable-pitch)
-    (my/set-face-height 'variable-pitch my/variable-pitch-height))
-  (my/set-face-height 'mode-line my/mode-line-height)
-  (my/set-face-height 'mode-line-inactive my/mode-line-height))
-
-(my/apply-main-font-sizes)
-;; The override specs above survive theme recalculation on their own, but
-;; re-apply them anyway to cover code that clears the override spec.  Both
-;; hooks are needed: `load-theme' enables a theme, while switching away
-;; from the old theme recalculates faces when it is disabled.
-(add-hook 'enable-theme-functions
-          (lambda (&rest _) (my/apply-main-font-sizes)))
-(add-hook 'disable-theme-functions
-          (lambda (&rest _) (my/apply-main-font-sizes)))
-(add-hook 'after-make-frame-functions
-          (lambda (_frame) (my/apply-main-font-sizes)))
+;; Font heights and `my/apply-main-font-sizes' moved to
+;; Emacs-vanilla/init.el (`font-size-core').  C-z z resets the display
+;; scale after buffer or global zooming.
 
 ;;
 ;; -> package-archives
