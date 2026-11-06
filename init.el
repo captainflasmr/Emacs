@@ -1667,6 +1667,23 @@ comment headers fold their section, definitions fold to the next one."
     (define-key my-ms-map (kbd "i")
                 (lambda () (interactive) (my/tab-bar-push-window 1)))
     (define-key my-overrides-mode-map (kbd "M-s") my-ms-map))
+  (define-key simply-annotate-mode-map (kbd "M-N") #'simply-annotate-next)
+  (define-key simply-annotate-mode-map (kbd "M-P") #'simply-annotate-previous)
+  (defun my/simply-annotate-next-or-flymake ()
+    "Go to the next annotation, or the next flymake error when not annotating."
+    (interactive)
+    (if (bound-and-true-p simply-annotate-mode)
+        (simply-annotate-next)
+      (call-interactively #'flymake-goto-next-error)))
+  (defun my/simply-annotate-previous-or-flymake ()
+    "Go to the previous annotation, or the previous flymake error when not annotating."
+    (interactive)
+    (if (bound-and-true-p simply-annotate-mode)
+        (simply-annotate-previous)
+      (call-interactively #'flymake-goto-prev-error)))
+  (with-eval-after-load 'flymake
+    (define-key flymake-mode-map (kbd "M-N") #'my/simply-annotate-next-or-flymake)
+    (define-key flymake-mode-map (kbd "M-P") #'my/simply-annotate-previous-or-flymake))
   (require 'posframe)
   (setq simply-annotate-inline-position 'margin-right)
   (setq simply-annotate-tint-amount 50)
