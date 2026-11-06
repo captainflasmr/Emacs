@@ -12,6 +12,13 @@ This document contains the release notes for offline-packages
 
 ** <2026-11-06>
 
+Add a favourite-themes section to the starters
+
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: added a =favourite-themes= block with =doom-tokyo-night= active and =gruvbox-dark-hard=, =doom-material-dark=, =doom-outrun-electric=, =doom-manegarm= and =ef-trio-dark= as commented alternatives.
+- =README.org=: documented the theme list and noted that =ef-trio-dark= requires =ef-themes= (available in the 30.x mirror).
+
+** <2026-11-06>
+
 Expose font-size overrides in the offline configs
 
 - =init.el.in=, =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: added a commented =my/set-font-size-overrides= block so per-machine font sizes can be set without editing Emacs-vanilla's =font-size-core=.

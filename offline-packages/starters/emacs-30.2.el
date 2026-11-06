@@ -50,7 +50,19 @@
   (setq timu-rouge-scale-org-level-2 1.4)
   (setq timu-rouge-scale-org-level-3 1.2))
 
-;; (load-theme 'ef-dark t)          ; uncomment to pick one
+;;
+;; -> favourite-themes
+;;
+;; Pick one at a time; the others stay commented so they are easy to
+;; swap.  `gruvbox-dark-hard' comes from `gruvbox-theme' and
+;; `ef-trio-dark' from `ef-themes'.
+;;
+;; (load-theme 'gruvbox-dark-hard t)
+(load-theme 'doom-tokyo-night t)
+;; (load-theme 'doom-material-dark t)
+;; (load-theme 'doom-outrun-electric t)
+;; (load-theme 'doom-manegarm t)
+;; (load-theme 'ef-trio-dark t)
 
 ;;
 ;; -> face heights
