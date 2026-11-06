@@ -6,13 +6,6 @@
 (load-file "~/.emacs.d/Emacs-vanilla/init.el")
 
 ;;
-;; -> fonts
-;;
-;; Font heights and `my/apply-main-font-sizes' moved to
-;; Emacs-vanilla/init.el (`font-size-core').  C-z z resets the display
-;; scale after buffer or global zooming.
-
-;;
 ;; -> package-archives
 ;;
 
@@ -1776,3 +1769,16 @@ comment headers fold their section, definitions fold to the next one."
 ;; environments that don't support it.
 (set-frame-parameter nil 'alpha-background 80)
 (add-to-list 'default-frame-alist '(alpha-background . 80))
+
+;;
+;; -> fonts
+;;
+;; Emacs-vanilla/init.el owns the default font sizes.  Override them here
+;; per machine without editing that module.  `default' and
+;; `variable-pitch' are in 1/10pt; `fixed-pitch' and `mode-line' are
+;; relative to `default'.  Uncomment and adjust for the current display.
+;;
+(my/set-font-size-overrides
+ '((default . 90)
+   (variable-pitch . 100)
+   (mode-line . 1.0)))
