@@ -1189,10 +1189,11 @@ mu4e's own header-line content once the update is done."
 (add-to-list 'load-path "~/.emacs.d/offline-packages/local-packages/diff-minimap")
 (autoload 'diff-minimap-toggle "diff-minimap" nil t)
 
-
-;; (setq diff-minimap-viewport-style 'filled)
 ;; (setq diff-minimap-viewport-style 'edge-bar)
 ;; (setq diff-minimap-viewport-style 'stipple)
+;; (setq diff-minimap-viewport-style 'filled)
+;; (setq diff-minimap-viewport-style 'outline)
+
 ;; (setq diff-minimap-stipple-pattern 'dots-sparse)
 ;; (setq diff-minimap-colour-source 'diff-hl)
 ;; (setq diff-minimap-font-scale 0.2)
@@ -1709,7 +1710,10 @@ comment headers fold their section, definitions fold to the next one."
 (use-package zig-mode
   :mode "\\.zig\\'")
 
-(load-theme 'doom-material-dark t)
+
+;; (load-theme 'gruvbox-dark-hard t)
+(load-theme 'doom-tokyo-night t)
+;; (load-theme 'doom-material-dark t)
 ;; (load-theme 'doom-outrun-electric t)
 ;; (load-theme 'doom-manegarm t)
 ;; (load-theme 'ef-trio-dark t)
@@ -1767,3 +1771,8 @@ comment headers fold their section, definitions fold to the next one."
 ;;   :config
 ;;   (setq completion-preview-minimum-symbol-length 2)
 ;;   (global-completion-preview-mode 1))
+
+;; Slight transparency on the frame background. Harmless in TTY/Wayland
+;; environments that don't support it.
+(set-frame-parameter nil 'alpha-background 80)
+(add-to-list 'default-frame-alist '(alpha-background . 80))
