@@ -10,6 +10,13 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-11-06>
+
+Add =org-table-fit= to the starter configs
+
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: added a =use-package= block for the vendored =org-table-fit= package, enabling =org-table-fit-overlay-mode= from =org-mode-hook= and binding =C-c t f/i/t/u/r=.  The block is version-gated to Emacs 29.1+ (the package's minimum) and guarded by =my/org-table-fit-configured=.
+- =README.org=: documented the =org-table-fit= starter block.
+
 ** <2026-11-05>
 
 Load =simply-annotate= eagerly in the starter configs

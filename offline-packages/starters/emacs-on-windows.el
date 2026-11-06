@@ -334,6 +334,38 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
 (use-package jira-to-org)
 
 ;;
+;; -> org-table-fit — fit Org tables to the window width
+;;
+;; Vendored under local-packages/org-table-fit; no ELPA archive needed.
+;; `org-table-fit-overlay-mode' wraps wide tables with overlays without
+;; changing the buffer text; `org-table-fit-window' rewrites the table at
+;; point and `org-table-fit-unwrap' restores it.  Org 9.7 removed the
+;; `org-table-map' prefix keymap (C-c | is now a direct binding), so these
+;; live on the free C-c t prefix.  Requires Emacs 29.1; the block is
+;; skipped on older Emacs versions.
+;;
+(unless (and (boundp 'my/org-table-fit-configured)
+             my/org-table-fit-configured)
+  (when (and (locate-library "org-table-fit")
+             (version<= "29.1" emacs-version))
+    (use-package org-table-fit
+      :ensure nil
+      :load-path ("offline-packages/local-packages/org-table-fit"
+                  "local-packages/org-table-fit")
+      :demand t
+      :hook (org-mode . org-table-fit-overlay-mode)
+      :bind (:map org-mode-map
+                  ("C-c t f" . org-table-fit-window)
+                  ("C-c t i" . org-table-fit-window)
+                  ("C-c t t" . org-table-fit-overlay-mode)
+                  ("C-c t u" . org-table-fit-unwrap)
+                  ("C-c t r" . org-table-fit-toggle-reveal-on-point))
+      :init
+      (setq my/org-table-fit-configured t)
+      :config
+      (setq org-table-fit-overlay-reveal-on-point nil))))
+
+;;
 ;; -> org-ibullets — render Org heading stars as UTF-8 bullets
 ;;
 ;; Vendored under local-packages/org-ibullets; no ELPA archive needed.
