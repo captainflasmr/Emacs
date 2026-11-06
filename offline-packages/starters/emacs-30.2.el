@@ -78,6 +78,24 @@
                'face-override-spec)
 
 ;;
+;; -> font-size-overrides
+;;
+;; Per-machine override point for the sizes in `font-size-core'.  The
+;; face-height block above supplies the starter defaults; uncommenting
+;; this replaces them.  `default' and `variable-pitch' are in 1/10pt;
+;; `fixed-pitch' and `mode-line' are relative to `default'.
+;; `my/set-font-size-overrides' applies the whole set, so include every
+;; face you want to pin; unspecified faces fall back to Emacs-vanilla's
+;; defaults.
+;;
+;; (when (fboundp 'my/set-font-size-overrides)
+;;   (my/set-font-size-overrides
+;;    '((default . 100)
+;;      (fixed-pitch . 1.1)
+;;      (variable-pitch . 120)
+;;      (mode-line . 1.4))))
+
+;;
 ;; -> mode hints for file types
 ;;
 (use-package yaml-mode)
