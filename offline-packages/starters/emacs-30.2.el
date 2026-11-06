@@ -185,16 +185,50 @@
 ;; -> simply-annotate — overlay notes on any file
 ;;
 (use-package simply-annotate
+  :if (locate-library "simply-annotate")
   :demand t
   :hook (find-file-hook . simply-annotate-mode)
   :config
-  (define-key my-overrides-mode-map (kbd "M-s") simply-annotate-command-map)
-  (setq simply-annotate-inline-position 'above)
-  (setq simply-annotate-tint-amount 20)
+  (let ((my-ms-map (make-sparse-keymap)))
+    (set-keymap-parent my-ms-map simply-annotate-command-map)
+    (define-key my-ms-map (kbd "u")
+                (lambda () (interactive) (my/tab-bar-push-window -1)))
+    (define-key my-ms-map (kbd "i")
+                (lambda () (interactive) (my/tab-bar-push-window 1)))
+    (define-key my-overrides-mode-map (kbd "M-s") my-ms-map))
+  (define-key simply-annotate-mode-map (kbd "M-N") #'simply-annotate-next)
+  (define-key simply-annotate-mode-map (kbd "M-P") #'simply-annotate-previous)
+  (defun my/simply-annotate-next-or-flymake ()
+    "Go to the next annotation, or the next flymake error when not annotating."
+    (interactive)
+    (if (bound-and-true-p simply-annotate-mode)
+        (simply-annotate-next)
+      (call-interactively #'flymake-goto-next-error)))
+  (defun my/simply-annotate-previous-or-flymake ()
+    "Go to the previous annotation, or the previous flymake error when not annotating."
+    (interactive)
+    (if (bound-and-true-p simply-annotate-mode)
+        (simply-annotate-previous)
+      (call-interactively #'flymake-goto-prev-error)))
+  (with-eval-after-load 'flymake
+    (define-key flymake-mode-map (kbd "M-N") #'my/simply-annotate-next-or-flymake)
+    (define-key flymake-mode-map (kbd "M-P") #'my/simply-annotate-previous-or-flymake))
+  ;; `posframe' is optional in the offline toolkit; load it when present.
+  (when (locate-library "posframe")
+    (require 'posframe))
+  (setq simply-annotate-inline-position 'margin-right)
+  (setq simply-annotate-tint-amount 50)
+  (setq simply-annotate-hide-done-statuses '("resolved" "closed"))
+  (setq simply-annotate-hide-done-style 'indicator)
   (setq simply-annotate-inline-pointer-above "┗━▶")
   (setq simply-annotate-inline-pointer-after "┏━▶")
+  (setq simply-annotate-author-list '("John Doe" "Jane Smith" "James Dyer"))
+  (setq simply-annotate-prompt-for-author 'threads-only)
   (setq simply-annotate-database-strategy 'both)
-  (setq simply-annotate-inline-default t))
+  (setq simply-annotate-display-style '(bracket)))
+
+(with-eval-after-load 'simply-annotate
+  (add-hook 'dired-mode-hook #'simply-annotate-dired-mode))
 
 
 ;;

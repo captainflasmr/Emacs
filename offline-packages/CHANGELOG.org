@@ -12,6 +12,14 @@ This document contains the release notes for offline-packages
 
 ** <2026-11-06>
 
+Update the simply-annotate starter setup
+
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: mirrored the live =simply-annotate= configuration: right-margin inline position, tint 50, hidden resolved/closed threads, the three-author list, threads-only prompting, bracket display, the =M-s= command map with =u=/=i= tab-bar movement, and the dired hook.  The block remains =:demand t=, skips itself when the package is unavailable, and loads =posframe= only when present.
+- Added =M-N=/=M-P= annotation navigation.  In buffers with =flymake-mode=, the keys dispatch to =simply-annotate-next=/=previous= when =simply-annotate-mode= is active and otherwise keep flymake's error navigation.
+- =README.org=: documented the updated setup and navigation keys.
+
+** <2026-11-06>
+
 Add a favourite-themes section to the starters
 
 - =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: added a =favourite-themes= block with =doom-tokyo-night= active and =gruvbox-dark-hard=, =doom-material-dark=, =doom-outrun-electric=, =doom-manegarm= and =ef-trio-dark= as commented alternatives.
