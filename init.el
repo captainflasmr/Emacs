@@ -1703,7 +1703,13 @@ comment headers fold their section, definitions fold to the next one."
 (use-package zig-mode
   :mode "\\.zig\\'")
 
-
+;;
+;; -> favourite-themes
+;;
+;; Pick one at a time; the others stay commented so they are easy to
+;; swap.  `gruvbox-dark-hard' comes from `gruvbox-theme' and
+;; `ef-trio-dark' from `ef-themes'.
+;;
 ;; (load-theme 'gruvbox-dark-hard t)
 (load-theme 'doom-tokyo-night t)
 ;; (load-theme 'doom-material-dark t)
