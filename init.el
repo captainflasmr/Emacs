@@ -1658,6 +1658,7 @@ comment headers fold their section, definitions fold to the next one."
 
 (use-package simply-annotate
   :load-path "~/source/repos/simply-annotate"
+  :demand t
   :hook (find-file-hook . simply-annotate-mode)
   :config
   (let ((my-ms-map (make-sparse-keymap)))
