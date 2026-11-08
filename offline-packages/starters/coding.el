@@ -405,10 +405,10 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 ;; Ships in this toolkit under local-packages/project-overview.  Needs the
 ;; Emacs 28+ project.el commands, so it is skipped on 27.x.
 ;;
-;; In the dashboard: RET/o switch · f find file · m magit · D dired ·
-;; w browse remote · c/C changelog · R README · b BUGS · i/P GitHub
-;; issues/PRs · / filter · V cycle view · t toggle Description · g refresh ·
-;; r cache/pull · ? all actions.  Every option below has a sensible default,
+;; In the dashboard: RET/o switch (project-switch menu) · m magit · D dired ·
+;; w browse remote · C changelog · R README · b BUGS · i/P GitHub
+;; issues/PRs · / filter · V cycle view · g refresh ·
+;; ? all actions (incl. cache/pull).  Every option below has a sensible default,
 ;; so the whole `:custom' block is optional reference; see example-init.el in
 ;; the package directory for the full annotated list.
 (when (fboundp 'project-switch-project)

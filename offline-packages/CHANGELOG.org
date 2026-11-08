@@ -12,6 +12,20 @@ This document contains the release notes for offline-packages
 
 ** <2026-11-06>
 
+Ensure simply-annotate mode is enabled for new files
+
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: replaced the =locate-library= guard with a =version<= "28.1"= guard and added an explicit =find-file-hook= for =simply-annotate-mode=.  The package's own find-file hook only enables the mode when annotations already exist, so new files were left without the mode and new annotations were not persisted.
+- =README.org=: documented the explicit hook.
+
+** <2026-11-06>
+
+Fix simply-annotate persistence on read-only offline projects
+
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: advised =simply-annotate--database-path= to fall back to the global =simply-annotations.el= when the project-local =.simply-annotations.el= is not writable.  The =both= strategy otherwise fails silently on read-only project roots because its save error is followed by an "Annotation saved" message.
+- =README.org=: documented the writable-database fallback.
+
+** <2026-11-06>
+
 Update the simply-annotate starter setup
 
 - =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: mirrored the live =simply-annotate= configuration: right-margin inline position, tint 50, hidden resolved/closed threads, the three-author list, threads-only prompting, bracket display, the =M-s= command map with =u=/=i= tab-bar movement, and the dired hook.  The block remains =:demand t=, skips itself when the package is unavailable, and loads =posframe= only when present.

@@ -170,7 +170,7 @@
                                        (find-file (concat user-emacs-directory "README.org"))))
 
 (use-package simply-annotate
-  :if (locate-library "simply-annotate")
+  :if (version<= "28.1" emacs-version)
   :demand t
   :hook (find-file-hook . simply-annotate-mode)
   :config
@@ -210,7 +210,25 @@
   (setq simply-annotate-author-list '("John Doe" "Jane Smith" "James Dyer"))
   (setq simply-annotate-prompt-for-author 'threads-only)
   (setq simply-annotate-database-strategy 'both)
+  ;; Offline project roots are often read-only.  Fall back to the
+  ;; writable global database when the project-local database cannot be
+  ;; written, instead of silently failing to persist annotations.
+  (defun my/simply-annotate--database-path (orig)
+    "Use the project database when writable, else the global database."
+    (let ((path (funcall orig)))
+      (if (file-writable-p path)
+          path
+        (expand-file-name simply-annotate-file))))
+  (unless (advice-member-p #'my/simply-annotate--database-path
+                           'simply-annotate--database-path)
+    (advice-add 'simply-annotate--database-path :around
+                #'my/simply-annotate--database-path))
   (setq simply-annotate-display-style '(bracket)))
+
+;; Enable annotation mode for every new file.  The package's own
+;; find-file hook only enables it when annotations already exist.
+(when (version<= "28.1" emacs-version)
+  (add-hook 'find-file-hook #'simply-annotate-mode))
 
 (with-eval-after-load 'simply-annotate
   (add-hook 'dired-mode-hook #'simply-annotate-dired-mode))
