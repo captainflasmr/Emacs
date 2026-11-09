@@ -43,7 +43,7 @@
   (selected-window-accent-use-pywal t)
   (selected-window-accent-smart-borders nil))
 
-;; (define-key my-overrides-mode-map (kbd "C-c w") selected-window-accent-map)
+(define-key my-overrides-mode-map (kbd "C-c w") selected-window-accent-map)
 
 ;;
 ;; -> org-table-fit
