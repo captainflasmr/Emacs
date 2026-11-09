@@ -94,6 +94,16 @@ Failures (e.g. package requires a newer Emacs) are logged, not fatal."
   (my/ensure-package pkg))
 
 ;;
+;; -> xkb-mode
+;;
+;; Vendored under local-packages/xkb-mode.  Local packages get no
+;; generated autoloads, so register the .xkb association explicitly.
+;;
+(when (locate-library "xkb-mode")
+  (autoload 'xkb-mode "xkb-mode" nil t)
+  (add-to-list 'auto-mode-alist '("\\.xkb\\'" . xkb-mode)))
+
+;;
 ;; -> org-ibullets
 ;;
 ;; Vendored under local-packages/org-ibullets.  Render Org heading stars as

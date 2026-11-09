@@ -483,6 +483,18 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
     (with-eval-after-load 'org
       (define-key org-mode-map (kbd "C-c P") #'org-slides-start))))
 
+;;
+;; -> xkb-mode — edit XKB keyboard layout files
+;;
+;; Vendored under local-packages/xkb-mode; no ELPA archive needed.  Local
+;; packages get no generated autoloads, so register .xkb explicitly.
+;;
+(use-package xkb-mode
+  :ensure nil
+  :load-path ("offline-packages/local-packages/xkb-mode"
+              "local-packages/xkb-mode")
+  :mode "\\.xkb\\'")
+
 (use-package selected-window-accent-mode
   :config (selected-window-accent-mode 1)
   :custom

@@ -10,6 +10,15 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-11-09>
+
+Add =xkb-mode= to the offline toolkit
+
+- =local-packages/xkb-mode/=: vendored the XKB major mode, including the fix for its redundant =kill-all-local-variables= call (which reset =major-mode= to =fundamental-mode=).
+- =init.el.in=: register the =.xkb= auto-mode association when the package is present.
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-on-windows.el=: added the =xkb-mode= =use-package= block.
+- =README.org=: documented the package and automatic =.xkb= mode registration.
+
 ** <2026-11-06>
 
 Ensure simply-annotate mode is enabled for new files
