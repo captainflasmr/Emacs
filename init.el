@@ -134,6 +134,10 @@
   :defer t)
 (use-package i3wm-config-mode
   :defer t)
+(use-package xkb-mode
+  :ensure nil
+  :load-path "~/source/repos/xkb-mode"
+  :mode "\\.xkb\\'")
 (use-package yaml-mode
   :mode ("\\.yml\\'" "\\.yaml\\'"))
 
