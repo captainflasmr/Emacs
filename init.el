@@ -33,12 +33,9 @@
   :load-path "~/source/repos/selected-window-accent-mode"
   :config (selected-window-accent-mode 1)
   :custom
-  (selected-window-accent-fringe-minimum 10)
-  (selected-window-accent-fringe-thickness 10)
-  (selected-window-accent-custom-color nil)
-  (selected-window-accent-mode-style 'default)
-  (selected-window-accent-percentage-darken 20)
-  (selected-window-accent-percentage-desaturate 20)
+  (selected-window-accent-fringe-minimum 5)
+  (selected-window-accent-fringe-thickness 5)
+  (selected-window-accent-mode-style 'tiling)
   (selected-window-accent-tab-accent t)
   (selected-window-accent-use-pywal t)
   (selected-window-accent-smart-borders nil))
@@ -1748,8 +1745,8 @@ comment headers fold their section, definitions fold to the next one."
 ;; swap.  `gruvbox-dark-hard' comes from `gruvbox-theme' and
 ;; `ef-trio-dark' from `ef-themes'.
 ;;
-;; (load-theme 'gruvbox-dark-hard t)
-(load-theme 'doom-tokyo-night t)
+(load-theme 'gruvbox-dark-hard t)
+;; (load-theme 'doom-tokyo-night t)
 ;; (load-theme 'doom-material-dark t)
 ;; (load-theme 'doom-outrun-electric t)
 ;; (load-theme 'doom-manegarm t)
@@ -1811,8 +1808,8 @@ comment headers fold their section, definitions fold to the next one."
 
 ;; Slight transparency on the frame background. Harmless in TTY/Wayland
 ;; environments that don't support it.
-(set-frame-parameter nil 'alpha-background 80)
-(add-to-list 'default-frame-alist '(alpha-background . 80))
+(set-frame-parameter nil 'alpha-background 95)
+(add-to-list 'default-frame-alist '(alpha-background . 95))
 
 ;;
 ;; -> fonts
