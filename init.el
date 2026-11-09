@@ -1229,6 +1229,9 @@ mu4e's own header-line content once the update is done."
               (expand-file-name "~/.emacs.d/offline-packages")
               (expand-file-name "~/.emacs.d/offline-packages/local-packages")
               (expand-file-name "~/source/repos")
+              ;; The dotfiles repo itself (hidden, so it is not found by
+              ;; scanning a parent one level deep).
+              (expand-file-name "~/.config")
               (expand-file-name "~/.config/sway")
               (expand-file-name "~/source")
               (expand-file-name "~/bin")))
