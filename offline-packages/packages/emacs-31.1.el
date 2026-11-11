@@ -1,0 +1,40 @@
+;; One package name per line. Comments start with ';'. Blank lines ignored.
+;; Packages that fail to install (e.g. require a newer Emacs) are logged
+;; and skipped, not fatal.
+
+async
+chess
+cmake-mode
+corfu
+csv-mode
+dape
+diff-hl
+doc-view-follow
+doom-themes
+dumb-jump
+ef-themes
+gnuplot
+gruvbox-theme
+highlight-indent-guides
+htmlize
+i3wm-config-mode
+magit
+markdown-mode
+modus-themes
+outline-indent
+ollama-buddy
+package-lint
+plantuml-mode
+protobuf-mode
+selected-window-accent-mode
+simply-annotate
+timu-caribbean-theme
+timu-rouge-theme
+timu-spacegrey-theme
+typescript-mode
+vlf
+web-mode
+yaml-mode
+kotlin-mode
+powershell
+zig-mode
