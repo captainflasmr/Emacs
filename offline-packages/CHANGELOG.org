@@ -10,6 +10,21 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-11-11>
+
+Add the Emacs 31.1 target
+
+- =packages/emacs-31.1.el=: package list for the 31.1 mirror (copied from the
+  30.2 list).
+- =starters/emacs-31.1.el=: starter customisations for 31.1.
+- =sources/LATEST_STABLE=: bumped from 30.2 to 31.1, so
+  =--with-source auto= bundles the current stable source tarball.
+- =tools/=: restored =mg= and =exiftool= so =--tools= bundles all three
+  advertised helpers alongside =jasspa-me=.
+- =tools/prep-linux-offline.sh=: fixed the JDTLS, netcoredbg, Ada LS, and
+  Kotlin LS extraction paths; added the Java debug adapter JAR; the bundle
+  now has a top-level directory and a working offline installer.
+
 ** <2026-11-09>
 
 Add =xkb-mode= to the offline toolkit

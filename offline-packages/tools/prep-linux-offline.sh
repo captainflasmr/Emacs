@@ -11,7 +11,7 @@
 #   ./prep-linux-offline.sh /path/to/output        # explicit output dir
 #
 # Output:  <OUT_DIR>/linux-tools-offline-<STAMP>.tar.gz
-#          Extracted contents:
+#          Extracted contents (under linux-tools-offline-<STAMP>/):
 #            install-offline.sh  — run on air-gapped Linux target
 #            tools/              — pre-downloaded archives + pre-extracted dirs
 
@@ -54,6 +54,13 @@ mkdir -p "${TOOLS_DIR}/archives"
 download \
   "https://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz" \
   "${TOOLS_DIR}/archives/jdt-language-server-latest.tar.gz" \
+  || FAILED=$((FAILED + 1))
+
+# Java debug adapter used by dape for JDTLS; the coding starter globs
+# jdtls/com.microsoft.java.debug.plugin-*.jar.
+download \
+  "https://repo1.maven.org/maven2/com/microsoft/java/com.microsoft.java.debug.plugin/0.53.1/com.microsoft.java.debug.plugin-0.53.1.jar" \
+  "${TOOLS_DIR}/archives/com.microsoft.java.debug.plugin-0.53.1.jar" \
   || FAILED=$((FAILED + 1))
 
 # ---------- 2. netcoredbg ----------
@@ -153,10 +160,19 @@ echo "[1/8] JDTLS..."
 if ! installed "jdtls/.installed"; then
   if [[ -f "${ARCHIVES}/jdt-language-server-latest.tar.gz" ]]; then
     mkdir -p "${ROOT}/jdtls"
-    tar -xzf "${ARCHIVES}/jdt-language-server-latest.tar.gz" -C "${ROOT}/jdtls" --strip-components=1
+    # The archive has bin/, plugins/, features/ at its root — do NOT strip
+    # a path component here.
+    tar -xzf "${ARCHIVES}/jdt-language-server-latest.tar.gz" -C "${ROOT}/jdtls"
+    chmod +x "${ROOT}/jdtls/bin/jdtls" 2>/dev/null || true
     touch "${ROOT}/jdtls/.installed"
     echo "   Installed."
   else echo "   Skipped (archive not found)."; fi
+fi
+
+# 1b. Java debug adapter JAR (dape + JDTLS)
+if [[ -f "${ARCHIVES}/com.microsoft.java.debug.plugin-0.53.1.jar" ]]; then
+  mkdir -p "${ROOT}/jdtls"
+  cp -f "${ARCHIVES}/com.microsoft.java.debug.plugin-0.53.1.jar" "${ROOT}/jdtls/"
 fi
 
 # 2. netcoredbg
@@ -164,7 +180,8 @@ echo "[2/8] netcoredbg..."
 if ! installed "netcoredbg/.installed"; then
   if [[ -f "${ARCHIVES}/netcoredbg-linux-amd64.tar.gz" ]]; then
     mkdir -p "${ROOT}/netcoredbg"
-    tar -xzf "${ARCHIVES}/netcoredbg-linux-amd64.tar.gz" -C "${ROOT}/netcoredbg"
+    # Archive contains a top-level netcoredbg/ directory.
+    tar -xzf "${ARCHIVES}/netcoredbg-linux-amd64.tar.gz" -C "${ROOT}/netcoredbg" --strip-components=1
     chmod +x "${ROOT}/netcoredbg/netcoredbg" 2>/dev/null || true
     touch "${ROOT}/netcoredbg/.installed"
     echo "   Installed."
@@ -180,9 +197,15 @@ echo "   dotnet tool install --global csharp-ls"
 echo "[4/8] Ada Language Server..."
 if ! installed "ada_language_server/.installed"; then
   if [[ -f "${ARCHIVES}/als-2026.3.202607051-linux-x64.tar.gz" ]]; then
-    mkdir -p "${ROOT}/ada_language_server"
-    tar -xzf "${ARCHIVES}/als-2026.3.202607051-linux-x64.tar.gz" -C "${ROOT}/ada_language_server"
-    chmod +x "${ROOT}/ada_language_server/bin/ada_language_server" 2>/dev/null || true
+    _als_tmp="$(mktemp -d)"
+    tar -xzf "${ARCHIVES}/als-2026.3.202607051-linux-x64.tar.gz" -C "${_als_tmp}"
+    mkdir -p "${ROOT}/ada_language_server/bin"
+    _als_bin="$(find "${_als_tmp}" -type f -name ada_language_server -print -quit)"
+    if [[ -n "${_als_bin}" ]]; then
+      cp -f "${_als_bin}" "${ROOT}/ada_language_server/bin/ada_language_server"
+      chmod +x "${ROOT}/ada_language_server/bin/ada_language_server"
+    fi
+    rm -rf "${_als_tmp}"
     touch "${ROOT}/ada_language_server/.installed"
     echo "   Installed."
   else echo "   Skipped (archive not found)."; fi
@@ -204,9 +227,18 @@ fi
 echo "[6/8] Kotlin Language Server..."
 if ! installed "kotlin-language-server/.installed"; then
   if [[ -f "${ARCHIVES}/kotlin-language-server-server.zip" ]]; then
+    _kls_tmp="$(mktemp -d)"
+    unzip -qo "${ARCHIVES}/kotlin-language-server-server.zip" -d "${_kls_tmp}"
     mkdir -p "${ROOT}/kotlin-language-server"
-    unzip -qo "${ARCHIVES}/kotlin-language-server-server.zip" -d "${ROOT}/kotlin-language-server"
+    # The zip has a top-level server/ directory; flatten it so the launcher
+    # lands at kotlin-language-server/bin/kotlin-language-server.
+    if [[ -d "${_kls_tmp}/server" ]]; then
+      cp -a "${_kls_tmp}/server/." "${ROOT}/kotlin-language-server/"
+    else
+      cp -a "${_kls_tmp}/." "${ROOT}/kotlin-language-server/"
+    fi
     chmod +x "${ROOT}/kotlin-language-server/bin/kotlin-language-server" 2>/dev/null || true
+    rm -rf "${_kls_tmp}"
     touch "${ROOT}/kotlin-language-server/.installed"
     echo "   Installed."
   else echo "   Skipped (archive not found)."; fi
@@ -245,6 +277,13 @@ echo ""
 echo "Add to your PATH:"
 echo "  export PATH=\"\${PATH}:${ROOT}/jdtls/bin:${ROOT}/netcoredbg:${ROOT}/csharp-ls:${ROOT}/ada_language_server/bin:${ROOT}/buf/bin:${ROOT}/kotlin-language-server/bin:${ROOT}/exiftool\""
 echo ""
+echo "Runtime requirements:"
+echo "  java   — JDTLS and Kotlin Language Server"
+echo "  python3 — JDTLS bin/jdtls launcher"
+echo "  unzip  — only needed while running this installer (Kotlin LS)"
+echo "  perl   — exiftool"
+echo "  node/npm — only to install the bundled TypeScript tarballs"
+echo ""
 INSTALLEOF
 chmod +x "${STAGING}/install-offline.sh"
 
@@ -258,7 +297,7 @@ echo ""
 echo ">> Packaging ${OUT_DIR}/${BUNDLE_NAME}.tar.gz..."
 mkdir -p "$OUT_DIR"
 tar -C "$STAGING" -czf "${OUT_DIR}/${BUNDLE_NAME}.tar.gz" \
-  --transform="s|^\./|${BUNDLE_NAME}/|" \
+  --transform="s|^|${BUNDLE_NAME}/|" \
   "$(basename "${TOOLS_DIR}")" \
   "$(basename "${STAGING}/install-offline.sh")"
 
