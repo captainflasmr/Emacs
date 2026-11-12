@@ -1731,7 +1731,9 @@ comment headers fold their section, definitions fold to the next one."
   (with-eval-after-load 'flymake
     (define-key flymake-mode-map (kbd "M-N") #'my/simply-annotate-next-or-flymake)
     (define-key flymake-mode-map (kbd "M-P") #'my/simply-annotate-previous-or-flymake))
-  (require 'posframe)
+  ;; `posframe' is optional; load it when the package is present.
+  (when (locate-library "posframe")
+    (require 'posframe))
   (setq simply-annotate-inline-position 'margin-right)
   (setq simply-annotate-tint-amount 50)
   (setq simply-annotate-hide-done-statuses '("resolved" "closed"))
