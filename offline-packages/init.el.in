@@ -7,8 +7,35 @@
 ;;
 ;; -> core-configuration
 ;;
-(let ((f (expand-file-name "~/.emacs.d/Emacs-vanilla/init.el")))
-  (when (file-exists-p f) (load-file f)))
+;; Load the built-in-only core, then the personal defun layer.  The
+;; top-level init stays out of the rendered config so the toolkit keeps
+;; control of package setup; Emacs-DIYer provides the commands used below.
+(dolist (dir '("Emacs-vanilla" "Emacs-DIYer"))
+  (let ((f (expand-file-name (format "~/.emacs.d/%s/init.el" dir))))
+    (when (file-exists-p f) (load-file f))))
+
+;;
+;; -> personal-bridges
+;;
+;; Keep the toolkit's keymaps in sync with the author's top-level init.
+;; These commands live in Emacs-DIYer; the bindings were moved out of
+;; Emacs-vanilla so that core stays built-in-only.  Keep in sync with the
+;; vanilla-personal-bridges block in the top-level init.  The guard keeps
+;; the package-download pass (isolated HOME without the literate configs)
+;; from touching undefined keymaps.
+(when (and (boundp 'my-win-keymap)
+           (fboundp 'my/rainbow-mode))
+  (define-key my-win-keymap (kbd "l") #'my/sync-ui-accent-color)
+  (define-key my-win-keymap (kbd "o") #'my/center-buffer-mode)
+  (define-key my-win-keymap (kbd "r") #'my/rainbow-mode)
+  (global-set-key (kbd "C-c f") #'my/find-file)
+  (global-set-key (kbd "C-c g") #'my/grep)
+  (define-key my-overrides-mode-map (kbd "M-/") #'my/quick-window-jump)
+  (define-key my-jump-keymap (kbd "y")
+    (lambda () (interactive) (find-file "~/.emacs.d/Emacs-DIYer")))
+  (add-hook 'prog-mode-hook #'my/rainbow-mode)
+  (add-hook 'org-mode-hook #'my/rainbow-mode)
+  (add-hook 'conf-space-mode-hook #'my/rainbow-mode))
 
 ;;
 ;; -> package-archives

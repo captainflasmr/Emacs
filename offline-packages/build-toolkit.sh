@@ -5,9 +5,9 @@
 # Picks one of the per-version ELPA mirrors under the cache
 # ($OFFLINE_MIRRORS_DIR, default ~/.cache/emacs-offline-toolkit/mirrors/), built
 # by create-install.sh, and bundles it alongside the rendered init.el, the
-# Emacs-vanilla and Emacs-DIYer literate configs, an early-init.el if present,
-# and an installer (setup.sh). Optional GNU Emacs source tarball for rebuild
-# on the target.
+# Emacs-vanilla and Emacs-DIYer literate configs, the author's top-level init
+# as an optional reference copy, an early-init.el if present, and an installer
+# (setup.sh). Optional GNU Emacs source tarball for rebuild on the target.
 #
 # Output: $OUT_DIR/emacs-offline-toolkit-<ver>-<os>-<arch>-<stamp>.tar.gz
 #
@@ -166,6 +166,13 @@ fi
 cp "${MIRROR_TARBALL}" "${STAGING}/"
 [[ -f "${EMACS_D_DIR}/early-init.el" ]] && cp "${EMACS_D_DIR}/early-init.el" "${STAGING}/"
 [[ -f "${EMACS_D_DIR}/abbrev_defs" ]] && cp "${EMACS_D_DIR}/abbrev_defs" "${STAGING}/"
+# Bundle the author's current top-level init for reference and opt-in use.
+# It is not the active toolkit init: init.el (rendered from init.el.in) keeps
+# control of offline package setup.
+if [[ -f "${EMACS_D_DIR}/init.el" ]]; then
+  cp "${EMACS_D_DIR}/init.el" "${STAGING}/init-top-level.el"
+  echo ">> Bundled top-level init.el as init-top-level.el"
+fi
 [[ -f "${SCRIPT_DIR}/README.org" ]] && cp "${SCRIPT_DIR}/README.org" "${STAGING}/"
 
 # Surface PACKAGES.txt at the toolkit root so users can inspect the bundled
@@ -376,7 +383,7 @@ backup_item() {
 mkdir -p "$BACKUP_DIR"
 
 # Back up existing init files so we don't silently clobber an existing setup.
-for f in init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el init-on-windows.el; do
+for f in init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el init-on-windows.el init-top-level.el; do
   if [[ -e "${EMACS_D}/${f}" && ! -L "${EMACS_D}/${f}" ]]; then
     backup_item "${EMACS_D}/${f}" "${BACKUP_DIR}/${f}"
   fi
@@ -453,6 +460,12 @@ fi
 if [[ -f "${HERE}/init-on-windows.el" ]]; then
   cp "${HERE}/init-on-windows.el" "${EMACS_D}/init-on-windows.el"
   echo ">> Windows starter installed at ${EMACS_D}/init-on-windows.el (not auto-loaded)"
+fi
+
+# Install the author's full top-level init for reference. NOT auto-loaded.
+if [[ -f "${HERE}/init-top-level.el" ]]; then
+  cp "${HERE}/init-top-level.el" "${EMACS_D}/init-top-level.el"
+  echo ">> Top-level init installed at ${EMACS_D}/init-top-level.el (not auto-loaded)"
 fi
 
 # Install docs/ drop-zone (coding guide, reference material).
@@ -564,7 +577,7 @@ if not exist "%EMACS_D%" mkdir "%EMACS_D%"
 if not exist "%BACKUP_DIR%" mkdir "%BACKUP_DIR%"
 
 :: Back up existing init files so we don't silently clobber an existing setup.
-for %%f in (init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el init-on-windows.el) do (
+for %%f in (init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el init-on-windows.el init-top-level.el) do (
   if exist "%EMACS_D%\%%f" (
     echo    backing up %%f -^> .backups\%STAMP%\%%f
     move "%EMACS_D%\%%f" "%BACKUP_DIR%\%%f" >nul
@@ -635,6 +648,10 @@ if exist "%HERE%init-starter-coding.el" (
 if exist "%HERE%init-on-windows.el" (
   copy "%HERE%init-on-windows.el" "%EMACS_D%\init-on-windows.el" >nul
   echo ^>^> Windows starter installed at %EMACS_D%\init-on-windows.el (not auto-loaded^)
+)
+if exist "%HERE%init-top-level.el" (
+  copy "%HERE%init-top-level.el" "%EMACS_D%\init-top-level.el" >nul
+  echo ^>^> Top-level init installed at %EMACS_D%\init-top-level.el (not auto-loaded^)
 )
 
 :: Install docs/ drop-zone (coding guide, reference material).
@@ -750,7 +767,7 @@ rollback_dir() {
   echo ">> Restoring from directory backup: ${bak_dir}"
 
   # Restore items that live directly under ~/.emacs.d/
-  for item in init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el init-on-windows.el \
+  for item in init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el init-on-windows.el init-top-level.el \
               elpa local-packages bin docs Emacs-vanilla Emacs-DIYer; do
     local src="${bak_dir}/${item}"
     [[ -e "$src" ]] || continue
@@ -893,7 +910,7 @@ set bak_dir=%BACKUPS_DIR%\!LATEST!
 if exist "!bak_dir!" (
   echo ^>^> Restoring from directory backup: !LATEST!
 
-  for %%i in (init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el init-on-windows.el elpa local-packages bin docs Emacs-vanilla Emacs-DIYer) do (
+  for %%i in (init.el early-init.el abbrev_defs init-starter.el init-starter-coding.el init-on-windows.el init-top-level.el elpa local-packages bin docs Emacs-vanilla Emacs-DIYer) do (
     if exist "!bak_dir!\%%i" (
       if exist "%EMACS_D%\%%i" (
         echo    archiving current %%i -^> !NOW!-rolledback\%%i
@@ -991,6 +1008,9 @@ fi
   fi
   if [[ -f "${STAGING}/init-on-windows.el" ]]; then
     echo "Windows starter: init-on-windows.el (optional, not auto-loaded)"
+  fi
+  if [[ -f "${STAGING}/init-top-level.el" ]]; then
+    echo "Top-level init: init-top-level.el (optional, not auto-loaded)"
   fi
   if [[ -d "${STAGING}/local-packages" ]]; then
     _lp_count="$(find "${STAGING}/local-packages" -maxdepth 1 -mindepth 1 \

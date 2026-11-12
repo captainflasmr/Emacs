@@ -4,7 +4,7 @@
 ;;
 ;; Distilled from the upstream author's live init.el. Supplements (does not
 ;; replace) the bundled init.el, which already installs the ELPA mirror,
-;; bootstraps ~/.emacs.d/local-packages, and loads the Emacs-vanilla base.
+;; bootstraps ~/.emacs.d/local-packages, and loads Emacs-vanilla + Emacs-DIYer.
 ;;
 ;; 28.1 and 28.2 use identical customisations — the only delta from 27.2 is
 ;; that `repeat-mode' (new in 28.1) is enabled. 28.1 is the first release
@@ -192,6 +192,8 @@
   :demand t
   :hook (find-file-hook . simply-annotate-mode)
   :config
+  ;; Fall through to the stock search map for unbound M-s keys.
+  (set-keymap-parent simply-annotate-command-map search-map)
   (let ((my-ms-map (make-sparse-keymap)))
     (set-keymap-parent my-ms-map simply-annotate-command-map)
     (define-key my-ms-map (kbd "u")

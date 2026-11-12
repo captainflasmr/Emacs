@@ -3,7 +3,10 @@
 ;;
 ;; -> core-configuration
 ;;
-(load-file "~/.emacs.d/Emacs-vanilla/init.el")
+;; Load the built-in-only core, then the personal defun layer.
+(dolist (dir '("Emacs-vanilla" "Emacs-DIYer"))
+  (let ((f (expand-file-name (format "~/.emacs.d/%s/init.el" dir))))
+    (when (file-exists-p f) (load-file f))))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -174,6 +177,8 @@
   :demand t
   :hook (find-file-hook . simply-annotate-mode)
   :config
+  ;; Fall through to the stock search map for unbound M-s keys.
+  (set-keymap-parent simply-annotate-command-map search-map)
   (let ((my-ms-map (make-sparse-keymap)))
     (set-keymap-parent my-ms-map simply-annotate-command-map)
     (define-key my-ms-map (kbd "u")

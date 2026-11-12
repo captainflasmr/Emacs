@@ -4,7 +4,7 @@
 ;;
 ;; Distilled from the upstream author's live init.el. Supplements (does not
 ;; replace) the bundled init.el, which already installs the ELPA mirror,
-;; bootstraps ~/.emacs.d/local-packages, and loads the Emacs-vanilla base.
+;; bootstraps ~/.emacs.d/local-packages, and loads Emacs-vanilla + Emacs-DIYer.
 ;;
 ;; Coding-oriented blocks (eglot, dape, emeld-sidebar, protobuf-mode, etc.)
 ;; live in starters/coding.el to avoid duplication — load both:
@@ -189,6 +189,8 @@
   :demand t
   :hook (find-file-hook . simply-annotate-mode)
   :config
+  ;; Fall through to the stock search map for unbound M-s keys.
+  (set-keymap-parent simply-annotate-command-map search-map)
   (let ((my-ms-map (make-sparse-keymap)))
     (set-keymap-parent my-ms-map simply-annotate-command-map)
     (define-key my-ms-map (kbd "u")

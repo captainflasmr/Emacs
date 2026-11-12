@@ -10,7 +10,8 @@
 ;; -> vanilla-personal-bridges
 ;;
 ;; Emacs-vanilla stays built-in-only.  These bindings and hooks connect
-;; its keymaps to commands defined in Emacs-DIYer.
+;; its keymaps to commands defined in Emacs-DIYer.  Keep in sync with the
+;; personal-bridges block in offline-packages/init.el.in.
 (define-key my-win-keymap (kbd "l") #'my/sync-ui-accent-color)
 (define-key my-win-keymap (kbd "o") #'my/center-buffer-mode)
 (define-key my-win-keymap (kbd "r") #'my/rainbow-mode)

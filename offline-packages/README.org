@@ -6,10 +6,10 @@
 A self-contained toolkit for bringing up my Emacs configuration on machines with no network access. The package set is keyed purely on Emacs version — architecture is not tracked separately. Three scripts do the work:
 
 - =create-install.sh= — on an /online/ machine: render an init.el from a per-version package list, download every package into an isolated =$HOME=, tar it up as an ELPA mirror, and (by default) chain into =build-toolkit.sh= to produce the deployable tarball.
-- =build-toolkit.sh= — on any /online/ machine with this repo: bundle a chosen version's mirror with =init.el=, the =Emacs-vanilla= + =Emacs-DIYer= literate configs, an installer, and (optionally) the GNU Emacs source tarball.
+- =build-toolkit.sh= — on any /online/ machine with this repo: bundle a chosen version's mirror with =init.el=, the =Emacs-vanilla= + =Emacs-DIYer= literate configs, the author's top-level =init.el= as an optional reference copy, an installer, and (optionally) the GNU Emacs source tarball.
 - =setup.sh= — lives inside each built toolkit, run on the /offline/ target to drop everything into =~/.emacs.d/=.
 
-The rendered =init.el= auto-detects =~/elpa-mirror-emacs-*/= at startup and points =package-archives= at the local mirror when one is present. No manual toggle required.
+The rendered =init.el= auto-detects =~/elpa-mirror-emacs-*/= at startup and points =package-archives= at the local mirror when one is present. No manual toggle required. It loads =Emacs-vanilla= first and then =Emacs-DIYer=, matching the top-level init's load order.
 
 * Directory layout
 
@@ -139,6 +139,10 @@ Adding a starter for a new version: drop =starters/emacs-<VER>.el= next to =init
 #+end_src
 
 Blocks that need Emacs 29+ (eglot, =global-corfu-mode=) are guarded by =fboundp= checks, so loading under 27.2/28.x is a no-op for those features rather than an error. The JDTLS entry looks for =~/.emacs.d/bin/jdtls/bin/jdtls= — populate =tools/= (see below) to wire it up.
+
+** Bundled top-level init
+
+=build-toolkit.sh= also copies the author's live =~/.emacs.d/init.el= into the toolkit as =init-top-level.el=. The installer places it at =~/.emacs.d/init-top-level.el=, but it is /not/ auto-loaded: the active config remains the rendered offline =init.el=. Use =init-top-level.el= as a reference, or load/cherry-pick from it when you want the full online package setup on a connected machine.
 
 * Tools drop-zone (non-Emacs binaries)
 
@@ -279,6 +283,7 @@ emacs-offline-toolkit-<VER>-<OS>-<ARCH>-<STAMP>/
 ├── docs/                   ← reference docs (coding guide, cheat sheets)
 ├── init-starter.el         ← optional starter snippet (not auto-loaded)
 ├── init-starter-coding.el  ← optional coding companion (not auto-loaded)
+├── init-top-level.el       ← author's full top-level init (not auto-loaded)
 └── emacs-<VER>.tar.xz      ← optional GNU Emacs source
 #+end_example
 
@@ -334,10 +339,10 @@ cd emacs-offline-toolkit-*/
 
 =setup.sh= will:
 
-1. Back up any existing =~/.emacs.d/{init.el,early-init.el,Emacs-vanilla,Emacs-DIYer,local-packages,bin,docs,init-starter.el,init-starter-coding.el,elpa}= and any =~/elpa-mirror-emacs-*/= into a single timestamped directory: =~/.emacs.d/.backups/<STAMP>=. Mirror extractions from =$HOME= go into a =home-mirrors/= subfolder. This keeps the main directories clean — all backups for each install are grouped together, and old installs can be removed by deleting a single directory. (An older setup.sh created =.pre-toolkit-*== suffixes at the top level; rollback.sh still recognises those.)
+1. Back up any existing =~/.emacs.d/{init.el,early-init.el,Emacs-vanilla,Emacs-DIYer,local-packages,bin,docs,init-starter.el,init-starter-coding.el,init-top-level.el,elpa}= and any =~/elpa-mirror-emacs-*/= into a single timestamped directory: =~/.emacs.d/.backups/<STAMP>=. Mirror extractions from =$HOME= go into a =home-mirrors/= subfolder. This keeps the main directories clean — all backups for each install are grouped together, and old installs can be removed by deleting a single directory. (An older setup.sh created =.pre-toolkit-*== suffixes at the top level; rollback.sh still recognises those.)
 2. Extract the ELPA mirror tarball into =~/=, creating =~/elpa-mirror-emacs-<VER>-<OS>-<ARCH>-<STAMP>-<N>pkgs/=.
 3. Install the literate config directories under =~/.emacs.d/=.
-4. Install =init.el= plus any bundled =early-init.el= / =init-starter.el= / =init-starter-coding.el= / =local-packages/= / =tools/= (→ =~/.emacs.d/bin/=) / =docs/= (→ =~/.emacs.d/docs/=).
+4. Install =init.el= plus any bundled =early-init.el= / =init-starter.el= / =init-starter-coding.el= / =init-top-level.el= / =local-packages/= / =tools/= (→ =~/.emacs.d/bin/=) / =docs/= (→ =~/.emacs.d/docs/=).
 5. Report instructions for building the bundled Emacs source, if present.
 
 To undo: run =./rollback.sh= from inside the same extracted toolkit dir (or from anywhere — it operates on =$HOME= / =$HOME/.emacs.d= directly). It finds the newest backup under =~/.emacs.d/.backups/= (or legacy =.pre-toolkit-*= suffixes), archives the current post-install state as =~/.emacs.d/.backups/<NOW>-rolledback/=, and swaps the backup back into place. Old backups can be pruned by deleting their directory under =~/.emacs.d/.backups/=.
