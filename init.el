@@ -4,6 +4,33 @@
 ;; -> core-configuration
 ;;
 (load-file "~/.emacs.d/Emacs-vanilla/init.el")
+(load-file "~/.emacs.d/Emacs-DIYer/init.el")
+
+;;
+;; -> vanilla-personal-bridges
+;;
+;; Emacs-vanilla stays built-in-only.  These bindings and hooks connect
+;; its keymaps to commands defined in Emacs-DIYer.
+(define-key my-win-keymap (kbd "l") #'my/sync-ui-accent-color)
+(define-key my-win-keymap (kbd "o") #'my/center-buffer-mode)
+(define-key my-win-keymap (kbd "r") #'my/rainbow-mode)
+(global-set-key (kbd "C-c f") #'my/find-file)
+(global-set-key (kbd "C-c g") #'my/grep)
+(define-key my-overrides-mode-map (kbd "M-/") #'my/quick-window-jump)
+(define-key my-jump-keymap (kbd "y")
+  (lambda () (interactive) (find-file "~/.emacs.d/Emacs-DIYer")))
+(add-hook 'prog-mode-hook #'my/rainbow-mode)
+(add-hook 'org-mode-hook #'my/rainbow-mode)
+(add-hook 'conf-space-mode-hook #'my/rainbow-mode)
+
+;;
+;; -> neomacs-effects
+;;
+;; Neomacs-only visual options; absent from GNU Emacs, hence the guard.
+(when (fboundp 'neomacs-effect-names)
+  (require 'neomacs-effects)
+  ;; No fading tail behind the moving cursor; 0.0 draws none (default 0.7).
+  (setopt neomacs-cursor-motion-trail-size 0.0))
 
 ;;
 ;; -> package-archives
@@ -33,9 +60,9 @@
   :load-path "~/source/repos/selected-window-accent-mode"
   :config (selected-window-accent-mode 1)
   :custom
-  (selected-window-accent-fringe-minimum 5)
-  (selected-window-accent-fringe-thickness 5)
-  (selected-window-accent-mode-style 'tiling)
+  (selected-window-accent-fringe-minimum 10)
+  (selected-window-accent-fringe-thickness 10)
+  (selected-window-accent-mode-style 'default)
   (selected-window-accent-tab-accent t)
   (selected-window-accent-use-pywal t)
   (selected-window-accent-smart-borders nil))
@@ -908,6 +935,15 @@ mu4e's own header-line content once the update is done."
           ;; :inlayHintProvider                ; Inlay hints
           )))
 
+;; Create .dir-locals.el for Eglot's Ada project file.
+(defun my/eglot-dir-locals ()
+  "Create .dir-locals.el file for eglot ada-mode using the selected DIRED path."
+  (interactive)
+  (add-dir-local-variable
+   'ada-mode
+   'eglot-workspace-configuration
+   `((ada . (:projectFile ,(dired-get-filename))))))
+
 (setq-default eglot-workspace-configuration
               '((java . (:import (:gradle (:offline (:enabled t)
                                                     :checksums (:verify :json-false)
@@ -1192,6 +1228,8 @@ mu4e's own header-line content once the update is done."
 ;; (setq diff-minimap-colour-source 'diff-hl)
 ;; (setq diff-minimap-font-scale 0.2)
 (setq diff-minimap-diff-backend 'vc)
+;; Let the minimap keep M-n/M-p for hunk navigation in file buffers.
+(add-to-list 'my/window-nav-passthrough-minor-modes 'diff-minimap-mode)
 ;; (add-hook 'ediff-startup-hook #'diff-minimap-ediff-setup)
 
 
@@ -1665,6 +1703,9 @@ comment headers fold their section, definitions fold to the next one."
   :demand t
   :hook (find-file-hook . simply-annotate-mode)
   :config
+  ;; Make simply-annotate's command map fall through to the stock search
+  ;; map, so M-s o, M-s . and the like keep working.
+  (set-keymap-parent simply-annotate-command-map search-map)
   (let ((my-ms-map (make-sparse-keymap)))
     (set-keymap-parent my-ms-map simply-annotate-command-map)
     (define-key my-ms-map (kbd "u")
@@ -1745,8 +1786,8 @@ comment headers fold their section, definitions fold to the next one."
 ;; swap.  `gruvbox-dark-hard' comes from `gruvbox-theme' and
 ;; `ef-trio-dark' from `ef-themes'.
 ;;
-(load-theme 'gruvbox-dark-hard t)
-;; (load-theme 'doom-tokyo-night t)
+;; (load-theme 'gruvbox-dark-hard t)
+(load-theme 'doom-tokyo-night t)
 ;; (load-theme 'doom-material-dark t)
 ;; (load-theme 'doom-outrun-electric t)
 ;; (load-theme 'doom-manegarm t)
@@ -1808,8 +1849,8 @@ comment headers fold their section, definitions fold to the next one."
 
 ;; Slight transparency on the frame background. Harmless in TTY/Wayland
 ;; environments that don't support it.
-(set-frame-parameter nil 'alpha-background 95)
-(add-to-list 'default-frame-alist '(alpha-background . 95))
+(set-frame-parameter nil 'alpha-background 90)
+(add-to-list 'default-frame-alist '(alpha-background . 90))
 
 ;;
 ;; -> fonts

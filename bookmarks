@@ -76,10 +76,10 @@
  (last-modified 27266 45765 911166 703000))
 ("org-refile-last-stored"
  (filename . "~/DCIM/content/aaa--todo.org")
- (front-context-string . "** DOING mercer ")
+ (front-context-string . "** DONE scottish")
  (rear-context-string . "ds email\n* 2026\n")
- (position . 1169)
- (last-modified 27244 28164 383994 89000))
+ (position . 977)
+ (last-modified 1794300966091437438 . 1000000000))
 ("james"
  (filename . "~/source/repos/james/")
  (front-context-string . ".git\n  -rw-r--r-")
@@ -207,11 +207,11 @@
  (position . 261)
  (last-modified 27125 57540 94473 207000))
 ("org-capture-last-stored"
- (filename . "~/DCIM/content/linux.org")
- (front-context-string . "* TODO Mesh-netw")
- (rear-context-string . "x:@open_source:\n")
- (position . 359)
- (last-modified 27270 53996 919771 317000))
+ (filename . "~/.emacs.d/notes")
+ (front-context-string . "*  2026-11-12 Th")
+ (rear-context-string . "apturing thing\n\n")
+ (position . 1296)
+ (last-modified 1794486317185048705 . 1000000000))
 ("Emacs-DIYer"
  (filename . "~/.emacs.d/Emacs-DIYer/")
  (front-context-string . "CHANGELOG.org\n  ")
