@@ -19,6 +19,7 @@ Keep the toolkit in sync with the purified Emacs-vanilla
 - =build-toolkit.sh=: bundle the current top-level =~/.emacs.d/init.el= as =init-top-level.el= (installed but not auto-loaded), including setup/rollback/manifest handling.
 - =README.org=: document the bundled top-level init and the explicit vanilla/DIYer load order.
 - =Emacs-DIYer=: restored =my/tab-bar-push-window=, which the starter/keymap code still calls.
+- =packages/emacs-30.1.el=, =emacs-30.2.el=, =emacs-31.1.el=, =init.el.in=, and the 30.2/31.1 starters: added =calfw= and =calfw-org=, with =C-c D= opening the month calendar from =org-agenda-files= and calendar holidays hidden.
 
 ** <2026-11-11>
 

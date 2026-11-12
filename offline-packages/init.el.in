@@ -164,6 +164,29 @@ Failures (e.g. package requires a newer Emacs) are logged, not fatal."
   (setq my/org-slides-configured t))
 
 ;;
+;; -> calfw
+;;
+;; Month calendar backed by the Org agenda files.  `C-c D' opens the
+;; calendar; `M'/`W'/`D' switch between month, week, and day views, `SPC'
+;; opens the Org agenda for the selected day, and `RET' visits the
+;; selected item.  Set `calfw-org-overwrite-default-keybinding' to t for
+;; Org-Agenda-style view keys.  calfw-org requires Emacs 28.1+ and Org
+;; 9.7+, so the 30.x/31.x mirrors carry it.
+;;
+(defvar my/calfw-configured nil
+  "Non-nil when the calfw-org keybinding is installed.")
+
+(when (and (locate-library "calfw-org")
+           (version<= "28.1" emacs-version))
+  (setq calfw-display-calendar-holidays nil)
+  (autoload 'calfw-org-open-calendar "calfw-org" nil t)
+  (global-set-key (kbd "C-c D") #'calfw-org-open-calendar)
+  (with-eval-after-load 'calfw-org
+    (setq calfw-org-agenda-schedule-args
+          '(:timestamp :scheduled :deadline)))
+  (setq my/calfw-configured t))
+
+;;
 ;; -> custom-faces
 ;;
 ;; `default' must use an absolute height (1/10 pt).  Every other face uses

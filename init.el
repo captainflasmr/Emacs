@@ -153,6 +153,30 @@
                 (org-table-fit-refresh-overlays)))))
 
 ;;
+;; -> calfw
+;;
+;; Month calendar backed by the Org agenda files.  `C-c D' opens the
+;; calendar; `M'/`W'/`D' switch between month, week, and day views, `SPC'
+;; opens the Org agenda for the selected day, and `RET' visits the selected
+;; item.  Set `calfw-org-overwrite-default-keybinding' to t for
+;; Org-Agenda-style `v m'/`v w'/`v d' view keys.  `calfw-org' reads
+;; `org-agenda-files', so no separate file list is needed.
+(use-package calfw
+  :ensure t
+  :init
+  ;; Hide calendar holidays such as "Birth of the Báb"; only Org events
+  ;; should appear in the calendar.
+  (setq calfw-display-calendar-holidays nil))
+
+(use-package calfw-org
+  :ensure t
+  :after calfw
+  :bind ("C-c D" . calfw-org-open-calendar)
+  :config
+  ;; Include plain timestamps as well as SCHEDULED/DEADLINE entries.
+  (setq calfw-org-agenda-schedule-args '(:timestamp :scheduled :deadline)))
+
+;;
 ;; -> use-package
 ;;
 (use-package async

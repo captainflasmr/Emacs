@@ -341,6 +341,18 @@
       (setq org-table-fit-overlay-reveal-on-point nil))))
 
 ;;
+;; -> calfw — month calendar backed by Org agenda files
+;;
+;; Available from the ELPA mirror.  The rendered init sets the `C-c D'
+;; binding; this block enables Org Agenda-like keys in the calendar.
+;;
+(when (and (locate-library "calfw-org")
+           (version<= "28.1" emacs-version))
+  (setq calfw-display-calendar-holidays nil
+        calfw-org-overwrite-default-keybinding t
+        calfw-org-agenda-schedule-args '(:timestamp :scheduled :deadline)))
+
+;;
 ;; -> org-ibullets — render Org heading stars as UTF-8 bullets
 ;;
 ;; Vendored under local-packages/org-ibullets; no ELPA archive needed.

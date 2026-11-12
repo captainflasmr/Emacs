@@ -3,6 +3,8 @@
 ;; and skipped, not fatal.
 
 async
+calfw
+calfw-org
 chess
 cmake-mode
 corfu
