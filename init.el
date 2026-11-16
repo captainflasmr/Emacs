@@ -71,6 +71,112 @@
 (define-key my-overrides-mode-map (kbd "C-c w") selected-window-accent-map)
 
 ;;
+;; -> org-agenda
+;;
+;; Machine-specific agenda files and diary path; Emacs-vanilla keeps
+;; only the generic agenda defaults.
+(setq org-agenda-files
+      '("~/DCIM/content/aaa--calendar.org"
+        "~/DCIM/content/aab--repeat.org"
+        "~/DCIM/content/aaa--todo.org"
+        "~/DCIM/content/aab--move.org"
+        "~/DCIM/content/aac--emacs-todo.org"))
+(setq diary-file "~/DCIM/content/diary.org")
+
+;;
+;; -> org-capture
+;;
+(defun my-capture-top-level ()
+  "Function to capture a new entry at the top level of the given file."
+  (goto-char (point-min))
+  (or (outline-next-heading)
+      (goto-char (point-max)))
+  (unless (bolp) (insert "\n")))
+
+(setq org-capture-templates
+      '(
+        ("b" "Blog" plain
+         (file+function
+          "~/DCIM/content/blog.org"
+          my-capture-top-level)
+         "* TODO %^{title} :%(format-time-string \"%Y\"):
+:PROPERTIES:
+:EXPORT_FILE_NAME: %<%Y%m%d%H%M%S>-blog--%\\1
+:EXPORT_HUGO_SECTION: blog
+:EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /blog/%<%Y%m%d%H%M%S>-blog--%\\1.jpg
+:END:
+%?
+" :prepend t :jump-to-captured t)
+
+        ("e" "Emacs" plain
+         (file+function
+          "~/DCIM/content/emacs.org"
+          my-capture-top-level)
+         "* TODO %^{title} :emacs:%(format-time-string \"%Y\"):
+:PROPERTIES:
+:EXPORT_FILE_NAME: %<%Y%m%d%H%M%S>-emacs--%\\1
+:EXPORT_HUGO_SECTION: emacs
+:EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /emacs/%<%Y%m%d%H%M%S>-emacs--%\\1.jpg
+:END:
+%?
+" :prepend t :jump-to-captured t)
+
+        ("l" "Linux" plain
+         (file+function
+          "~/DCIM/content/linux.org"
+          my-capture-top-level)
+         "* TODO %^{title} :%(format-time-string \"%Y\"):
+:PROPERTIES:
+:EXPORT_FILE_NAME: %<%Y%m%d%H%M%S>-linux--%\\1
+:EXPORT_HUGO_SECTION: linux
+:EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /linux/%<%Y%m%d%H%M%S>-linux--%\\1.jpg
+:END:
+%?
+" :prepend t :jump-to-captured t)
+
+        ("a" "Art")
+
+        ("av" "Art Videos" plain
+         (file+function
+          "~/DCIM/content/art.org"
+          my-capture-top-level)
+         "* TODO %^{title} :videos:painter:krita:artrage:%(format-time-string \"%Y\"):
+:PROPERTIES:
+:EXPORT_FILE_NAME: %<%Y%m%d%H%M%S>--%\\1-%\\2
+:EXPORT_HUGO_SECTION: art--videos
+:EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /art--videos/%<%Y%m%d%H%M%S>--%\\1-%\\2.jpg
+:VIDEO:
+:END:
+#+begin_export md
+{{< youtube %^{youtube} >}}
+#+end_export
+%?
+" :prepend t :jump-to-captured t)
+
+        ("aa" "Art" plain
+         (file+function
+          "~/DCIM/content/art.org"
+          my-capture-top-level)
+         "* TODO %^{title} :painter:krita:artrage:%(format-time-string \"%Y\"):
+:PROPERTIES:
+:EXPORT_FILE_NAME: %\\1
+:EXPORT_HUGO_SECTION: art--all
+:EXPORT_HUGO_LASTMOD: <%<%Y-%m-%d %H:%M>>
+:EXPORT_HUGO_CUSTOM_FRONT_MATTER+: :thumbnail /art--all/%\\1.jpg
+:VIDEO:
+:END:
+#+attr_org: :width 300px
+#+attr_html: :width 100%
+#+begin_export md
+#+end_export
+%?
+" :prepend t :jump-to-captured t)))
+
+;;
 ;; -> org-table-fit
 ;;
 ;; org 9.7 removed the org-table-map prefix keymap (C-c | is now a
@@ -608,9 +714,13 @@
             ("/james/INBOX" . ?m)
             ("/captainflasmr/INBOX" . ?g)))
 
+    (defconst my/mu4e-inbox-query
+      "(maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX)"
+      "Query matching the INBOX of all three accounts.")
+
     (setq mu4e-bookmarks
-          '((:name "Unified Inbox"
-                   :query "(maildir:/jimbob/INBOX OR maildir:/james/INBOX OR maildir:/captainflasmr/INBOX)"
+          `((:name "Unified Inbox"
+                   :query ,my/mu4e-inbox-query
                    :key ?b)
             (:name "Unified Archive"
                    :query "(maildir:/jimbob/Archive OR maildir:/james/Archive OR maildir:\"/captainflasmr/[Gmail]/All Mail\")"
@@ -629,7 +739,26 @@
                    :key ?u)
             (:name "Today's messages"
                    :query "date:today..now"
-                   :key ?d)))
+                   :key ?d)
+            ;; High-volume, low-signal senders, for bulk cleanup.  In a
+            ;; bookmark's results, `O f' sorts by sender.
+            (:name "Vinted"
+                   :query ,(concat my/mu4e-inbox-query " AND from:vinted*")
+                   :key ?v)
+            (:name "Google Play"
+                   :query ,(concat my/mu4e-inbox-query " AND from:googleplay*")
+                   :key ?g)
+            (:name "PayPal"
+                   :query ,(concat my/mu4e-inbox-query " AND from:paypal*")
+                   :key ?y)
+            (:name "BT"
+                   :query ,(concat my/mu4e-inbox-query " AND from:btcomms*")
+                   :key ?c)
+            (:name "Noisy senders"
+                   :query ,(concat my/mu4e-inbox-query
+                                   " AND (from:vinted* OR from:googleplay*"
+                                   " OR from:paypal* OR from:btcomms*)")
+                   :key ?N)))
 
     (setq shr-use-colors nil
           shr-use-fonts nil
@@ -1252,7 +1381,7 @@ mu4e's own header-line content once the update is done."
 ;; (setq diff-minimap-stipple-pattern 'dots-sparse)
 ;; (setq diff-minimap-colour-source 'diff-hl)
 ;; (setq diff-minimap-font-scale 0.2)
-(setq diff-minimap-diff-backend 'vc)
+;; (setq diff-minimap-diff-backend 'vc)
 ;; Let the minimap keep M-n/M-p for hunk navigation in file buffers.
 (add-to-list 'my/window-nav-passthrough-minor-modes 'diff-minimap-mode)
 ;; (add-hook 'ediff-startup-hook #'diff-minimap-ediff-setup)
@@ -1814,7 +1943,8 @@ comment headers fold their section, definitions fold to the next one."
 ;; `ef-trio-dark' from `ef-themes'.
 ;;
 ;; (load-theme 'gruvbox-dark-hard t)
-(load-theme 'doom-tokyo-night t)
+(load-theme 'doom-snazzy t)
+;; (load-theme 'doom-tokyo-night t)
 ;; (load-theme 'doom-material-dark t)
 ;; (load-theme 'doom-outrun-electric t)
 ;; (load-theme 'doom-manegarm t)
