@@ -79,7 +79,6 @@
       '("~/DCIM/content/aaa--calendar.org"
         "~/DCIM/content/aab--repeat.org"
         "~/DCIM/content/aaa--todo.org"
-        "~/DCIM/content/aab--move.org"
         "~/DCIM/content/aac--emacs-todo.org"))
 (setq diary-file "~/DCIM/content/diary.org")
 
