@@ -112,6 +112,10 @@
 (use-package csv-mode)
 (use-package i3wm-config-mode)
 
+(use-package typescript-mode
+  :mode (("\\.ts\\'"  . typescript-mode)
+         ("\\.tsx\\'" . typescript-mode)))
+
 (use-package web-mode
   :mode "\\.cshtml?\\'"
   :hook (html-mode . web-mode)

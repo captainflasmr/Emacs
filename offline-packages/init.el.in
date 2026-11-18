@@ -121,6 +121,18 @@ Failures (e.g. package requires a newer Emacs) are logged, not fatal."
   (my/ensure-package pkg))
 
 ;;
+;; -> typescript-mode
+;;
+;; .ts/.tsx files open in `typescript-mode' from the per-version package list.
+;; The explicit association matters on Emacs 30+, where the built-in .ts entry
+;; (`typescript-ts-mode-maybe') falls back to `fundamental-mode' when the
+;; tree-sitter TypeScript grammar is not installed — no font-lock at all.
+;;
+(when (locate-library "typescript-mode")
+  (autoload 'typescript-mode "typescript-mode" nil t)
+  (add-to-list 'auto-mode-alist '("\\.tsx?\\'" . typescript-mode)))
+
+;;
 ;; -> xkb-mode
 ;;
 ;; Vendored under local-packages/xkb-mode.  Local packages get no

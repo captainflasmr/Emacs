@@ -288,7 +288,8 @@
          ("\\.cmake\\'"         . cmake-mode)))
 
 (use-package typescript-mode
-  :mode "\\.ts\\'")
+  :mode (("\\.ts\\'"  . typescript-mode)
+         ("\\.tsx\\'" . typescript-mode)))
 
 (use-package protobuf-mode
   :mode "\\.proto\\'")
