@@ -996,14 +996,19 @@ mu4e's own header-line content once the update is done."
                  forge gruvbox-theme htmlize i3wm-config-mode
                  kotlin-mode magit org-social ox-hugo package-lint
                  protobuf-mode timu-caribbean-theme timu-rouge-theme
-                 timu-spacegrey-theme web-mode yaml-mode)))
+                 timu-spacegrey-theme typescript-mode web-mode yaml-mode)))
 
 ;;
 ;; -> typescript-support
 ;;
 
-(add-to-list 'auto-mode-alist '("\\.ts\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
+;; web-mode is an HTML/template mode: it only fontifies JS/TS inside <script>
+;; blocks, so a bare .ts/.tsx buffer stays unhighlighted.  typescript-mode is a
+;; real TS mode and autoloads a "\\.tsx?\\'" mapping for both extensions.
+(use-package typescript-mode
+  :ensure t
+  :mode (("\\.ts\\'"  . typescript-mode)
+         ("\\.tsx\\'" . typescript-mode)))
 
 (use-package agent-shell
   :ensure t
@@ -1472,12 +1477,33 @@ mu4e's own header-line content once the update is done."
 ;; $ emacs --batch --eval '(progn (find-file "/home/jdyer/.emacs.d/offline-packages/local-packages/emeld/emeld.el") (goto-char (point-min)) (condition-case nil (while (not (eobp)) (forward-sexp)) (error (message "Unbalanced at pos %d, line %d, col %d" (point) (line-number-at-pos) (current-column)))))' 2>&1
 ;; Unbalanced at pos 31818, line 693, col 62
 
+;; Allow a project .dir-locals.el to set Org duration units.
+(put 'org-duration-units 'safe-local-variable
+     (lambda (value)
+       (and (listp value)
+            (integerp (cdr (assoc "d" value)))
+            (integerp (cdr (assoc "w" value))))))
+;; `org-duration-units' ships with a setter that only updates the global
+;; default.  Teach it to support buffer-local values so dir-locals and
+;; `setopt-local' do not warn, while preserving the global behaviour.
+(require 'org-duration)
+(put 'org-duration-units 'custom-set
+     (lambda (variable value &optional buffer-local)
+       (if buffer-local
+           (set (make-local-variable variable) value)
+         (set-default-toplevel-value variable value))
+       (when (featurep 'org-duration)
+         (org-duration-set-regexps))))
+
 (use-package simply-kanban
   :load-path "~/.emacs.d/offline-packages/local-packages/simply-kanban"
   :commands (simply-kanban-show-card)
   :bind
   ("C-c K" . simply-kanban)
   ("C-c A" . simply-kanban-agenda))
+
+(autoload 'org-dblock-write:simply-kanban-sprint-summary "simply-kanban"
+  "Write a Simply Kanban sprint summary table." nil)
 
 (define-key org-mode-map (kbd "C-c ;") #'simply-kanban-show-card)
 
@@ -2017,6 +2043,6 @@ comment headers fold their section, definitions fold to the next one."
 ;; relative to `default'.  Uncomment and adjust for the current display.
 ;;
 (my/set-font-size-overrides
- '((default . 90)
-   (variable-pitch . 100)
+ '((default . 110)
+   (variable-pitch . 120)
    (mode-line . 1.0)))
