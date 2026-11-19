@@ -77,7 +77,7 @@ The GNU Emacs source tarball bundled with the toolkit is decoupled from the mirr
 
 * Local packages (self-written / locally-patched)
 
-Anything dropped under =offline-packages/local-packages/= is bundled into every toolkit regardless of target version — these are packages you've written yourself or pulled from GitHub and tweaked, i.e. things that don't live in an ELPA archive. A few source-only assets (such as =emeld/demos/=) are excluded from the bundle; see "What goes into the toolkit".
+Anything dropped under =offline-packages/local-packages/= is bundled into every toolkit regardless of target version — these are packages you've written yourself or pulled from GitHub and tweaked, i.e. things that don't live in an ELPA archive. A few source-only assets (such as =emeld/demos/=) are excluded from the bundle, and the ~29 MB PlantUML jar is omitted by default; see "What goes into the toolkit".
 
 Two supported shapes:
 
@@ -184,7 +184,7 @@ cd ~/.emacs.d/offline-packages
 ./create-install.sh 27.2 --out-dir /tmp # toolkit tarball goes to /tmp
 #+end_src
 
-By default, once the mirror is built =create-install.sh= invokes =build-toolkit.sh --target emacs-<VER>=, producing =$HOME/.emacs.d/emacs-offline-toolkit-<VER>-*.tar.xz= /without/ the GNU Emacs source tarball bundled. Pass =--with-source auto= (or an explicit version) to include the source, or =--mirror-only= to stop after the ELPA mirror under =$OFFLINE_MIRRORS_DIR/= (default =~/.cache/emacs-offline-toolkit/mirrors/=).
+By default, once the mirror is built =create-install.sh= invokes =build-toolkit.sh --target emacs-<VER>=, producing =$HOME/.emacs.d/emacs-offline-toolkit-<VER>-*.tar.xz= /without/ the GNU Emacs source tarball or PlantUML jar bundled. Pass =--with-source auto= (or an explicit version) to include the source, =--with-plantuml-jar= to include the jar, or =--mirror-only= to stop after the ELPA mirror under =$OFFLINE_MIRRORS_DIR/= (default =~/.cache/emacs-offline-toolkit/mirrors/=).
 
 =create-install.sh= will:
 
@@ -261,6 +261,7 @@ Flags:
 | =--xz=                     | Use xz -9e (.tar.xz) instead of default gzip     |
 | =--smoke-test=             | Run the post-staging "boot init.el" check         |
 | =--tools=                  | Include tools/ drop-zone (jasspa-me, mg, exiftool; default: off) |
+| =--with-plantuml-jar=      | Include the ~29 MB PlantUML jar (default: off)   |
 | =-l=, =--list=             | List available targets and exit                  |
 | =-h=, =--help=             | Show help                                        |
 
@@ -303,6 +304,9 @@ Excluded from =Emacs-vanilla/=, =Emacs-DIYer/= and =local-packages/= to keep the
 =local-packages/= has an additional exclusion list in =build-toolkit.sh= for package assets that are useful in the source repo but not on the offline target:
 
 - =emeld/demos/= (screen-recording GIF/MP4 demos referenced by the emeld README)
+- =ox-plantuml-gantt/plantuml.jar= (~29 MB PlantUML engine, omitted by default)
+
+The PlantUML jar is the exception that can be opted back in: pass =--with-plantuml-jar= to =create-install.sh= or =build-toolkit.sh=. Without it, drop a jar onto the target later and point =plantuml-jar-path= at it.
 
 ** Size
 
@@ -313,7 +317,7 @@ Default compression is gzip. Pass =--xz= for =xz -9e= (extreme preset) for a sma
 | Emacs 27.2 (14 pkgs) | ~600 KB | ~700 KB | ~1–2 MB          | ~55–65 MB       |
 | Emacs 30.2 (28 pkgs) | ~1.7 MB | ~700 KB | ~2–3 MB          | ~55–65 MB       |
 
-The =tools/= drop-zone is /omitted by default/ (~25 MB uncompressed =jasspa-me= / =mg= / =exiftool= binaries, ~15–20 MB in the tarball); add =--tools= to include it.
+The =tools/= drop-zone is /omitted by default/ (~25 MB uncompressed =jasspa-me= / =mg= / =exiftool= binaries, ~15–20 MB in the tarball); add =--tools= to include it. The PlantUML engine (=local-packages/ox-plantuml-gantt/plantuml.jar=, ~29 MB) is likewise omitted by default; add =--with-plantuml-jar= to bundle it.
 
 ** --tools (MicroEmacs, mg, exiftool)
 

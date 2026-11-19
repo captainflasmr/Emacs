@@ -12,6 +12,14 @@ This document contains the release notes for offline-packages
 
 ** <2026-11-19>
 
+Omit the PlantUML jar from the default toolkit tarball
+
+- =build-toolkit.sh=: excluded =local-packages/ox-plantuml-gantt/plantuml.jar= (~29 MB) from the default bundle and added a build hint when the jar is present but skipped. Pass =--with-plantuml-jar= to include it; =MANIFEST.txt= now records whether the jar shipped.
+- =create-install.sh=: accepts and passes through =--with-plantuml-jar=.
+- =README.org=: documented the default omission, the opt-in flag, and supplying a jar on the target.
+
+** <2026-11-19>
+
 Keep the Org clock mode-line text at the mode-line height
 
 - =Emacs-vanilla= =font-size-core= now resets =org-mode-line-clock= and =org-mode-line-clock-overrun= with the mode-line faces.

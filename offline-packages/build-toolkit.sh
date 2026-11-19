@@ -25,6 +25,9 @@
 #                           Default: off — the toolkit is built without them
 #                           and gets a plain filename; with --tools the name
 #                           gains a "-tools" suffix.
+#       --with-plantuml-jar Bundle the ~29 MB PlantUML jar from
+#                           local-packages/ox-plantuml-gantt/. Default: off —
+#                           supply a jar on the target when rendering charts.
 #       --smoke-test        Run the post-staging "boot rendered init.el" check
 #                           (disabled by default; only useful when the target
 #                           emacs-<VER> binary is available on this machine).
@@ -46,6 +49,7 @@ LOCAL_CONFIGS=0
 USE_XZ=0
 SMOKE_TEST=0
 INCLUDE_TOOLS=0
+INCLUDE_PLANTUML_JAR=0
 
 # Literate config sources — fetched from GitHub main by default.
 VANILLA_REPO="captainflasmr/Emacs-vanilla"
@@ -103,6 +107,7 @@ while [[ $# -gt 0 ]]; do
     --local-configs)  LOCAL_CONFIGS=1; shift ;;
     --xz)             USE_XZ=1; shift ;;
     --tools)          INCLUDE_TOOLS=1; shift ;;
+    --with-plantuml-jar) INCLUDE_PLANTUML_JAR=1; shift ;;
     --smoke-test)     SMOKE_TEST=1; shift ;;
     -l|--list)        list_targets; exit 0 ;;
     -h|--help)        usage; exit 0 ;;
@@ -204,6 +209,12 @@ _local_pkg_excludes=(
   --exclude='emeld/demos'
 )
 
+# The PlantUML engine is ~29 MB and can be supplied separately on the target.
+# Omit it from the default bundle; --with-plantuml-jar opts back in.
+if [[ "$INCLUDE_PLANTUML_JAR" -eq 0 ]]; then
+  _local_pkg_excludes+=(--exclude='ox-plantuml-gantt/plantuml.jar')
+fi
+
 if [[ "$LOCAL_CONFIGS" -eq 1 ]]; then
   for d in Emacs-vanilla Emacs-DIYer; do
     if [[ -d "${EMACS_D_DIR}/${d}" ]]; then
@@ -284,6 +295,12 @@ if [[ -d "$LOCAL_PKG_SRC" ]] \
   tar -C "$LOCAL_PKG_SRC" "${_tar_excludes[@]}" "${_local_pkg_excludes[@]}" \
     --exclude='.gitkeep' -cf - . \
     | tar -C "${STAGING}/local-packages" -xf -
+fi
+
+# Make the default jar omission discoverable, like the tools/ hint below.
+if [[ "$INCLUDE_PLANTUML_JAR" -eq 0 \
+      && -f "${LOCAL_PKG_SRC}/ox-plantuml-gantt/plantuml.jar" ]]; then
+  echo ">> PlantUML jar present but NOT bundled — pass --with-plantuml-jar to include it"
 fi
 
 # --- Docs drop-zone ---
@@ -1016,6 +1033,11 @@ fi
     _lp_count="$(find "${STAGING}/local-packages" -maxdepth 1 -mindepth 1 \
                   \( -type d -o -name '*.el' \) | wc -l)"
     echo "Local pkgs:    ${_lp_count} entries under local-packages/"
+    if [[ -f "${STAGING}/local-packages/ox-plantuml-gantt/plantuml.jar" ]]; then
+      echo "PlantUML jar:  $(du -h "${STAGING}/local-packages/ox-plantuml-gantt/plantuml.jar" | cut -f1) bundled"
+    else
+      echo "PlantUML jar:  omitted (pass --with-plantuml-jar to include)"
+    fi
   fi
   if [[ -d "${STAGING}/tools" ]]; then
     _t_size="$(du -sh "${STAGING}/tools" | cut -f1)"
