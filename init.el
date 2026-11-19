@@ -98,6 +98,7 @@
 (setq org-agenda-files
       '("~/DCIM/content/aaa--calendar.org"
         "~/DCIM/content/aab--repeat.org"
+        "~/DCIM/content/aab--meds.org"
         "~/DCIM/content/aaa--todo.org"
         "~/DCIM/content/aac--emacs-todo.org"))
 (setq diary-file "~/DCIM/content/diary.org")
@@ -193,7 +194,17 @@
 #+begin_export md
 #+end_export
 %?
-" :prepend t :jump-to-captured t)))
+" :prepend t :jump-to-captured t)
+
+        ("m" "Medication pickup")
+        ("mk" "kate" entry
+         (file+headline "~/DCIM/content/aab--meds.org" "kate")
+         "* %U %^{Medication(s)}\n%?"
+         :prepend t :empty-lines 1 :jump-to-captured t)
+        ("mj" "james" entry
+         (file+headline "~/DCIM/content/aab--meds.org" "james")
+         "* %U %^{Medication(s)}\n%?"
+         :prepend t :empty-lines 1 :jump-to-captured t)))
 
 ;;
 ;; -> org-table-fit
