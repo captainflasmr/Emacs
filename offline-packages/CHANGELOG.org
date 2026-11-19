@@ -10,6 +10,19 @@ This document contains the release notes for offline-packages
 
 * Versions
 
+** <2026-11-19>
+
+Keep the Org clock mode-line text at the mode-line height
+
+- =Emacs-vanilla= =font-size-core= now resets =org-mode-line-clock= and =org-mode-line-clock-overrun= with the mode-line faces.
+- =init.el.in= and the per-version/Windows starters pin the same two clock faces to the starter mode-line height (1.4).  Previously, clocking in from =simply-kanban= on the offline target could leave the running-clock text larger than the rest of the mode line after a theme change, because Org's clock face inherits =mode-line= and could keep a stale realised height.
+
+** <2026-11-19>
+
+Leave repeat-mode off in the starters
+
+- =starters/emacs-28.1.el=, =emacs-30.2.el=, and =emacs-31.1.el=: removed the automatic =repeat-mode= activation to match the live configuration; the mode can still be enabled with =M-x repeat-mode=.  The 28.1 header no longer lists repeat-mode as the delta from 27.2.
+
 ** <2026-11-12>
 
 Keep the toolkit in sync with the purified Emacs-vanilla

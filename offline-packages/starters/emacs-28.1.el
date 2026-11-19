@@ -6,8 +6,7 @@
 ;; replace) the bundled init.el, which already installs the ELPA mirror,
 ;; bootstraps ~/.emacs.d/local-packages, and loads Emacs-vanilla + Emacs-DIYer.
 ;;
-;; 28.1 and 28.2 use identical customisations — the only delta from 27.2 is
-;; that `repeat-mode' (new in 28.1) is enabled. 28.1 is the first release
+;; 28.1 and 28.2 use identical customisations. 28.1 is the first release
 ;; with native compilation enabled by default on most distros, so packages
 ;; installed from the mirror will produce .eln files in ~/.emacs.d/eln-cache/
 ;; on first startup.
@@ -77,7 +76,9 @@
 (dolist (face-height '((fixed-pitch 1.1)
                        (variable-pitch 1.2)
                        (mode-line 1.4)
-                       (mode-line-inactive 1.4)))
+                       (mode-line-inactive 1.4)
+                       (org-mode-line-clock 1.4)
+                       (org-mode-line-clock-overrun 1.4)))
   (face-spec-set (car face-height)
                  `((t (:height ,(cadr face-height))))
                  'face-override-spec))
@@ -376,8 +377,7 @@
       recentf-max-saved-items 40
       max-mini-window-height 8)
 
-;; `repeat-mode' was added in Emacs 28.1 — C-x o o o… to cycle windows, etc.
-(when (fboundp 'repeat-mode) (repeat-mode 1))
+;; `repeat-mode' is intentionally left off; enable it with `M-x repeat-mode'.
 
 (use-package chess)
 

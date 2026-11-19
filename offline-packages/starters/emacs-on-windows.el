@@ -56,6 +56,8 @@
  '(indent-guide-face ((t (:background "#282828" :foreground "#666666"))))
  '(mode-line ((t (:height 1.4 :underline nil :overline nil :box nil))))
  '(mode-line-inactive ((t (:height 1.4 :underline nil :overline nil :box nil))))
+ '(org-mode-line-clock ((t (:inherit mode-line :height 1.4))))
+ '(org-mode-line-clock-overrun ((t (:inherit mode-line :background "red" :height 1.4))))
  '(org-column ((t (:background "#1e1e1e" :foreground "#d4d4d4"))))
  '(org-level-1 ((t (:inherit default :weight regular :height 1.0))))
  '(org-level-2 ((t (:inherit default :weight light :height 1.0))))

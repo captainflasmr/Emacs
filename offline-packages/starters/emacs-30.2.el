@@ -74,7 +74,9 @@
 (dolist (face-height '((fixed-pitch 1.1)
                        (variable-pitch 1.2)
                        (mode-line 1.4)
-                       (mode-line-inactive 1.4)))
+                       (mode-line-inactive 1.4)
+                       (org-mode-line-clock 1.4)
+                       (org-mode-line-clock-overrun 1.4)))
   (face-spec-set (car face-height)
                  `((t (:height ,(cadr face-height))))
                  'face-override-spec))
@@ -412,7 +414,7 @@
       max-mini-window-height 8
       tab-bar-auto-width-max '((120) 20))
 
-(when (fboundp 'repeat-mode) (repeat-mode 1))
+;; `repeat-mode' is intentionally left off; enable it with `M-x repeat-mode'.
 
 (use-package chess)
 
