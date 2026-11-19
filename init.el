@@ -25,6 +25,22 @@
 (add-hook 'conf-space-mode-hook #'my/rainbow-mode)
 
 ;;
+;; -> linux-specific
+;;
+;; Machine-specific Linux paths and desktop bindings; Emacs-vanilla keeps
+;; only the generic keymaps.
+(when (eq system-type 'gnu/linux)
+  (define-key my-jump-keymap (kbd "a") (lambda () (interactive) (find-file "~/DCIM/content/emacs.org")))
+  (define-key my-jump-keymap (kbd "c") (lambda () (interactive) (find-file "~/DCIM/content/aaa--calendar.org")))
+  (define-key my-jump-keymap (kbd "f") (lambda () (interactive) (find-file "~/nas")))
+  (define-key my-jump-keymap (kbd "m") (lambda () (interactive) (find-file "~/DCIM/Camera")))
+  (define-key my-jump-keymap (kbd "j") (lambda () (interactive) (find-file "~/DCIM/content/aaa--todo.org")))
+  (define-key my-jump-keymap (kbd "n") (lambda () (interactive) (find-file "~/DCIM/Screenshots")))
+  (define-key my-jump-keymap (kbd "w") (lambda () (interactive) (find-file "~/DCIM/content/")))
+  ;; Sway/Waybar stores its config as JSON with comments.
+  (add-to-list 'auto-mode-alist '("waybar.*/config\\'" . js-json-mode)))
+
+;;
 ;; -> neomacs-effects
 ;;
 ;; Neomacs-only visual options; absent from GNU Emacs, hence the guard.
