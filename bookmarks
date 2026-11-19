@@ -207,11 +207,11 @@
  (position . 261)
  (last-modified 27125 57540 94473 207000))
 ("org-capture-last-stored"
- (filename . "~/.emacs.d/notes")
- (front-context-string . "*  2026-11-12 Th")
- (rear-context-string . "apturing thing\n\n")
- (position . 1296)
- (last-modified 1794486317185048705 . 1000000000))
+ (filename . "~/DCIM/content/aab--meds.org")
+ (front-context-string . "** [2026-11-19 T")
+ (rear-context-string . "\n* kate :kate:\n\n")
+ (position . 652)
+ (last-modified 1795092642540115355 . 1000000000))
 ("Emacs-DIYer"
  (filename . "~/.emacs.d/Emacs-DIYer/")
  (front-context-string . "CHANGELOG.org\n  ")

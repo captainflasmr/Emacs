@@ -1999,7 +1999,8 @@ comment headers fold their section, definitions fold to the next one."
 ;; `ef-trio-dark' from `ef-themes'.
 ;;
 ;; (load-theme 'gruvbox-dark-hard t)
-(load-theme 'doom-snazzy t)
+(load-theme 'doom-nord t)
+;; (load-theme 'doom-snazzy t)
 ;; (load-theme 'doom-tokyo-night t)
 ;; (load-theme 'doom-material-dark t)
 ;; (load-theme 'doom-outrun-electric t)

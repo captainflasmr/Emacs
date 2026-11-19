@@ -8,7 +8,8 @@
 ;;
 ;; Built-in stack targeted: eglot (29+), flymake, eldoc, xref, project.el.
 ;; External packages from the mirror: corfu, dape, diff-hl, cmake-mode,
-;; typescript-mode, highlight-indent-guides, protobuf-mode, kotlin-mode, powershell.
+;; typescript-mode, protobuf-mode, kotlin-mode, powershell.  The
+;; highlight-indent-guides block is kept commented out as an opt-in example.
 ;; Also wires the local emeld-sidebar package (project file-tree sidebar).
 ;;
 ;; Version-gated: blocks that need Emacs >= 29 are guarded by `fboundp'
@@ -302,11 +303,14 @@
          ("\\.psm1\\'" . powershell-mode)
          ("\\.psd1\\'" . powershell-mode)))
 
-(use-package highlight-indent-guides
-  :hook ((prog-mode yaml-mode) . highlight-indent-guides-mode)
-  :custom
-  (highlight-indent-guides-method 'character)
-  (highlight-indent-guides-responsive 'top))
+;; Kept here commented out: indent guides are opt-in, not enabled by default.
+;; Uncomment this block to turn them on for prog-mode and yaml-mode buffers.
+;;
+;; (use-package highlight-indent-guides
+;;   :hook ((prog-mode yaml-mode) . highlight-indent-guides-mode)
+;;   :custom
+;;   (highlight-indent-guides-method 'character)
+;;   (highlight-indent-guides-responsive 'top))
 
 ;;
 ;; -> GUD/GDB fallback keys — overridden by dape when a dape session is live
