@@ -6,7 +6,8 @@
 ;; Optional, not auto-loaded. To try it, append to ~/.emacs.d/init.el:
 ;;   (load (expand-file-name "init-starter-coding" user-emacs-directory) t t)
 ;;
-;; Built-in stack targeted: eglot (29+), flymake, eldoc, xref, project.el.
+;; Built-in stack targeted: eglot (29+), eldoc, xref, project.el.  The flymake
+;; block is kept commented out as an opt-in example, like indent guides.
 ;; External packages from the mirror: corfu, dape, diff-hl, cmake-mode,
 ;; typescript-mode, protobuf-mode, kotlin-mode, powershell.  The
 ;; highlight-indent-guides block is kept commented out as an opt-in example.
@@ -197,11 +198,14 @@
 ;;
 ;; -> flymake — diagnostics, built-in. M-n/M-p to jump between errors.
 ;;
-(use-package flymake
-  :hook (prog-mode . flymake-mode)
-  :bind (:map flymake-mode-map
-              ("M-n" . flymake-goto-next-error)
-              ("M-p" . flymake-goto-prev-error)))
+;; Kept here commented out: flymake is opt-in, not enabled by default.
+;; Uncomment this block to turn on on-the-fly diagnostics in prog-mode.
+;;
+;; (use-package flymake
+;;   :hook (prog-mode . flymake-mode)
+;;   :bind (:map flymake-mode-map
+;;               ("M-n" . flymake-goto-next-error)
+;;               ("M-p" . flymake-goto-prev-error)))
 
 ;;
 ;; -> diff-hl — inline VCS indicators in fringe (or margin in TTY)
@@ -421,12 +425,6 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
     :load-path "~/.emacs.d/offline-packages/local-packages/project-overview"
     :commands (project-overview)
     :bind (:map project-prefix-map ("O" . project-overview))
-    :init
-    ;; Show the dashboard instead of the splash screen at startup.
-    (setq initial-buffer-choice
-          (lambda ()
-            (project-overview)
-            (get-buffer project-overview-buffer-name)))
     :custom
     ;; Roots scanned for git projects (each checked directly and one level
     ;; deep for .git subdirs).  Adjust to wherever you keep your repos.

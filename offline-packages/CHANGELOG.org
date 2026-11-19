@@ -18,7 +18,7 @@ Make =init.el.in= a bootstrapper and move package setup into the starters
 - =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-31.1.el=: rebuilt from one shared body that owns the moved package setup and uses =use-package= throughout. Added the live init's =diff-minimap=, =transmute=, =simply-kanban=, =markdown-mode=, =zig-mode=, =htmlize=, richer =vlf=, =selected-window-accent-mode=, =org-slides=, and Linux jump-path config. Packages that only exist in newer mirrors are guarded with =:if (locate-library ...)=, so the same starter also loads on 27.2/28.x.
 - =starters/emacs-on-windows.el=: added the =use-package= bootstrap, TypeScript/calfw blocks, and direct =use-package= forms for =org-table-fit=, =org-ibullets=, and =org-slides=; removed the old =my/*-configured= guards.
 - =README.org= and =local-packages/org-ibullets/VENDORED.org=: documented the bootstrapper/starter split and removed the stale =my/*-configured= guard references.
-- =starters/coding.el=: kept the =highlight-indent-guides= =use-package= block but commented it out, so indent guides are opt-in rather than enabled by default.
+- =starters/coding.el=: kept the =highlight-indent-guides= and =flymake= =use-package= blocks but commented them out, so indent guides and on-the-fly diagnostics are opt-in rather than enabled by default.  =project-overview= remains available on =C-x p O= but no longer replaces the startup splash screen.
 
 ** <2026-11-19>
 
