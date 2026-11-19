@@ -8,6 +8,13 @@
   (let ((f (expand-file-name (format "~/.emacs.d/%s/init.el" dir))))
     (when (file-exists-p f) (load-file f))))
 
+;; The rendered offline init.el installs the mirror and the package list but
+;; leaves per-package setup to the starters.  `:ensure' is left off here for
+;; the same reason: every package is already present in the local mirror.
+(require 'use-package)
+(setq use-package-always-ensure nil)
+(setq use-package-verbose t)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -259,7 +266,9 @@
 ;; `ef-trio-dark' from `ef-themes'.
 ;;
 ;; (load-theme 'gruvbox-dark-hard t)
-(load-theme 'doom-tokyo-night t)
+(load-theme 'doom-nord t)
+;; (load-theme 'doom-snazzy t)
+;; (load-theme 'doom-tokyo-night t)
 ;; (load-theme 'doom-material-dark t)
 ;; (load-theme 'doom-outrun-electric t)
 ;; (load-theme 'doom-manegarm t)
@@ -287,6 +296,15 @@
   :mode "\\.cshtml?\\'"
   :hook (html-mode . web-mode)
   :bind (:map web-mode-map ("M-;" . nil)))
+
+;; Emacs 30+ otherwise falls back to `fundamental-mode' for .ts/.tsx when the
+;; tree-sitter TypeScript grammar is not installed — no font-lock at all.
+(use-package typescript-mode
+  :mode (("\\.ts\\'"  . typescript-mode)
+         ("\\.tsx\\'" . typescript-mode)))
+
+(use-package markdown-mode
+  :mode ("\\.md\\'" "\\.markdown\\'"))
 
 (add-to-list 'auto-mode-alist '("\\.cshtml\\'" . html-mode))
 (add-to-list 'auto-mode-alist '("\\.proto\\'" . protobuf-mode))
@@ -433,26 +451,34 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
 ;; live on the free C-c t prefix.  Requires Emacs 29.1; the block is
 ;; skipped on older Emacs versions.
 ;;
-(unless (and (boundp 'my/org-table-fit-configured)
-             my/org-table-fit-configured)
-  (when (and (locate-library "org-table-fit")
-             (version<= "29.1" emacs-version))
-    (use-package org-table-fit
-      :ensure nil
-      :load-path ("offline-packages/local-packages/org-table-fit"
-                  "local-packages/org-table-fit")
-      :demand t
-      :hook (org-mode . org-table-fit-overlay-mode)
-      :bind (:map org-mode-map
-                  ("C-c t f" . org-table-fit-window)
-                  ("C-c t i" . org-table-fit-window)
-                  ("C-c t t" . org-table-fit-overlay-mode)
-                  ("C-c t u" . org-table-fit-unwrap)
-                  ("C-c t r" . org-table-fit-toggle-reveal-on-point))
-      :init
-      (setq my/org-table-fit-configured t)
-      :config
-      (setq org-table-fit-overlay-reveal-on-point nil))))
+(use-package org-table-fit
+  :ensure nil
+  :if (version<= "29.1" emacs-version)
+  :load-path ("offline-packages/local-packages/org-table-fit"
+              "local-packages/org-table-fit")
+  :hook (org-mode . org-table-fit-overlay-mode)
+  :bind (:map org-mode-map
+              ("C-c t i" . org-table-fit-window)
+              ("C-c t t" . org-table-fit-overlay-mode)
+              ("C-c t u" . org-table-fit-unwrap)
+              ("C-c t r" . org-table-fit-toggle-reveal-on-point))
+  :custom
+  (org-table-fit-overlay-reveal-on-point nil))
+
+;;
+;; -> calfw — month calendar backed by Org agenda files
+;;
+(use-package calfw
+  :if (locate-library "calfw")
+  :custom
+  (calfw-display-calendar-holidays nil))
+
+(use-package calfw-org
+  :if (locate-library "calfw-org")
+  :bind ("C-c D" . calfw-org-open-calendar)
+  :custom
+  (calfw-org-overwrite-default-keybinding t)
+  (calfw-org-agenda-schedule-args '(:timestamp :scheduled :deadline)))
 
 ;;
 ;; -> org-ibullets — render Org heading stars as UTF-8 bullets
@@ -460,17 +486,14 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
 ;; Vendored under local-packages/org-ibullets; no ELPA archive needed.
 ;; Disabling font-cache compaction keeps the composed bullets fast.
 ;;
-(unless (and (boundp 'my/org-ibullets-configured)
-             my/org-ibullets-configured)
-  (use-package org-ibullets
-    :ensure nil
-    :load-path ("offline-packages/local-packages/org-ibullets"
-                "local-packages/org-ibullets")
-    :commands org-ibullets-mode
-    :init
-    (setq my/org-ibullets-configured t
-          inhibit-compacting-font-caches t)
-    :hook (org-mode . org-ibullets-mode)))
+(use-package org-ibullets
+  :ensure nil
+  :load-path ("offline-packages/local-packages/org-ibullets"
+              "local-packages/org-ibullets")
+  :commands org-ibullets-mode
+  :init
+  (setq inhibit-compacting-font-caches t)
+  :hook (org-mode . org-ibullets-mode))
 
 ;;
 ;; -> org-slides — present an Org buffer, one top-level heading per slide
@@ -478,17 +501,25 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
 ;; Vendored under local-packages/org-slides; no ELPA archive needed.
 ;; C-c P starts, n/SPC/right go forward, p/S-SPC/left go back, and q quits.
 ;;
-(unless (and (boundp 'my/org-slides-configured)
-             my/org-slides-configured)
-  (use-package org-slides
-    :ensure nil
-    :load-path ("offline-packages/local-packages/org-slides"
-                "local-packages/org-slides")
-    :commands org-slides-start
-    :init
-    (setq my/org-slides-configured t)
-    (with-eval-after-load 'org
-      (define-key org-mode-map (kbd "C-c P") #'org-slides-start))))
+(use-package org-slides
+  :ensure nil
+  :load-path ("offline-packages/local-packages/org-slides"
+              "local-packages/org-slides")
+  :commands (org-slides-start org-slides-timed-macro-toggle)
+  :bind ("C-c T" . org-slides-timed-macro-toggle)
+  :init
+  (with-eval-after-load 'org
+    (define-key org-mode-map (kbd "C-c P") #'org-slides-start))
+  :custom
+  (org-slides-page-style 'split)
+  (org-slides-text-scale 3)
+  (org-slides-hide-stars-in-headings nil)
+  :config
+  (add-hook 'org-slides-after-navigate-functions
+            (lambda (&rest _)
+              (when (and (bound-and-true-p org-table-fit-overlay-mode)
+                         (fboundp 'org-table-fit-refresh-overlays))
+                (org-table-fit-refresh-overlays)))))
 
 ;;
 ;; -> xkb-mode — edit XKB keyboard layout files
@@ -503,13 +534,13 @@ STOP-AT-ENTRY if non-nil, stops at program entry point."
   :mode "\\.xkb\\'")
 
 (use-package selected-window-accent-mode
-  :config (selected-window-accent-mode 1)
+  :config
+  (selected-window-accent-mode 1)
+  (define-key my-overrides-mode-map (kbd "C-c w") selected-window-accent-map)
   :custom
   (selected-window-accent-fringe-thickness 10)
   (selected-window-accent-custom-color "#c1c1c1")
   (selected-window-accent-mode-style 'default))
-
-(define-key my-overrides-mode-map (kbd "C-c w") selected-window-accent-map)
 
 (require 'image-dired)
 (use-package dired-image-thumbnail)

@@ -12,6 +12,15 @@ This document contains the release notes for offline-packages
 
 ** <2026-11-19>
 
+Make =init.el.in= a bootstrapper and move package setup into the starters
+
+- =init.el.in=: reduced to the offline bootstrap — mirror discovery, =local-packages= on =load-path=, =my/ensure-package=, the injected per-version package list, the personal key bridges, and the initial =custom-set-faces=. Removed the TypeScript, XKB, =org-ibullets=, =org-slides=, and =calfw= setup blocks (and their =my/*-configured= flags).
+- =starters/emacs-27.2.el=, =emacs-28.1.el=, =emacs-30.2.el=, and =emacs-31.1.el=: rebuilt from one shared body that owns the moved package setup and uses =use-package= throughout. Added the live init's =diff-minimap=, =transmute=, =simply-kanban=, =markdown-mode=, =zig-mode=, =htmlize=, richer =vlf=, =selected-window-accent-mode=, =org-slides=, and Linux jump-path config. Packages that only exist in newer mirrors are guarded with =:if (locate-library ...)=, so the same starter also loads on 27.2/28.x.
+- =starters/emacs-on-windows.el=: added the =use-package= bootstrap, TypeScript/calfw blocks, and direct =use-package= forms for =org-table-fit=, =org-ibullets=, and =org-slides=; removed the old =my/*-configured= guards.
+- =README.org= and =local-packages/org-ibullets/VENDORED.org=: documented the bootstrapper/starter split and removed the stale =my/*-configured= guard references.
+
+** <2026-11-19>
+
 Omit the PlantUML jar from the default toolkit tarball
 
 - =build-toolkit.sh=: excluded =local-packages/ox-plantuml-gantt/plantuml.jar= (~29 MB) from the default bundle and added a build hint when the jar is present but skipped. Pass =--with-plantuml-jar= to include it; =MANIFEST.txt= now records whether the jar shipped.

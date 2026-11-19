@@ -3,13 +3,21 @@
 ;; Rendered from init.el.in by create-install.sh for Emacs @@EMACS_VERSION@@.
 ;; Do not edit the rendered init.el by hand — edit the template or the
 ;; packages/emacs-<VER>.el list and re-render.
+;;
+;; This template is deliberately minimal: it only bootstraps the offline
+;; toolkit, adds local-packages to `load-path', installs the per-version
+;; package list, and applies the initial custom faces.  Per-package setup
+;; (typescript-mode, xkb-mode, org-ibullets, org-slides, calfw, themes,
+;; magit, ...) lives in the optional starters under starters/ and in the
+;; author's top-level init.el, never here.
 
 ;;
 ;; -> core-configuration
 ;;
 ;; Load the built-in-only core, then the personal defun layer.  The
-;; top-level init stays out of the rendered config so the toolkit keeps
-;; control of package setup; Emacs-DIYer provides the commands used below.
+;; top-level init stays out of the rendered config so the offline bootstrap
+;; keeps control of package installation; Emacs-DIYer provides the commands
+;; used below.
 (dolist (dir '("Emacs-vanilla" "Emacs-DIYer"))
   (let ((f (expand-file-name (format "~/.emacs.d/%s/init.el" dir))))
     (when (file-exists-p f) (load-file f))))
@@ -121,82 +129,20 @@ Failures (e.g. package requires a newer Emacs) are logged, not fatal."
   (my/ensure-package pkg))
 
 ;;
-;; -> typescript-mode
+;; -> package-configuration
 ;;
-;; .ts/.tsx files open in `typescript-mode' from the per-version package list.
-;; The explicit association matters on Emacs 30+, where the built-in .ts entry
-;; (`typescript-ts-mode-maybe') falls back to `fundamental-mode' when the
-;; tree-sitter TypeScript grammar is not installed — no font-lock at all.
+;; Per-package setup is intentionally absent from this bootstrap file.  The
+;; optional starters installed alongside it carry the `use-package' forms:
 ;;
-(when (locate-library "typescript-mode")
-  (autoload 'typescript-mode "typescript-mode" nil t)
-  (add-to-list 'auto-mode-alist '("\\.tsx?\\'" . typescript-mode)))
-
+;;   init-starter.el         <- starters/emacs-@@EMACS_VERSION@@.el
+;;   init-starter-coding.el  <- starters/coding.el
 ;;
-;; -> xkb-mode
+;; They are not auto-loaded.  Opt in from the top-level init.el, or
+;; cherry-pick the blocks you want:
 ;;
-;; Vendored under local-packages/xkb-mode.  Local packages get no
-;; generated autoloads, so register the .xkb association explicitly.
+;;   (load (expand-file-name "init-starter" user-emacs-directory) t t)
+;;   (load (expand-file-name "init-starter-coding" user-emacs-directory) t t)
 ;;
-(when (locate-library "xkb-mode")
-  (autoload 'xkb-mode "xkb-mode" nil t)
-  (add-to-list 'auto-mode-alist '("\\.xkb\\'" . xkb-mode)))
-
-;;
-;; -> org-ibullets
-;;
-;; Vendored under local-packages/org-ibullets.  Render Org heading stars as
-;; UTF-8 bullets.  Disabling font-cache compaction keeps the composed glyphs
-;; fast (see the package README).
-;;
-(defvar my/org-ibullets-configured nil
-  "Non-nil when the org-ibullets hook and performance setting are installed.")
-
-(when (locate-library "org-ibullets")
-  (autoload 'org-ibullets-mode "org-ibullets" nil t)
-  (add-hook 'org-mode-hook #'org-ibullets-mode)
-  (setq inhibit-compacting-font-caches t)
-  (setq my/org-ibullets-configured t))
-
-;;
-;; -> org-slides
-;;
-;; Vendored under local-packages/org-slides.  Each top-level heading is one
-;; slide; `C-c P' starts the presentation, `n'/`SPC'/right move forward,
-;; `p'/`S-SPC'/left move back, and `q' quits.  The package handles the text
-;; scale, inline images, read-only mode, and cursor hiding itself.
-;;
-(defvar my/org-slides-configured nil
-  "Non-nil when the org-slides keybinding is installed.")
-
-(when (locate-library "org-slides")
-  (autoload 'org-slides-start "org-slides" nil t)
-  (with-eval-after-load 'org
-    (define-key org-mode-map (kbd "C-c P") #'org-slides-start))
-  (setq my/org-slides-configured t))
-
-;;
-;; -> calfw
-;;
-;; Month calendar backed by the Org agenda files.  `C-c D' opens the
-;; calendar; `M'/`W'/`D' switch between month, week, and day views, `SPC'
-;; opens the Org agenda for the selected day, and `RET' visits the
-;; selected item.  Set `calfw-org-overwrite-default-keybinding' to t for
-;; Org-Agenda-style view keys.  calfw-org requires Emacs 28.1+ and Org
-;; 9.7+, so the 30.x/31.x mirrors carry it.
-;;
-(defvar my/calfw-configured nil
-  "Non-nil when the calfw-org keybinding is installed.")
-
-(when (and (locate-library "calfw-org")
-           (version<= "28.1" emacs-version))
-  (setq calfw-display-calendar-holidays nil)
-  (autoload 'calfw-org-open-calendar "calfw-org" nil t)
-  (global-set-key (kbd "C-c D") #'calfw-org-open-calendar)
-  (with-eval-after-load 'calfw-org
-    (setq calfw-org-agenda-schedule-args
-          '(:timestamp :scheduled :deadline)))
-  (setq my/calfw-configured t))
 
 ;;
 ;; -> custom-faces
