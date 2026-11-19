@@ -20,6 +20,10 @@
 (define-key my-overrides-mode-map (kbd "M-/") #'my/quick-window-jump)
 (define-key my-jump-keymap (kbd "y")
   (lambda () (interactive) (find-file "~/.emacs.d/Emacs-DIYer")))
+;; M-l l opens ~/.emacs.d/notes at the end.  For another base notes file,
+;; bind a lambda like this (or set `my/notes-file'):
+;; (define-key my-jump-keymap (kbd "L")
+;;   (lambda () (interactive) (my/open-notes "~/base-notes.org")))
 (add-hook 'prog-mode-hook #'my/rainbow-mode)
 (add-hook 'org-mode-hook #'my/rainbow-mode)
 (add-hook 'conf-space-mode-hook #'my/rainbow-mode)
