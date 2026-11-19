@@ -8,9 +8,9 @@
 ;;
 ;; Built-in stack targeted: eglot (29+), eldoc, xref, project.el.  The flymake
 ;; block is kept commented out as an opt-in example, like indent guides.
-;; External packages from the mirror: corfu, dape, diff-hl, cmake-mode,
-;; typescript-mode, protobuf-mode, kotlin-mode, powershell.  The
-;; highlight-indent-guides block is kept commented out as an opt-in example.
+;; External packages from the mirror: corfu, dape, cmake-mode, typescript-mode,
+;; protobuf-mode, kotlin-mode, powershell.  The diff-hl and
+;; highlight-indent-guides blocks are kept commented out as opt-in examples.
 ;; Also wires the local emeld-sidebar package (project file-tree sidebar).
 ;;
 ;; Version-gated: blocks that need Emacs >= 29 are guarded by `fboundp'
@@ -210,12 +210,15 @@
 ;;
 ;; -> diff-hl — inline VCS indicators in fringe (or margin in TTY)
 ;;
-(use-package diff-hl
-  :config
-  (global-diff-hl-mode 1)
-  (diff-hl-flydiff-mode 1)
-  (unless (display-graphic-p)
-    (diff-hl-margin-mode 1)))
+;; Kept here commented out: diff-hl is opt-in, not enabled by default.
+;; Uncomment this block to enable inline VCS change indicators.
+;;
+;; (use-package diff-hl
+;;   :config
+;;   (global-diff-hl-mode 1)
+;;   (diff-hl-flydiff-mode 1)
+;;   (unless (display-graphic-p)
+;;     (diff-hl-margin-mode 1)))
 
 ;;
 ;; -> magit — porcelain Git interface
@@ -400,9 +403,44 @@ Finds or creates a .gpr file and restarts eglot so ALS picks it up."
 ;; buffers; `C-x m' toggles it open/closed, rooted at the current file's
 ;; project.  Current-line overlay and follow behaviour are built in.  Ships in
 ;; this toolkit under local-packages/emeld.
+;;
+;; `C-c z' is the emeld compare namespace: d diff-dwim, l reopen a recent
+;; comparison; a marks the current dired directory as comparison side A,
+;; c compares it with the directory being browsed.
 (use-package emeld
-  :load-path "~/.emacs.d/offline-packages/local-packages/emeld"
-  :bind ("C-x m" . emeld-sidebar))
+  :ensure nil
+  :load-path ("offline-packages/local-packages/emeld"
+              "local-packages/emeld")
+  :commands (emeld-diff-dwim emeld-recent)
+  :bind (("C-x m"   . emeld-sidebar)
+         ("C-c z d" . emeld-diff-dwim)
+         ("C-c z l" . emeld-recent)
+         ("C-c z a" . emeld-mark-dir-a)
+         ("C-c z c" . emeld-compare-marked-dirs))
+  ;; M-n / M-p keep emeld's own change navigation (next/previous changed
+  ;; file) and M-N / M-P step through its hunks: `emeld-mode' is in
+  ;; `my/window-nav-passthrough-modes', so the global window bindings
+  ;; stand aside there.
+  :init
+  (add-to-list 'my/window-nav-passthrough-modes 'emeld-mode)
+  :config
+  ;; (setq emeld-benchmark t)
+  ;; (setq emeld-dir-prefix "📁 ")
+  )
+
+;; Fold indicators — uncomment one set to customise the sidebar arrows.
+;;
+;; 1. Classic solid triangles — medium (U+25BA / U+25BC)
+;; (setq emeld-fold-collapsed-indicator "► "
+;;       emeld-fold-expanded-indicator  "▼ ")
+;;
+;; 2. "Media" triangles — noticeably larger/bolder (U+23F5 / U+23F7)
+;; (setq emeld-fold-collapsed-indicator "⏵ "
+;;       emeld-fold-expanded-indicator  "⏷ ")
+;;
+;; 3. Centred medium triangles (U+2BC8 / U+2BC6)
+;; (setq emeld-fold-collapsed-indicator "⯈ "
+;;       emeld-fold-expanded-indicator  "⯆ ")
 
 ;;
 ;; -> project-overview — dashboard table of git projects with status + actions
